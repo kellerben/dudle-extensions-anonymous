@@ -267,6 +267,18 @@ Dir.glob("../../*/data.yaml").sort_by{|f|
 <tr>
 	<td class='polls'><a href='?pollID=#{CGI.escapeHTML(site).gsub("'","%27")}'>#{CGI.escapeHTML(site)}</a></td>
 	<td class='mtime'>#{File.new("../../#{site}/data.yaml").mtime.strftime('%d.%m, %H:%M')}</td>
+	<td><a href='../../#{CGI.escapeHTML(site).gsub("'","%27")}'>go there</a></td>
+	<td>
+	<div>
+		<form style='margin-bottom:0px' method='post' action='../../#{CGI.escapeHTML(site).gsub("'","%27")}/delete_poll.cgi'>
+			<div>
+				<input type='hidden' name='confirmnumber' value='0' />
+				<input type='hidden' name='confirm' value='Ja, ich weiß was ich mache!' />
+				<input type='submit' value='delete it!' />
+			</div>
+		</form>
+		</div>
+	</td>
 </tr>
 NOTICE
 }
