@@ -69,11 +69,11 @@ class Poll
 		{ "return" => "Liste der GPG-IDs aller Teilnehmer oder 204 wenn noch nix konfiguriert"}
 	end
 	def webservice_getParticipants
-		if @data.keys.empty?
+		if $dc["participants"]
+			$dc["participants"].join("\n")
+		else
 			$header["status"] = "204 No Content"
 			return ""
-		else
-			@data.keys.join("\n")
 		end
 	end
 
