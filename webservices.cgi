@@ -34,11 +34,11 @@ class Poll
 		{ "return" => "open, wenn noch nicht alle gewählt haben, sonst closed" }
 	end
 	def webservice_getPollState
-		return "open" unless @dc
+		return "open" unless $dc
 		ret = true
 		rett = ""
 		@data.keys.each{|p|
-			ret = false unless @dc[p]
+			ret = false unless $dc[p]
 		}
 		ret ? "closed" : "open"
 	end
@@ -46,7 +46,7 @@ class Poll
 		{ "return" => "debug" }
 	end
 	def webservice_getDebug
-		self.pretty_inspect
+		$dc.pretty_inspect + "\n" + self.pretty_inspect
 	end
 	###################################################################
 	# Poll Initialization
@@ -77,6 +77,17 @@ class Poll
 		end
 	end
 
+	def Poll.webservicedescription_0Initialization_addParticipant
+		{ "return" => "",
+			"input" => "gpgID"
+		}
+	end
+	def webservice_addParticipant
+		$dc["participants"] ||= []
+		$dc["participants"] << $cgi["gpgID"]
+		$dc["participants"].uniq!
+		store_dc($dc)
+	end
 
 	def Poll.webservicedescription_0Initialization_getDuration
 		{ "return" => "Dauer des Events in Minuten (integer)" }
@@ -100,10 +111,9 @@ class Poll
 		timestamp = $cgi["timestamp"]
 		tableindex = $cgi["tableindex"].to_i
 
-		@dc ||={}
-		@dc[gpgID] ||= {}
-		@dc[gpgID][timestamp] ||= []
-		@dc[gpgID][timestamp][tableindex] = vote
+		$dc[gpgID] ||= {}
+		$dc[gpgID][timestamp] ||= []
+		$dc[gpgID][timestamp][tableindex] = vote
 
 		participants = {"voted" => [], "notVoted" => []}
 		(@data.keys - [gpgID]).each{|p|
@@ -114,10 +124,10 @@ class Poll
 			usedKeys << p if getUsedKeys(p).include?(gpgID)
 		}
 
-		@dc[gpgID]["usedKeys"] = usedKeys
+		$dc[gpgID]["usedKeys"] = usedKeys
 
 		$header["status"] = "202 Accepted"
-		store("Anonymous vote added")
+		store_dc($dc)
 	end
 	
 	def Poll.webservicedescription_1VoteCasting_setVoteSignature
@@ -127,9 +137,9 @@ class Poll
 	end
 	def webservice_setVoteSignature
 		# TODO return 403 if getState == "voted" && getState fertig implementiert
-		@dc[$cgi["gpgID"]]["signature"] = $cgi["signature"]
+		$dc[$cgi["gpgID"]]["signature"] = $cgi["signature"]
 		$header["status"] = "202 Accepted"
-		store("Signature for anonymous vote added")
+		store_dc($dc)
 	end
 
 	def Poll.webservicedescription_1VoteCasting_getState
@@ -137,7 +147,7 @@ class Poll
 			"input" => ["gpgID"]}
 	end
 	def getState(gpgId)
-		if @dc != nil && @dc[gpgId]
+		if $dc != nil && $dc[gpgId]
 			#TODO sig überprüfen
 			return "voted"
 		else
@@ -155,7 +165,7 @@ class Poll
 		}
 	end
 	def getUsedKeys(gpgID)
-		@dc[gpgID]["usedKeys"].to_a
+		$dc[gpgID]["usedKeys"].to_a
 	end
 	def webservice_getUsedKeys
 		getUsedKeys($cgi["gpgID"]).join("\n")
@@ -196,7 +206,7 @@ class Poll
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
-		@dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i].to_s
+		$dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i].to_s
 	end
 
 	def Poll.webservicedescription_2ResultPublication_getVoteSignature
@@ -204,7 +214,7 @@ class Poll
 			"input" => ["gpgID"] }
 	end
 	def webservice_getVoteSignature
-		@dc[$cgi["gpgID"]]["signature"]
+		$dc[$cgi["gpgID"]]["signature"]
 	end
 	
 	def Poll.webservicedescription_2ResultPublication_getKickOutKey
@@ -221,6 +231,12 @@ class Poll
 #	def webservicedescription_getKickOutSignature
 #	end
 
+	def store_dc(data)
+		File.open("dc_data.yaml","w"){|f|
+			f << data.to_yaml
+		}
+		"Sucessfully Stored"
+	end
 end
 
 
@@ -246,6 +262,12 @@ if all.include?($cgi["service"])
 	Dir.chdir("../../#{$cgi["pollID"]}/")
 	load "../dudle.rb"
 	$d = Dudle.new
+
+	if File.exist?("dc_data.yaml")
+		$dc = YAML::load_file("dc_data.yaml")
+	else
+		$dc = {}
+	end
 
 	$cgi.out($header){
 		$d.table.send("webservice_#{$cgi["service"]}")
@@ -273,7 +295,7 @@ Dir.glob("../../*/data.yaml").sort_by{|f|
 		<form style='margin-bottom:0px' method='post' action='../../#{CGI.escapeHTML(site).gsub("'","%27")}/delete_poll.cgi'>
 			<div>
 				<input type='hidden' name='confirmnumber' value='0' />
-				<input type='hidden' name='confirm' value='Ja, ich weiß was ich mache!' />
+				<input type='hidden' name='confirm' value='phahqu3Uib4neiRi' />
 				<input type='submit' value='delete it!' />
 			</div>
 		</form>

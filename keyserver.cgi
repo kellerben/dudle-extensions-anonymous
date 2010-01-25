@@ -26,6 +26,7 @@ class Keyserver
 	end
 	def webservice_setKey
 		$u[$cgi["gpgID"]] = $cgi["gpgKey"]
+		store($u)
 	end
 	
 	def Keyserver.webservicedescription_Keyserver_getKey
@@ -60,6 +61,11 @@ class Keyserver
 			return "User not found!"
 		end
 	end
+	def store(data)
+		File.open("keyserverdata.yaml","w"){|f|
+			f << data.to_yaml
+		}
+	end
 end
 
 
@@ -92,10 +98,6 @@ if all.include?($cgi["service"])
 	end
 	$header["type"] = "text/plain"
 	$out = k.send("webservice_#{$cgi["service"]}")
-	File.open("keyserverdata.yaml","w"){|f|
-		f << $u.to_yaml
-	}
-
 else
 $header["type"] = "text/html"
 #$header["type"] = "application/xhtml+xml"
