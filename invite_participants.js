@@ -1,16 +1,4 @@
-function getName(gpgID){
-	var req = new Ajax.Request('/keyserver/',
-			{
-				parameters: {
-					gpgID: gpgID,
-					service: "getName"
-				}
-			}
-		);
-	return req.responseText;
-}
-
-new Ajax.Request('/keyserver/?service=listAllKeys',
+new Ajax.Request('../extensions/dc-net/keyserver.cgi?service=listAllKeys',
   {
     method:'get',
     onSuccess: function(transport){
@@ -26,7 +14,7 @@ new Ajax.Request('/keyserver/?service=listAllKeys',
 
 			$("wizzard_navigation").insert({ after: privacy_enhanced});
 			for (var line = 0; line < response.length;line++){
-				new Ajax.Updater(response[line],'/keyserver/?service=getName&gpgID=' + response[line] ,{ method:'get'});
+				new Ajax.Updater(response[line],'../extensions/dc-net/keyserver.cgi?service=getName&gpgID=' + response[line] ,{ method:'get'});
 			}
 
     },
