@@ -19,13 +19,19 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+require "digest/sha256"
+
 class Keyserver
+	def gpgid(key)
+		dhpubkey = key.scan(/^DHPUB (.*)$/).flatten[0]
+		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase
+	end
 	def Keyserver.webservicedescription_Keyserver_setKey
 		{ "return" => "202",
-			"input" => ["gpgID","gpgKey"]}
+			"input" => ["gpgKey"]}
 	end
 	def webservice_setKey
-		$u[$cgi["gpgID"]] = $cgi["gpgKey"]
+		$u[gpgid($cgi["gpgKey"])] = $cgi["gpgKey"]
 		store($u)
 		"Key sucessfully stored"
 	end
