@@ -101,8 +101,10 @@ class Poll
 	###################################################################
 	def Poll.webservicedescription_1VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403"',
-			"input" => ["gpgID", "vote", "timestamp", "tableindex"],
-			"vote" => "eigene Teilsumme ({0,1} + Schlüssel aller Teilnehmer, die noch nicht gewählt haben + Schlüssel zu allen Teilnehmern in deren getUsedKeys man selbst steht)" }
+			"input" => ["gpgID", "vote", "timestamp", "tableindex", "inverted"],
+			"vote" => "eigene Teilsumme ({0,1} + Schlüssel aller Teilnehmer, die noch nicht gewählt haben + Schlüssel zu allen Teilnehmern in deren getUsedKeys man selbst steht)",
+			"inverted" => "true, wenn tableindex für invertierte tabelle steht"
+		}
 	end
 	def webservice_setVote
 		# TODO return 403 if necessary
@@ -110,10 +112,12 @@ class Poll
 		vote = $cgi["vote"]
 		timestamp = $cgi["timestamp"]
 		tableindex = $cgi["tableindex"].to_i
+		inverted = $cgi["inverted"] == "true" ? 1 : 0
 
 		$dc[gpgID] ||= {}
 		$dc[gpgID][timestamp] ||= []
-		$dc[gpgID][timestamp][tableindex] = vote
+		$dc[gpgID][timestamp][tableindex] ||= []
+		$dc[gpgID][timestamp][tableindex][inverted] = vote
 
 		participants = {"voted" => [], "notVoted" => []}
 		($dc["participants"] - [gpgID]).each{|p|
@@ -173,7 +177,7 @@ class Poll
 
 	def Poll.webservicedescription_1VoteCasting_setKickOutKey
 		{ "return" => 'HTTP202" OR "HTTP403"',
-			"input" => ["gpgIDSender","gpgIDLeaver","timestamp", "tableindex", "key"],
+			"input" => ["gpgIDSender","gpgIDLeaver","timestamp", "tableindex", "inverted", "key"],
 			"key" => "symmetrischer Schlüssel mit dem gewählt wurde" }
 	end
 #	def webservicedescription_setKickOutKey
@@ -199,14 +203,14 @@ class Poll
 	###################################################################
 	def Poll.webservicedescription_2ResultPublication_getVote
 		{ "return" => 'Teilsumme des Teilnehmers oder "HTTP403", falls Wahlgang noch nicht beendet',
-			"input" => ["gpgID", "timestamp", "tableindex"]}
+			"input" => ["gpgID", "timestamp", "tableindex", "inverted"]}
 	end
 	def webservice_getVote
 		if webservice_getPollState == "open"
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
-		$dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i].to_s
+		$dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i][$cgi["inverted"] == "true" ? 1 : 0].to_s
 	end
 
 	def Poll.webservicedescription_2ResultPublication_getVoteSignature
@@ -219,14 +223,14 @@ class Poll
 	
 	def Poll.webservicedescription_2ResultPublication_getKickOutKey
 		{ "return" => 'symmetrischer Schlüssel (vor Hash)',
-			"input" => ["gpgIDSender", "gpgIDLeaver", "timestamp", "tableindex"] }
+			"input" => ["gpgIDSender", "gpgIDLeaver", "timestamp", "tableindex", "inverted"] }
 	end
 #	def webservicedescription_getKickOutKey
 #	end
 	
 	def Poll.webservicedescription_2ResultPublication_getKickOutSignature
 		{ "return" => 'Liste von Signaturen',
-			"input" => ["gpgIDSender", "gpgIDLeaver", "timestamp", "tableindex"] }
+			"input" => ["gpgIDSender", "gpgIDLeaver"] }
 	end
 #	def webservicedescription_getKickOutSignature
 #	end
