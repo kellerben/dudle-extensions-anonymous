@@ -89,7 +89,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 				participants.each(function(participant){
 					row += "<tr class='participantrow' id='participant_" + participant + "'>"
 					row += "<td class='name' id='" + participant + "'>Fetching Name for " + participant + "...</td>"
-					row += "<td class='undecided' colspan='" + columns.length + "'>Participant has not voted yet.</td>"
+					row += "<td class='undecided' colspan='" + columns.length + "'>Anonymous Participant has not voted yet.</td>"
 					row += "</tr>"
 				});
 				$("separator").insert({ before: row });
@@ -100,7 +100,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 					participaterow = "<td id='"+id+"' class='name'>fetching name for id " + id + "...</td>";
 
 					columns.each(function(col){
-						participaterow += "<td title='"+col+"' class='checkboxes'>";
+						participaterow += "<td title='"+col+"' class='undecided'>";
 						participaterow += "<input id='"+htmlid(col)+"' type='checkbox'/></td>";
 					});
 					participaterow += "<td id='submit' class='date'><input onclick='vote();' type='button' value='Save'></td>";
@@ -108,6 +108,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 
 					$("add_participant").update("");
 					$("participant_" + id).update(participaterow);
+					$("separator").update("");
 				}
 
 				// give everything humanreadable names
