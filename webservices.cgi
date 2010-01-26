@@ -259,19 +259,25 @@ Poll.methods.collect{|m|
 
 if all.include?($cgi["service"])
 	$header = {"type" => "text/plain"}
-	Dir.chdir("../../#{$cgi["pollID"]}/")
-	load "../dudle.rb"
-	$d = Dudle.new
 
-	if File.exist?("dc_data.yaml")
-		$dc = YAML::load_file("dc_data.yaml")
+	if File.directory?("../../#{$cgi["pollID"]}/")
+		Dir.chdir("../../#{$cgi["pollID"]}/")
+		load "../dudle.rb"
+		$d = Dudle.new
+
+		if File.exist?("dc_data.yaml")
+			$dc = YAML::load_file("dc_data.yaml")
+		else
+			$dc = {}
+		end
+
+		$cgi.out($header){
+			$d.table.send("webservice_#{$cgi["service"]}")
+		}
 	else
-		$dc = {}
+		$header["status"] = "404 Not Found"
+		$cgi.out($header){"The requested poll was not found!"}
 	end
-
-	$cgi.out($header){
-		$d.table.send("webservice_#{$cgi["service"]}")
-	}
 
 else
 
