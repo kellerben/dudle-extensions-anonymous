@@ -63,6 +63,18 @@ class Poll
 			@head.columns.collect{|t| "#{t}:00+01:00" }.join("\n")
 		end
 	end
+	
+	def Poll.webservicedescription_0Initialization_getColumns
+		{ "return" => "Liste der Spalten oder 204 wenn noch nix konfiguriert" }
+	end
+	def webservice_getColumns
+		if @head.columns.empty?
+			$header["status"] = "204 No Content"
+			return ""
+		else
+			@head.columns.join("\n")
+		end
+	end
 
 
 	def Poll.webservicedescription_0Initialization_getParticipants
