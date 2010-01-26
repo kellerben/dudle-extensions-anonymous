@@ -19,7 +19,7 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-require "digest/sha256"
+require "digest/sha2"
 
 class Keyserver
 	def gpgid(key)
