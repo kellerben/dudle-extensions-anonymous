@@ -27,6 +27,7 @@ class Keyserver
 	def webservice_setKey
 		$u[$cgi["gpgID"]] = $cgi["gpgKey"]
 		store($u)
+		"Key sucessfully stored"
 	end
 	
 	def Keyserver.webservicedescription_Keyserver_getKey
