@@ -31,7 +31,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 		if (participants.length > 0){
 			participanttable = "<table><tr><th>Name</th></tr>";
 			participants.each(function(participant){
-				participanttable += "<tr><td id='" + participant + "'>fetching user name for "+ participant +" ...</td></tr>";
+				participanttable += "<tr><td title='" + participant + "' id='" + participant + "'>fetching user name for "+ participant +" ...</td></tr>";
 			});
 		}
 		participanttable += "</table>";
@@ -46,7 +46,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 				var addParticipantsSelect = "<div><select id='addParticipant'>";
 				allusers.each(function(user){
 					if (!participants.include(user)){
-						addParticipantsSelect += "<option value='" + user + "' id='" + user + "'>fetching user name for " + user + " ...</option>";
+						addParticipantsSelect += "<option value='" + user + "' id='" + user + "' title='" + user + "'>fetching user name for " + user + " ...</option>";
 					}
 				});
 				
