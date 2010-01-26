@@ -2,19 +2,21 @@ var extensiondir='../extensions/dc-net/'
 var pollID = (location.href).split("/");
 pollID = pollID[pollID.length-2];
 
-$("wizzard_navigation").insert({
-	after: "<h2 id='privacy_enhanced'>Invite Participants to Privacy-Enhanced Poll</h2><div id='currentUsers'></div><div id='addUsers'></div>"
-});
 
 new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=' + pollID,{
 	method: "get",
 	onFailure: function(){ alert('Failed to fetch participant list.') },
 	onSuccess: function(transport){
+
+		$("wizzard_navigation").insert({
+			after: "<h2 id='privacy_enhanced'>Invite Participants to Privacy-Enhanced Poll</h2><div id='currentUsers'></div><div id='addUsers'></div>"
+		});
+
 		var participants = transport.responseText.split("\n");
 
 		participanttable = "<table><tr><th>Name</th></tr>";
 		participants.each(function(participant){
-			participanttable += "<tr><td id='" + participant + "'>fetching user name ...</td></tr>";
+			participanttable += "<tr><td id='" + participant + "'>fetching user name for "+ participant +" ...</td></tr>";
 		});
 		participanttable += "</table>";
 		$("currentUsers").update(participanttable);
@@ -28,7 +30,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 				var addParticipantsSelect = "<div><select id='addParticipant'>";
 				allusers.each(function(user){
 					if (!participants.include(user)){
-						addParticipantsSelect += "<option value='" + user + "' id='" + user + "'>fetching user name ...</option>";
+						addParticipantsSelect += "<option value='" + user + "' id='" + user + "'>fetching user name for " + user + " ...</option>";
 					}
 				});
 				
