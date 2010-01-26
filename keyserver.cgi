@@ -30,12 +30,16 @@ class Keyserver
 		"Key sucessfully stored"
 	end
 	
+	def getKey(gpgid)
+		$u["0x" + gpgid.to_s.scan(/^0x(.*)$/).flatten[0].upcase]
+	end
+
 	def Keyserver.webservicedescription_Keyserver_getKey
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
 			"input" => ["gpgID"]}
 	end
 	def webservice_getKey
-		ret = $u[$cgi["gpgID"]]
+		ret = getKey($cgi["gpgID"])
 		if ret
 			return ret
 		else
@@ -54,13 +58,24 @@ class Keyserver
 			"input" => ["gpgID"]}
 	end
 	def webservice_getName
-		user = $u[$cgi["gpgID"]]
+		user = getKey($cgi["gpgID"])
 		if user
 			return user.scan(/^NAME (.*)$/).flatten[0].to_s
 		else
 			$header["status"] = "404 Not Found"
 			return "User not found!"
 		end
+	end
+	def Keyserver.webservicedescription_Keyserver_searchKey
+		{ "return" => "gpgKey OR HTTP404 if user is unknown",
+			"input" => ["name"]}
+	end
+	def webservice_searchKey
+		$u.each{|user,key|
+			return key if key.scan(/^NAME (.*)$/).flatten[0].to_s == $cgi["name"].chomp
+		}
+		$header["status"] = "404 Not Found"
+		return "User not found!"
 	end
 	def store(data)
 		File.open("keyserverdata.yaml","w"){|f|
