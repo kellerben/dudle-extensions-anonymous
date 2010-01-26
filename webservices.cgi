@@ -37,7 +37,7 @@ class Poll
 		return "open" unless $dc
 		ret = true
 		rett = ""
-		@data.keys.each{|p|
+		$dc["participants"].each{|p|
 			ret = false unless $dc[p]
 		}
 		ret ? "closed" : "open"
@@ -116,7 +116,7 @@ class Poll
 		$dc[gpgID][timestamp][tableindex] = vote
 
 		participants = {"voted" => [], "notVoted" => []}
-		(@data.keys - [gpgID]).each{|p|
+		($dc["participants"] - [gpgID]).each{|p|
 			participants[getState(p)] << p
 		}
 		usedKeys = participants["notVoted"]
