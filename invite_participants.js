@@ -54,9 +54,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 
 				$("addUsers").update(addParticipantsSelect);
 
-				allusers.each(function(user){
-					new Ajax.Updater(user,extensiondir + 'keyserver.cgi?service=getName&gpgID=' + user,{ method:'get'});
-				});
+				allusers.each(function(user){updateName(user)});
 
 			},
 			onFailure: function(){ alert('Failed to fetch keys from keyserver.') }

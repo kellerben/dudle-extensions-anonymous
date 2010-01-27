@@ -73,6 +73,10 @@ function htmlid(s){
 	return s.gsub(" ","_").gsub(":","_");
 }
 
+function getState(gpgID){
+	return extensiondir + 'webservices.cgi?service=getState&pollID=' + pollID + "&gpgID=" + gpgID
+}
+
 var columns;
 new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + pollID, {
 	method:'get',
@@ -88,8 +92,8 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 				var row = "";
 				participants.each(function(participant){
 					row += "<tr class='participantrow' id='participant_" + participant + "'>"
-					row += "<td class='name' id='" + participant + "'>Fetching Name for " + participant + "...</td>"
-					row += "<td class='undecided' colspan='" + columns.length + "'>Anonymous Participant has not voted yet.</td>"
+					row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>"
+					row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>"
 					row += "</tr>"
 				});
 				$("separator").insert({ before: row });
@@ -97,7 +101,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 				// participate
 				if (participants.indexOf(localStorage.getItem("id")) != -1) {
 					var id = localStorage.getItem("id");
-					participaterow = "<td id='"+id+"' class='name'>fetching name for id " + id + "...</td>";
+					participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
 
 					columns.each(function(col){
 						participaterow += "<td title='"+col+"' class='undecided'>";
@@ -113,7 +117,8 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 
 				// give everything humanreadable names
 				participants.each(function(participant){
-					new Ajax.Updater(participant,extensiondir + 'keyserver.cgi?service=getName&gpgID=' + participant,{ method:'get'});
+					updateName(participant);
+					new Ajax.Updater("status_" + participant,getState(participant),{ method:'get'});
 				});
 		}});
 }});

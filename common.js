@@ -21,3 +21,6 @@ var extensiondir='../extensions/dc-net/'
 var pollID = (location.href).split("/");
 pollID = pollID[pollID.length-2];
 
+function updateName(gpgID){ 
+	new Ajax.Updater(gpgID,extensiondir + 'keyserver.cgi?service=getName&gpgID=' + gpgID,{ method:'get'});
+}
