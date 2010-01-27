@@ -276,7 +276,7 @@ Poll.methods.collect{|m|
 if all.include?($cgi["service"])
 	$header = {"type" => "text/plain"}
 
-	if File.directory?("../../#{$cgi["pollID"]}/")
+	if $cgi.include?("pollID") && File.directory?("../../#{$cgi["pollID"]}/")
 		Dir.chdir("../../#{$cgi["pollID"]}/")
 		load "../dudle.rb"
 		$d = Dudle.new
