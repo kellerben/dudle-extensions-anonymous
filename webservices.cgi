@@ -52,39 +52,28 @@ class Poll
 	# Poll Initialization
 	###################################################################
 	def Poll.webservicedescription_0Initialization_getTimeStamps
-		{ "return" => "Liste potentieller Startzeiten des Events (rfc3339) oder 204 wenn noch nix konfiguriert" }
+		{ "return" => "Liste potentieller Startzeiten des Events (rfc3339)" }
 	end
 	def webservice_getTimeStamps
 		# FIXME, when it should work for seconds or pollhead
-		if @head.columns.empty?
-			$header["status"] = "204 No Content"
-			return ""
-		else
-			@head.columns.collect{|t| "#{t}:00+01:00" }.join("\n")
-		end
+		@head.columns.collect{|t| "#{t}:00+01:00" }.join("\n")
 	end
 	
 	def Poll.webservicedescription_0Initialization_getColumns
-		{ "return" => "Liste der Spalten oder 204 wenn noch nix konfiguriert" }
+		{ "return" => "Liste der Spalten" }
 	end
 	def webservice_getColumns
-		if @head.columns.empty?
-			$header["status"] = "204 No Content"
-			return ""
-		else
-			@head.columns.join("\n")
-		end
+		@head.columns.join("\n")
 	end
 
 
 	def Poll.webservicedescription_0Initialization_getParticipants
-		{ "return" => "Liste der GPG-IDs aller Teilnehmer oder 204 wenn noch nix konfiguriert"}
+		{ "return" => "Liste der GPG-IDs aller Teilnehmer"}
 	end
 	def webservice_getParticipants
 		if $dc["participants"]
-			$dc["participants"].join("\n")
+			return $dc["participants"].join("\n")
 		else
-			$header["status"] = "204 No Content"
 			return ""
 		end
 	end
