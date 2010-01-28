@@ -23,17 +23,18 @@ require "digest/sha2"
 
 class Keyserver
 	def gpgid(key)
-		dhpubkey = key.scan(/^DHPUB (.*)$/).flatten[0]
-		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase
+		dhpubkey = key.scan(/DHPUB ([\da-fA-F]*)/).flatten[0]
+		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase[56..64]
 	end
 	def Keyserver.webservicedescription_Keyserver_setKey
 		{ "return" => "202",
 			"input" => ["gpgKey"]}
 	end
 	def webservice_setKey
-		$u[gpgid($cgi["gpgKey"])] = $cgi["gpgKey"]
+		id = gpgid($cgi["gpgKey"])
+		$u[id] = $cgi["gpgKey"]
 		store($u)
-		"Key sucessfully stored"
+		"Key with #{id} sucessfully stored"
 	end
 	
 	def getKey(gpgid)
