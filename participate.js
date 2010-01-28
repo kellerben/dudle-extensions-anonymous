@@ -118,7 +118,37 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 				// give everything humanreadable names
 				participants.each(function(participant){
 					updateName(participant);
-					new Ajax.Updater("status_" + participant,getState(participant),{ method:'get'});
+					new Ajax.Request(getState(participant),{
+						method: 'get',
+						onSuccess: function(transport){
+							stat = transport.responseText;
+							var classname = "undecided"
+							var statustext = "Failed to fetch Status";
+							switch (stat){
+								case "voted":
+									classname = 'ayes';
+									statustext = 'Has voted.';
+									break;
+								case 'notVoted':
+									classname = 'cno';
+									statustext = 'Has not voted yet.';
+									break;
+								case 'flying':
+									classname = 'bmaybe';
+									statustext = 'Is to be removed.';
+									break;
+								case 'kickedOut':
+									classname = 'ayes';
+									statustext = 'Is removed.';
+									break;
+							}
+							row = $("status_" + participant);
+							row.update(statustext);
+							row.removeClassName("undecided");
+							row.addClassName(classname);
+							
+						}
+					});
 				});
 		}});
 }});
