@@ -89,67 +89,69 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 			onSuccess: function(transport){
 				participants = transport.responseText.split("\n");
 
-				var row = "";
-				participants.each(function(participant){
-					row += "<tr class='participantrow' id='participant_" + participant + "'>"
-					row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>"
-					row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>"
-					row += "</tr>"
-				});
-				$("separator").insert({ before: row });
-
-				// participate
-				if (participants.indexOf(localStorage.getItem("id")) != -1) {
-					var id = localStorage.getItem("id");
-					participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
-
-					columns.each(function(col){
-						participaterow += "<td title='"+col+"' class='undecided'>";
-						participaterow += "<input id='"+htmlid(col)+"' type='checkbox'/></td>";
+				if (participants.length > 0 && participants[0] != ""){
+					var row = "";
+					participants.each(function(participant){
+						row += "<tr class='participantrow' id='participant_" + participant + "'>"
+						row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>"
+						row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>"
+						row += "</tr>"
 					});
-					participaterow += "<td id='submit' class='date'><input onclick='vote();' type='button' value='Save'></td>";
+					$("separator").insert({ before: row });
+
+					// participate
+					if (participants.indexOf(localStorage.getItem("id")) != -1) {
+						var id = localStorage.getItem("id");
+						participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
+
+						columns.each(function(col){
+							participaterow += "<td title='"+col+"' class='undecided'>";
+							participaterow += "<input id='"+htmlid(col)+"' type='checkbox'/></td>";
+						});
+						participaterow += "<td id='submit' class='date'><input onclick='vote();' type='button' value='Save'></td>";
 
 
-					$("add_participant").update("");
-					$("participant_" + id).update(participaterow);
-					$("separator").update("");
-				}
+						$("add_participant").update("");
+						$("participant_" + id).update(participaterow);
+						$("separator").update("");
+					}
 
-				// give everything humanreadable names
-				participants.each(function(participant){
-					updateName(participant);
-					new Ajax.Request(getState(participant),{
-						method: 'get',
-						onSuccess: function(transport){
-							stat = transport.responseText;
-							var classname = "undecided"
-							var statustext = "Failed to fetch Status";
-							switch (stat){
-								case "voted":
-									classname = 'ayes';
-									statustext = 'Has voted.';
-									break;
-								case 'notVoted':
-									classname = 'cno';
-									statustext = 'Has not voted yet.';
-									break;
-								case 'flying':
-									classname = 'bmaybe';
-									statustext = 'Is to be removed.';
-									break;
-								case 'kickedOut':
-									classname = 'ayes';
-									statustext = 'Is removed.';
-									break;
+					// give everything humanreadable names
+					participants.each(function(participant){
+						updateName(participant);
+						new Ajax.Request(getState(participant),{
+							method: 'get',
+							onSuccess: function(transport){
+								stat = transport.responseText;
+								var classname = "undecided"
+								var statustext = "Failed to fetch Status";
+								switch (stat){
+									case "voted":
+										classname = 'ayes';
+										statustext = 'Has voted.';
+										break;
+									case 'notVoted':
+										classname = 'cno';
+										statustext = 'Has not voted yet.';
+										break;
+									case 'flying':
+										classname = 'bmaybe';
+										statustext = 'Is to be removed.';
+										break;
+									case 'kickedOut':
+										classname = 'ayes';
+										statustext = 'Is removed.';
+										break;
+								}
+								row = $("status_" + participant);
+								row.update(statustext);
+								row.removeClassName("undecided");
+								row.addClassName(classname);
+								
 							}
-							row = $("status_" + participant);
-							row.update(statustext);
-							row.removeClassName("undecided");
-							row.addClassName(classname);
-							
-						}
+						});
 					});
-				});
+				}
 		}});
 }});
 

@@ -28,14 +28,15 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 
 		var participants = transport.responseText.split("\n");
 
-		if (participants.length > 0){
-			participanttable = "<table><tr><th>Name</th></tr>";
+		if (participants.length > 0 && participants[0] != ""){
+			var participanttable = "<table><tr><th>Name</th></tr>";
 			participants.each(function(participant){
 				participanttable += "<tr><td title='" + participant + "' id='" + participant + "'>fetching user name for "+ participant +" ...</td></tr>";
 			});
+
+			participanttable += "</table>";
+			$("currentUsers").update(participanttable);
 		}
-		participanttable += "</table>";
-		$("currentUsers").update(participanttable);
 
 		// Add Participants
 		new Ajax.Request(extensiondir + 'keyserver.cgi?service=listAllKeys', {
