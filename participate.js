@@ -101,7 +101,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 						row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>"
 						row += "</tr>"
 					});
-					$("separator").insert({ before: row });
+					$("separator_top").insert({ before: row });
 
 					// participate
 					if (participants.indexOf(localStorage.getItem("id")) != -1) {
@@ -117,7 +117,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 
 						$("add_participant").update("");
 						$("participant_" + id).update(participaterow);
-						$("separator").update("");
+						$("separator_top").update("");
 					}
 
 					// give everything humanreadable names
