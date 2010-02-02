@@ -109,8 +109,8 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 						participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
 
 						columns.each(function(col){
-							participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheck('"+col+"');\">";
-							participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheck('"+col+"');\"/></td>";
+							participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheck('"+htmlid(col)+"');\">";
+							participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheck('"+htmlid(col)+"');\"/></td>";
 						});
 						participaterow += "<td id='submit' class='date'><input onclick='vote();' type='button' value='Save'></td>";
 
