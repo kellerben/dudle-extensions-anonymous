@@ -115,7 +115,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 							participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheck('"+htmlid(col)+"');\">";
 							participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheck('"+htmlid(col)+"');\"/></td>";
 						});
-						participaterow += "<td id='submit' class='date'><input onclick='vote();' type='button' value='Save'></td>";
+						participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='vote();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
 
 
 						$("add_participant").update("");
@@ -230,7 +230,9 @@ function calcVote(votev){
 	location.reload();
 }
 function showSaveButton(){
-	alert("fertig!");
+	v = $("votebutton");
+	v.value="Save";
+	v.enable();
 }
 
 function Vote(participantArray, columnArray){
