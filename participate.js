@@ -84,6 +84,7 @@ function togglecheck(id){
 }
 
 var columns;
+var v = new Vote();
 new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + pollID, {
 	method:'get',
 	onSuccess: function(transport){
@@ -106,8 +107,8 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 					$("separator_top").insert({ before: row });
 
 					// participate
+					v.startKeyCalc(participants, columns);
 					if (participants.indexOf(localStorage.getItem("id")) != -1) {
-						v = new Vote(participants, columns, pollID);
 						var id = localStorage.getItem("id");
 						participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
 
@@ -167,10 +168,25 @@ function vote(){
 	columns.each(function(col){
 		votev[col] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 	});
-	for (var v in votev){
-		document.write(votev[v]);
+	for (var vo in votev){
+		document.write(votev[vo]);
+		
 	}
+	document.write("TODO");
+	return ; //TODO
+	for (var key in this.keyVector){
+		votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
+	}
+
+	var reqvars = "add_participant=" + this.id.toString();
+	for (var timeslot in votev){
+		reqvars += "&add_participant_checked_" + encodeURIComponent(timeslot.toString()) + "=" + votev[timeslot].toString();
+	}
+
+	//TODO
+	var req = request(".",reqvars);
 	
+	location.reload();
 }
 
 function pseudorandom(dh,uuid,t){
@@ -213,22 +229,6 @@ function getPubKey(otherID,timeslot){
 	return ret.mod(this.dcmod);
 }
 
-function calcVote(votev){
-
-	for (var key in this.keyVector){
-		votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
-	}
-
-	var reqvars = "add_participant=" + this.id.toString();
-	for (var timeslot in votev){
-		reqvars += "&add_participant_checked_" + encodeURIComponent(timeslot.toString()) + "=" + votev[timeslot].toString();
-	}
-
-	//TODO
-	var req = request(".",reqvars);
-	
-	location.reload();
-}
 function showSaveButton(){
 	v = $("votebutton");
 	v.value="Save";
@@ -239,15 +239,18 @@ function Vote(participantArray, columnArray){
 	this.id = localStorage.getItem("id");
 	var that = this;
 
-	that.participantArray = participantArray.without(this.id);
-	that.columns = columnArray;
+	this.startKeyCalc = function (participantArray, columnArray){
+		that.participantArray = participantArray.without(this.id);
+		that.columns = columnArray;
+		keyRound();
+	}
 	that.g = new BigInteger(localStorage.getItem("g"));
 	that.dhmod = new BigInteger(localStorage.getItem("dhmod"));
 	that.sec = new BigInteger(localStorage.getItem("sec"));
 	that.pub = new BigInteger(localStorage.getItem("pub"));
 	that.dcmod = new BigInteger(localStorage.getItem("dcmod"));
 
-	that.calcVote = calcVote;
+	this.vote = vote;
 	that.getPubKey = getPubKey;
 
 	that.participants = new Object();
@@ -297,7 +300,6 @@ function Vote(participantArray, columnArray){
 			keyRound();
 		}
 	}
-	keyRound();
 }
 
 // TODO: transform into asynchronus call
