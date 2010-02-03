@@ -63,7 +63,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' +
 									}
 								});
 							} else {
-								// Summe
+								calcResult();
 							}
 						}
 					});
@@ -128,7 +128,7 @@ function login(){
  * remove non-standard characters to give a valid html id *
  **********************************************************/
 function htmlid(s){
-	return s.gsub(" ","_").gsub(":","_");
+	return s.gsub(" ",".");
 }
 
 /***************************************
@@ -219,6 +219,36 @@ function showParticipationRow(){
 	$("separator_bottom").remove();
 }
 
+/*******************************************************************
+ * calculate the result from anonymous votes and add it to the sum *
+ *******************************************************************/
+function calcResult(){
+	gaColumns.each(function(_column){
+		gaParticipants.each(function(_gpgID){
+			new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID + "&gpgID=" + _gpgID + "&timestamp=" + _column + "&tableindex=0&inverted=false" , {
+				method: "get",
+				onSuccess: function(_transport){
+					addToResult(_column, new BigInteger(_transport.responseText));
+				},
+				onFailure: function(_transport){
+					alert("Failed to fetch result for column " + _column + ", participant " + _gpgID)
+				}
+			});
+		});
+	});
+}
+
+var goResult = new Object();
+function addToResult(_column,_value){
+	if (!goResult[_column]){
+		goResult[_column] = BigInteger.ZERO
+	}
+	goResult[_column] = goResult[_column].add(_value).mod(goVoteVector.dcmod);
+	if ((new BigInteger(gaParticipants.length.toString())).compareTo(goResult[_column]) > -1){
+		var gaetotalsum = (new BigInteger($("sum_" + htmlid(_column)).textContent)).add(goResult[_column]);
+		$("sum_" + htmlid(_column)).update(gaetotalsum);
+	}
+}
 
 function pseudorandom(dh,uuid,t){
 	var seed = SHA256_hash(uuid + t);
@@ -284,15 +314,20 @@ function Vote(){
 			votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
 		}
 
+		var _failurehappend = false;
 		for (var column in votev){
 			new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID + "&gpgID=" + gsMyID + "&vote=" + votev[column] + "&timestamp=" + column + "&tableindex=0&inverted=false" , {
 				method:'get',
 				asynchronous: 'false',
 				onFailure: function(transport){
-					alert("Failed to submit vote!");
+					_failurehappend = true;
 			}});
 		}
-		location.reload();
+		if (_failurehappend){
+			alert("Failed to submit vote!");
+		} else {
+			location.reload();
+		}
 	}
  
 
