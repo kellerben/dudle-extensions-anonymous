@@ -17,8 +17,10 @@
  * along with dudle.  If not, see <http:**www.gnu.org*licenses*>.           *
  ***************************************************************************/
 
+var giNumTables = 3;
 var gaColumns;
 var gaParticipants;
+var goNumParticipants;
 var gsMyID = localStorage.getItem("id");
 var goVoteVector = new Vote();
 
@@ -49,10 +51,11 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' +
 			onSuccess: function(transport){
 				gaParticipants = transport.responseText.split("\n");
 				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
+					goNumParticipants = new BigInteger(gaParticipants.length.toString());
 					showParticipants();
 					getPollState(function(_pollState){
-						if (gaParticipants.indexOf(gsMyID) != -1) {
-							if (_pollState == "open"){
+						if (_pollState == "open"){
+							if (gaParticipants.indexOf(gsMyID) != -1) {
 								getState(gsMyID,function(_myStatus){
 									switch(_myStatus){
 									case "notVoted":
@@ -62,9 +65,9 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' +
 										break;
 									}
 								});
-							} else {
-								calcResult();
 							}
+						} else {
+							calcResult();
 						}
 					});
 				}
@@ -223,35 +226,45 @@ function showParticipationRow(){
  * calculate the result from anonymous votes and add it to the sum *
  *******************************************************************/
 function calcResult(){
+	var _resultMatrix = new Object();
 	gaColumns.each(function(_column){
-		gaParticipants.each(function(_gpgID){
-			new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID + "&gpgID=" + _gpgID + "&timestamp=" + _column + "&tableindex=0&inverted=false" , {
-				method: "get",
-				onSuccess: function(_transport){
-					addToResult(_column, new BigInteger(_transport.responseText));
-				},
-				onFailure: function(_transport){
-					alert("Failed to fetch result for column " + _column + ", participant " + _gpgID)
-				}
+		_resultMatrix[_column] = new Array();
+		var _colresult = BigInteger.ZERO;
+		var sumelement = $("sum_" + htmlid(_column));
+		for (var table = 0; table < giNumTables; table++){
+			_resultMatrix[_column][table] = BigInteger.ZERO;
+			gaParticipants.each(function(_gpgID){
+				new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID + "&gpgID=" + _gpgID + "&timestamp=" + _column + "&tableindex=" + table + "&inverted=false" , {
+					method: "get",
+					asynchronous: false,
+					onSuccess: function(_transport){
+						_resultMatrix[_column][table] = _resultMatrix[_column][table].add(new BigInteger(_transport.responseText)).mod(goVoteVector.dcmod);
+					},
+					onFailure: function(_transport){
+						alert("Failed to fetch result for column " + _column + ", participant " + _gpgID + ", table " + table);
+					}
+				});
 			});
-		});
+			if (goNumParticipants.compareTo(_resultMatrix[_column][table]) < 0){
+				alert("Somebody tried to cheat within one table (column: " + _column + ")!!!");
+				sumelement.setStyle("background-color:red");
+				sumelement.addClassName("wrong");
+			}
+			_colresult = _colresult.add(_resultMatrix[_column][table]);
+		}
+		if (goNumParticipants.compareTo(_colresult) < 0 && !sumelement.classNames().include("wrong")){
+			alert("Somebody tried to cheat using several tables (column: " + _column +")!!!");
+			sumelement.setStyle("background-color:red");
+			sumelement.addClassName("wrong");
+		}
+		var totalsum = (new BigInteger(sumelement.textContent)).add(_colresult);
+		sumelement.update(totalsum);
 	});
 }
 
-var goResult = new Object();
-function addToResult(_column,_value){
-	if (!goResult[_column]){
-		goResult[_column] = BigInteger.ZERO
-	}
-	goResult[_column] = goResult[_column].add(_value).mod(goVoteVector.dcmod);
-	if ((new BigInteger(gaParticipants.length.toString())).compareTo(goResult[_column]) > -1){
-		var gaetotalsum = (new BigInteger($("sum_" + htmlid(_column)).textContent)).add(goResult[_column]);
-		$("sum_" + htmlid(_column)).update(gaetotalsum);
-	}
-}
 
-function pseudorandom(dh,uuid,t){
-	var seed = SHA256_hash(uuid + t);
+function pseudorandom(dh,uuid,col,tableindex){
+	var seed = SHA256_hash(uuid + col + tableindex);
 	//FIXME: use 256 bit and not only the first 128 bit of SHA256
 	var block = new Array(16);
 	for(var i = 0; i < 16; i++){
@@ -305,23 +318,32 @@ function Vote(){
 	 * called from the "Save"-Button *
 	 *********************************/
 	this.save = function (){
-		var votev = new Object();
+		var _voteMatrix = new Object();
 		gaColumns.each(function(col){
-			votev[col] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
+			_voteMatrix[col] = new Array();
+			for (var i = 0; i < giNumTables; i++){
+				_voteMatrix[col][i] = BigInteger.ZERO
+			}
+			var randomTable = 0;
+			_voteMatrix[col][randomTable] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 		});
 
-		for (var key in this.keyVector){
-			votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
+		for (var key in this.keyMatrix){
+			for (var table = 0; table < giNumTables; table++){
+				_voteMatrix[key][table] = this.keyMatrix[key][table].add(_voteMatrix[key][table]).mod(this.dcmod);
+			}
 		}
 
 		var _failurehappend = false;
-		for (var column in votev){
-			new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID + "&gpgID=" + gsMyID + "&vote=" + votev[column] + "&timestamp=" + column + "&tableindex=0&inverted=false" , {
-				method:'get',
-				asynchronous: 'false',
-				onFailure: function(transport){
-					_failurehappend = true;
-			}});
+		for (var column in _voteMatrix){
+			for (var table = 0; table < giNumTables; table++){
+				new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID + "&gpgID=" + gsMyID + "&vote=" + _voteMatrix[column][table] + "&timestamp=" + column + "&tableindex=" + table + "&inverted=false" , {
+					method:'get',
+					asynchronous: false,
+					onFailure: function(transport){
+						_failurehappend = true;
+				}});
+			}
 		}
 		if (_failurehappend){
 			alert("Failed to submit vote!");
@@ -334,13 +356,13 @@ function Vote(){
  	/*******************************************************
  	 * calculate one DC-Net key with one other participant *
  	 *******************************************************/
-	that.calcSharedKey = function (otherID,timeslot){
+	that.calcSharedKey = function (otherID,timeslot,tableindex){
 		var cmp = new BigInteger(gsMyID).compareTo(new BigInteger(otherID));
 		if (cmp == 0){
 				return BigInteger.ZERO;
 		}
 
-		var ret = hash(pseudorandom(that.participants[otherID]["dh"],gsPollID,timeslot));
+		var ret = hash(pseudorandom(that.participants[otherID]["dh"],gsPollID,timeslot,tableindex));
 		if (cmp > 0){
 			return ret.negate().mod(this.dcmod);
 		}
@@ -352,18 +374,20 @@ function Vote(){
 	 * calculate the DC-Net keys, a participant has to add to his vote vector *
 	 **************************************************************************/
 	function calculateVoteKeys() {
-		that.keyVector = new Object();
+		that.keyMatrix = new Object();
 
-		for (var col = 0; col < gaColumns.length; col++){
-			var t = gaColumns[col];
-			that.keyVector[t] = BigInteger.ZERO;
-			for (var id in that.participants){
-				var addval = that.calcSharedKey(id,t);
+		gaColumns.each(function(col){
+			that.keyMatrix[col] = new Array();
+			for (var tableindex = 0; tableindex < giNumTables;tableindex++){
+				that.keyMatrix[col][tableindex] = BigInteger.ZERO;
+				for (var id in that.participants){
+					var addval = that.calcSharedKey(id,col,tableindex);
 
-				that.keyVector[t] = that.keyVector[t].add(addval);
-				that.keyVector[t] = that.keyVector[t].mod(that.dcmod);
+					that.keyMatrix[col][tableindex] = that.keyMatrix[col][tableindex].add(addval);
+					that.keyMatrix[col][tableindex] = that.keyMatrix[col][tableindex].mod(that.dcmod);
+				}
 			}
-		}
+		});
 	}
 
 
