@@ -110,7 +110,7 @@ class Poll
 	def webservice_setVote
 		# TODO return 403 if necessary
 		gpgID = $cgi["gpgID"]
-		vote = $cgi["vote"]
+		vote = $cgi["vote"].to_i
 		timestamp = $cgi["timestamp"]
 		tableindex = $cgi["tableindex"].to_i
 		inverted = $cgi["inverted"] == "true" ? 1 : 0
