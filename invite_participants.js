@@ -17,7 +17,7 @@
  * along with dudle.  If not, see <http:**www.gnu.org*licenses*>.           *
  ***************************************************************************/
 
-new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=' + pollID,{
+new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollID=' + gsPollID,{
 	method: "get",
 	onFailure: function(){ alert('Failed to fetch participant list.') },
 	onSuccess: function(transport){
@@ -39,7 +39,7 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 		}
 
 		// Add Participants
-		new Ajax.Request(extensiondir + 'keyserver.cgi?service=listAllKeys', {
+		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllKeys', {
 			method:'get',
 			onSuccess: function(transport){
 				var allusers = transport.responseText.split("\n");
@@ -65,9 +65,9 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=
 
 
 function addParticipant(){
-	new Ajax.Request(extensiondir + 'webservices.cgi', {
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		method:"get",
-		parameters: { service: 'addParticipant', pollID: pollID, gpgID: $F("addParticipant")},
+		parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: $F("addParticipant")},
 		onSuccess: function(){location.reload();}
 	});
 }

@@ -17,8 +17,13 @@
  * along with dudle.  If not, see <http:**www.gnu.org*licenses*>.           *
  ***************************************************************************/
 
+var gaColumns;
+var gaParticipants;
+var gsMyID = localStorage.getItem("id");
+var goVoteVector = new Vote();
+
 var li = "<li class='nonactive_tab'>";
-if (localStorage.getItem("id")){
+if (gsMyID){
 	li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
 } else {
 	li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
@@ -28,9 +33,31 @@ if (localStorage.getItem("id")){
 li += "</li>";
 $("tablist").insert({ bottom: li});
 
-var columns;
-var participants;
-var votevector = new Vote();
+
+/*********************************************************
+ * fetch columns and participants                        *
+ * show participants and start precalculation when ready *
+ *********************************************************/
+new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' + gsPollID, {
+	method:'get',
+	onSuccess: function(transport){
+		gaColumns = transport.responseText.split("\n");
+
+		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollID=' + gsPollID,{
+			method: "get",
+			onFailure: function(){ alert('Failed to fetch participant list.') },
+			onSuccess: function(transport){
+				gaParticipants = transport.responseText.split("\n");
+				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
+					showParticipants();
+					if (gaParticipants.indexOf(gsMyID) != -1) {
+						goVoteVector.startKeyCalc();
+						showParticipationRow();
+					}
+				}
+		}});
+}});
+
 
 var loginisdisplayed = false;
 function showLogin(){
@@ -92,7 +119,7 @@ function htmlid(s){
 }
 
 function getState(gpgID){
-	return extensiondir + 'webservices.cgi?service=getState&pollID=' + pollID + "&gpgID=" + gpgID;
+	return gsExtensiondir + 'webservices.cgi?service=getState&pollID=' + gsPollID + "&gpgID=" + gpgID;
 }
 
 function togglecheckbutton(id){
@@ -104,17 +131,17 @@ function togglecheckbutton(id){
  **************************************************/
 function showParticipants(){
 	var row = "";
-	participants.each(function(participant){
+	gaParticipants.each(function(participant){
 		row += "<tr class='participantrow' id='participant_" + participant + "'>";
 		row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>";
-		row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>";
+		row += "<td class='undecided' colspan='" + gaColumns.length + "' id='status_"+participant+"'>Fetching status...</td>";
 		row += "<td class='invisible'></td></tr>";
 	});
 	$("separator_top").insert({ before: row });
 
 
 	// give everything humanreadable names
-	participants.each(function(participant){
+	gaParticipants.each(function(participant){
 		updateName(participant);
 		new Ajax.Request(getState(participant),{
 			method: 'get',
@@ -154,47 +181,21 @@ function showParticipants(){
  * insert HTML code, which shows the row with checkboxes *
  *********************************************************/
 function showParticipationRow(){
-	var id = localStorage.getItem("id");
-
 	participaterow = "";
-	columns.each(function(col){
+	gaColumns.each(function(col){
 		participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
 		participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
 	});
-	participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='votevector.save();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
+	participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
 
 
 	$("add_participant").remove();
-	statusnode = 	$("status_" + id);
+	statusnode = 	$("status_" + gsMyID);
 	statusnode.insert({ before: participaterow});
 	statusnode.remove();
 	$("separator_top").remove();
 	$("separator_bottom").remove();
 }
-
-/***********************************************
- * fetch columns and participants              *
- * start display and precalculation when ready *
- ***********************************************/
-new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + pollID, {
-	method:'get',
-	onSuccess: function(transport){
-		columns = transport.responseText.split("\n");
-
-		new Ajax.Request(extensiondir + 'webservices.cgi?service=getParticipants&pollID=' + pollID,{
-			method: "get",
-			onFailure: function(){ alert('Failed to fetch participant list.') },
-			onSuccess: function(transport){
-				participants = transport.responseText.split("\n");
-				if (participants.length > 0 && participants[0] != ""){
-					showParticipants();
-					if (participants.indexOf(localStorage.getItem("id")) != -1) {
-						votevector.startKeyCalc();
-						showParticipationRow();
-					}
-				}
-		}});
-}});
 
 
 function pseudorandom(dh,uuid,t){
@@ -231,7 +232,6 @@ function showSaveButton(){
 }
 
 function Vote(){
-	this.id = localStorage.getItem("id");
 	var that = this;
 
 	that.g = new BigInteger(localStorage.getItem("g"));
@@ -245,7 +245,7 @@ function Vote(){
 	 * Start all calculations, which can be done before vote casting *
 	 *****************************************************************/
 	this.startKeyCalc = function (){
-		that.otherParticipantArray = participants.without(this.id);
+		that.otherParticipantArray = gaParticipants.without(gsMyID);
 		calcNextDHKey();
 	}
 
@@ -254,7 +254,7 @@ function Vote(){
 	 *********************************/
 	this.save = function (){
 		var votev = new Object();
-		columns.each(function(col){
+		gaColumns.each(function(col){
 			votev[col] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 		});
 
@@ -263,7 +263,7 @@ function Vote(){
 		}
 
 		for (var column in votev){
-			new Ajax.Request(extensiondir + 'webservices.cgi?service=setVote&pollID=' + pollID + "&gpgID=" + this.id + "&vote=" + votev[column] + "&timestamp=" + column + "&tableindex=0&inverted=false" , {
+			new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID + "&gpgID=" + gsMyID + "&vote=" + votev[column] + "&timestamp=" + column + "&tableindex=0&inverted=false" , {
 				method:'get',
 				onFailure: function(transport){
 					alert("Failed to submit vote!");
@@ -275,12 +275,12 @@ function Vote(){
  	 * calculate one DC-Net key with one other participant *
  	 *******************************************************/
 	that.calcSharedKey = function (otherID,timeslot){
-		var cmp = new BigInteger(this.id).compareTo(new BigInteger(otherID));
+		var cmp = new BigInteger(gsMyID).compareTo(new BigInteger(otherID));
 		if (cmp == 0){
 				return BigInteger.ZERO;
 		}
 
-		var ret = hash(pseudorandom(this.participants[otherID]["dh"],pollID,timeslot));
+		var ret = hash(pseudorandom(that.participants[otherID]["dh"],gsPollID,timeslot));
 		if (cmp > 0){
 			return ret.negate().mod(this.dcmod);
 		}
@@ -294,8 +294,8 @@ function Vote(){
 	function calculateVoteKeys() {
 		that.keyVector = new Object();
 
-		for (var col = 0; col < columns.length; col++){
-			var t = columns[col];
+		for (var col = 0; col < gaColumns.length; col++){
+			var t = gaColumns[col];
 			that.keyVector[t] = BigInteger.ZERO;
 			for (var id in that.participants){
 				var addval = that.calcSharedKey(id,t);
@@ -344,7 +344,7 @@ function Vote(){
 function fetchKey(id){
 
 	var req = new XMLHttpRequest();
-	req.open("POST",extensiondir + "keyserver.cgi",false);
+	req.open("POST",gsExtensiondir + "keyserver.cgi",false);
 	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 	req.send("service=getKey&gpgID=" + id.toString());
 	req.close;

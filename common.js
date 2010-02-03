@@ -17,12 +17,12 @@
  * along with dudle.  If not, see <http:**www.gnu.org*licenses*>.           *
  ***************************************************************************/
 
-var extensiondir='../extensions/dc-net/';
-var pollID = (location.href).split("/");
-pollID = pollID[pollID.length-2];
+var gsExtensiondir='../extensions/dc-net/';
+var gsPollID = (location.href).split("/");
+gsPollID = gsPollID[gsPollID.length-2];
 
 function updateName(gpgID){ 
-	new Ajax.Updater(gpgID,extensiondir + 'keyserver.cgi?service=getName&gpgID=' + gpgID,{ 
+	new Ajax.Updater(gpgID,gsExtensiondir + 'keyserver.cgi?service=getName&gpgID=' + gpgID,{ 
 		method:'get',
 		onFailure: function(){$(gpgID).update("Failed to fetch name for" + gpgID)}
 	});
