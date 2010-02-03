@@ -18,29 +18,39 @@
  ***************************************************************************/
 
 var li = "<li class='nonactive_tab'>";
-li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a></li>";
-li += "<li class='nonactive_tab'>";
-li += "<a href='javascript:showRegister();'>&nbsp;Register&nbsp;</a></li>";
+if (localStorage.getItem("id")){
+	li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
+} else {
+	li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
+	li += "</li><li class='nonactive_tab'>";
+	li += "<a href='javascript:showRegister();'>&nbsp;Register&nbsp;</a>";
+}
+li += "</li>";
 $("tablist").insert({ bottom: li});
 
-var show = false;
+var loginisdisplayed = false;
 function showLogin(){
-	if (!show){
+	if (!loginisdisplayed){
 	var l = "Secret Key:<br /><textarea id='pass' cols='140' rows='3'></textarea><br />";
 	l += "<input type='button' value='Login' onclick='login();location.reload();' id='loginbutton' />";
 	$("polltitle").insert({before: l});
 	}
-	show = true;
+	loginisdisplayed = true;
 }
 
 function showRegister(){
 	alert('TODO');
+	loginisdisplayed = true;
 }
 
 function fingerprint(pub){
 	return SHA256_hash(pub);
 }
 
+function logout(){
+	localStorage.clear();
+	location.reload();
+}
 function login(){
 	switch (786){
 	case 786:
@@ -244,25 +254,18 @@ function Vote(participantArray, columnArray){
 		columns.each(function(col){
 			votev[col] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 		});
-		for (var vo in votev){
-			document.write(votev[vo]);
-			
-		}
-		document.write("TODO");
-		return 'TODO'; //TODO
+
 		for (var key in this.keyVector){
 			votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
 		}
 
-		var reqvars = "add_participant=" + this.id.toString();
-		for (var timeslot in votev){
-			reqvars += "&add_participant_checked_" + encodeURIComponent(timeslot.toString()) + "=" + votev[timeslot].toString();
+		for (var column in votev){
+			new Ajax.Request(extensiondir + 'webservices.cgi?service=setVote&pollID=' + pollID + "&gpgID=" + this.id + "&vote=" + votev[column] + "&timestamp=" + column + "&tableindex=0&inverted=false" , {
+				method:'get',
+				onFailure: function(transport){
+					alert("Failed to submit vote!");
+			}});
 		}
-
-		//TODO
-		var req = request(".",reqvars);
-		
-		location.reload();
 	}
  
  	/*******************************************************
