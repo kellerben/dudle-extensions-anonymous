@@ -50,10 +50,23 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' +
 				gaParticipants = transport.responseText.split("\n");
 				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
 					showParticipants();
-					if (gaParticipants.indexOf(gsMyID) != -1) {
-						goVoteVector.startKeyCalc();
-						showParticipationRow();
-					}
+					getPollState(function(_pollState){
+						if (gaParticipants.indexOf(gsMyID) != -1) {
+							if (_pollState == "open"){
+								getState(gsMyID,function(_myStatus){
+									switch(_myStatus){
+									case "notVoted":
+									case "flying":
+										goVoteVector.startKeyCalc();
+										showParticipationRow();
+										break;
+									}
+								});
+							} else {
+								// Summe
+							}
+						}
+					});
 				}
 		}});
 }});
@@ -118,8 +131,22 @@ function htmlid(s){
 	return s.gsub(" ","_").gsub(":","_");
 }
 
-function getState(gpgID){
-	return gsExtensiondir + 'webservices.cgi?service=getState&pollID=' + gsPollID + "&gpgID=" + gpgID;
+/***************************************
+ * fetches status of _sGpgID and calls *
+ * _successFunction with it            *
+ ***************************************/
+function getState(_sGpgID, _successFunction){
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getState&pollID=' + gsPollID + "&gpgID=" + _sGpgID,{
+		method: 'get',
+		onSuccess: function(_t){_successFunction(_t.responseText)}
+	});
+}
+/* similar to getState */
+function getPollState(_successFunction){
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getPollState&pollID=' + gsPollID,{
+		method: 'get',
+		onSuccess: function(_t){_successFunction(_t.responseText)}
+	});
 }
 
 function togglecheckbutton(id){
@@ -143,10 +170,7 @@ function showParticipants(){
 	// give everything humanreadable names
 	gaParticipants.each(function(participant){
 		updateName(participant);
-		new Ajax.Request(getState(participant),{
-			method: 'get',
-			onSuccess: function(transport){
-				stat = transport.responseText;
+		getState(participant, function(stat){
 				var classname = "undecided";
 				var statustext = "Failed to fetch Status";
 				switch (stat){
@@ -171,9 +195,7 @@ function showParticipants(){
 				row.update(statustext);
 				row.removeClassName("undecided");
 				row.addClassName(classname);
-				
-			}
-		});
+			})
 	});
 }
 
@@ -265,12 +287,15 @@ function Vote(){
 		for (var column in votev){
 			new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID + "&gpgID=" + gsMyID + "&vote=" + votev[column] + "&timestamp=" + column + "&tableindex=0&inverted=false" , {
 				method:'get',
+				asynchronous: 'false',
 				onFailure: function(transport){
 					alert("Failed to submit vote!");
 			}});
 		}
+		location.reload();
 	}
  
+
  	/*******************************************************
  	 * calculate one DC-Net key with one other participant *
  	 *******************************************************/
