@@ -97,23 +97,6 @@ function showParticipants(participants){
 	});
 	$("separator_top").insert({ before: row });
 
-	// participate
-	if (participants.indexOf(localStorage.getItem("id")) != -1) {
-		votevector.startKeyCalc(participants, columns);
-		var id = localStorage.getItem("id");
-		participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
-
-		columns.each(function(col){
-			participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
-			participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
-		});
-		participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='votevector.save();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
-
-
-		$("add_participant").update("");
-		$("participant_" + id).update(participaterow);
-		$("separator_top").update("");
-	}
 
 	// give everything humanreadable names
 	participants.each(function(participant){
@@ -152,6 +135,26 @@ function showParticipants(participants){
 	});
 }
 
+/*********************************************************
+ * insert HTML code, which shows the row with checkboxes *
+ *********************************************************/
+function showParticipationRow(){
+	var id = localStorage.getItem("id");
+
+	participaterow = "";
+	columns.each(function(col){
+		participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
+		participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
+	});
+	participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='votevector.save();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
+
+
+	$("add_participant").remove();
+	statusnode = 	$("status_" + id);
+	statusnode.insert({ before: participaterow});
+	statusnode.remove();
+}
+
 var columns;
 var votevector = new Vote();
 var num = 3;
@@ -171,6 +174,10 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 				var participants = transport.responseText.split("\n");
 				if (participants.length > 0 && participants[0] != ""){
 					showParticipants(participants);
+					if (participants.indexOf(localStorage.getItem("id")) != -1) {
+						votevector.startKeyCalc(participants, columns);
+						showParticipationRow();
+					}
 				}
 		}});
 }});
