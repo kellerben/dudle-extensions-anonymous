@@ -34,6 +34,7 @@ class Keyserver
 		id = gpgid($cgi["gpgKey"])
 		$u[id] = $cgi["gpgKey"]
 		store($u)
+		$header["status"] = "202 Accepted"
 		"Key with #{id} sucessfully stored"
 	end
 	
