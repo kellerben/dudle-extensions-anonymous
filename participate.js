@@ -70,7 +70,9 @@ function login(){
 	localStorage.setItem("id",id);
 }
 
-
+/**********************************************************
+ * remove non-standard characters to give a valid html id *
+ **********************************************************/
 function htmlid(s){
 	return s.gsub(" ","_").gsub(":","_");
 }
@@ -79,12 +81,84 @@ function getState(gpgID){
 	return extensiondir + 'webservices.cgi?service=getState&pollID=' + pollID + "&gpgID=" + gpgID;
 }
 
-function togglecheck(id){
+function togglecheckbutton(id){
 	$(id).checked = !$(id).checked;
+}
+/**************************************************
+ * insert HTML code, which shows the participants *
+ **************************************************/
+function showParticipants(participants){
+	var row = "";
+	participants.each(function(participant){
+		row += "<tr class='participantrow' id='participant_" + participant + "'>";
+		row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>";
+		row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>";
+		row += "<td class='invisible'></td></tr>";
+	});
+	$("separator_top").insert({ before: row });
+
+	// participate
+	if (participants.indexOf(localStorage.getItem("id")) != -1) {
+		votevector.startKeyCalc(participants, columns);
+		var id = localStorage.getItem("id");
+		participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
+
+		columns.each(function(col){
+			participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
+			participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
+		});
+		participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='votevector.save();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
+
+
+		$("add_participant").update("");
+		$("participant_" + id).update(participaterow);
+		$("separator_top").update("");
+	}
+
+	// give everything humanreadable names
+	participants.each(function(participant){
+		updateName(participant);
+		new Ajax.Request(getState(participant),{
+			method: 'get',
+			onSuccess: function(transport){
+				stat = transport.responseText;
+				var classname = "undecided";
+				var statustext = "Failed to fetch Status";
+				switch (stat){
+					case "voted":
+						classname = 'ayes';
+						statustext = 'Has voted.';
+						break;
+					case 'notVoted':
+						classname = 'cno';
+						statustext = 'Has not voted yet.';
+						break;
+					case 'flying':
+						classname = 'bmaybe';
+						statustext = 'Is to be removed.';
+						break;
+					case 'kickedOut':
+						classname = 'ayes';
+						statustext = 'Is removed.';
+						break;
+				}
+				row = $("status_" + participant);
+				row.update(statustext);
+				row.removeClassName("undecided");
+				row.addClassName(classname);
+				
+			}
+		});
+	});
 }
 
 var columns;
-var v = new Vote();
+var votevector = new Vote();
+var num = 3;
+/***********************************************
+ * fetch columns and participants              *
+ * start display and precalculation when ready *
+ ***********************************************/
 new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + pollID, {
 	method:'get',
 	onSuccess: function(transport){
@@ -95,99 +169,12 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 			onFailure: function(){ alert('Failed to fetch participant list.') },
 			onSuccess: function(transport){
 				var participants = transport.responseText.split("\n");
-
 				if (participants.length > 0 && participants[0] != ""){
-					var row = "";
-					participants.each(function(participant){
-						row += "<tr class='participantrow' id='participant_" + participant + "'>";
-						row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>";
-						row += "<td class='undecided' colspan='" + columns.length + "' id='status_"+participant+"'>Fetching status...</td>";
-						row += "<td class='invisible'></td></tr>";
-					});
-					$("separator_top").insert({ before: row });
-
-					// participate
-					v.startKeyCalc(participants, columns);
-					if (participants.indexOf(localStorage.getItem("id")) != -1) {
-						var id = localStorage.getItem("id");
-						participaterow = "<td id='"+id+"' title='"+id+"' class='name'>Fetching name for id " + id + "...</td>";
-
-						columns.each(function(col){
-							participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheck('"+htmlid(col)+"');\">";
-							participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheck('"+htmlid(col)+"');\"/></td>";
-						});
-						participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='vote();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
-
-
-						$("add_participant").update("");
-						$("participant_" + id).update(participaterow);
-						$("separator_top").update("");
-					}
-
-					// give everything humanreadable names
-					participants.each(function(participant){
-						updateName(participant);
-						new Ajax.Request(getState(participant),{
-							method: 'get',
-							onSuccess: function(transport){
-								stat = transport.responseText;
-								var classname = "undecided";
-								var statustext = "Failed to fetch Status";
-								switch (stat){
-									case "voted":
-										classname = 'ayes';
-										statustext = 'Has voted.';
-										break;
-									case 'notVoted':
-										classname = 'cno';
-										statustext = 'Has not voted yet.';
-										break;
-									case 'flying':
-										classname = 'bmaybe';
-										statustext = 'Is to be removed.';
-										break;
-									case 'kickedOut':
-										classname = 'ayes';
-										statustext = 'Is removed.';
-										break;
-								}
-								row = $("status_" + participant);
-								row.update(statustext);
-								row.removeClassName("undecided");
-								row.addClassName(classname);
-								
-							}
-						});
-					});
+					showParticipants(participants);
 				}
 		}});
 }});
 
-function vote(){
-	var votev = new Object();
-	columns.each(function(col){
-		votev[col] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
-	});
-	for (var vo in votev){
-		document.write(votev[vo]);
-		
-	}
-	document.write("TODO");
-	return ; //TODO
-	for (var key in this.keyVector){
-		votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
-	}
-
-	var reqvars = "add_participant=" + this.id.toString();
-	for (var timeslot in votev){
-		reqvars += "&add_participant_checked_" + encodeURIComponent(timeslot.toString()) + "=" + votev[timeslot].toString();
-	}
-
-	//TODO
-	var req = request(".",reqvars);
-	
-	location.reload();
-}
 
 function pseudorandom(dh,uuid,t){
 	var seed = SHA256_hash(uuid + t);
@@ -216,21 +203,8 @@ function hash(block){
 	return new BigInteger(SHA256_hash(block),16);
 }
 
-function getPubKey(otherID,timeslot){
-	var cmp = new BigInteger(this.id).compareTo(new BigInteger(otherID));
-	if (cmp == 0){
-			return BigInteger.ZERO;
-	}
-
-	var ret = hash(pseudorandom(this.participants[otherID]["dh"],pollID,timeslot));
-	if (cmp > 0){
-		return ret.negate().mod(this.dcmod);
-	}
-	return ret.mod(this.dcmod);
-}
-
 function showSaveButton(){
-	v = $("votebutton");
+	var v = $("votebutton");
 	v.value="Save";
 	v.enable();
 }
@@ -239,31 +213,79 @@ function Vote(participantArray, columnArray){
 	this.id = localStorage.getItem("id");
 	var that = this;
 
-	this.startKeyCalc = function (participantArray, columnArray){
-		that.participantArray = participantArray.without(this.id);
-		that.columns = columnArray;
-		keyRound();
-	}
 	that.g = new BigInteger(localStorage.getItem("g"));
 	that.dhmod = new BigInteger(localStorage.getItem("dhmod"));
 	that.sec = new BigInteger(localStorage.getItem("sec"));
 	that.pub = new BigInteger(localStorage.getItem("pub"));
 	that.dcmod = new BigInteger(localStorage.getItem("dcmod"));
-
-	this.vote = vote;
-	that.getPubKey = getPubKey;
-
 	that.participants = new Object();
 
+	/*****************************************************************
+	 * Start all calculations, which can be done before vote casting *
+	 *****************************************************************/
+	this.startKeyCalc = function (participantArray, columnArray){
+		that.participantArray = participantArray.without(this.id);
+		that.columns = columnArray;
+		calcNextDHKey();
+	}
+
+ 	/*********************************
+	 * called from the "Save"-Button *
+	 *********************************/
+	this.save = function (){
+		var votev = new Object();
+		columns.each(function(col){
+			votev[col] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
+		});
+		for (var vo in votev){
+			document.write(votev[vo]);
+			
+		}
+		document.write("TODO");
+		return 'TODO'; //TODO
+		for (var key in this.keyVector){
+			votev[key] = this.keyVector[key].add(votev[key]).mod(this.dcmod);
+		}
+
+		var reqvars = "add_participant=" + this.id.toString();
+		for (var timeslot in votev){
+			reqvars += "&add_participant_checked_" + encodeURIComponent(timeslot.toString()) + "=" + votev[timeslot].toString();
+		}
+
+		//TODO
+		var req = request(".",reqvars);
+		
+		location.reload();
+	}
+ 
+ 	/*******************************************************
+ 	 * calculate one DC-Net key with one other participant *
+ 	 *******************************************************/
+	that.calcSharedKey = function (otherID,timeslot){
+		var cmp = new BigInteger(this.id).compareTo(new BigInteger(otherID));
+		if (cmp == 0){
+				return BigInteger.ZERO;
+		}
+
+		var ret = hash(pseudorandom(this.participants[otherID]["dh"],pollID,timeslot));
+		if (cmp > 0){
+			return ret.negate().mod(this.dcmod);
+		}
+		return ret.mod(this.dcmod);
+	}
+
+ 
+	/**************************************************************************
+	 * calculate the DC-Net keys, a participant has to add to his vote vector *
+	 **************************************************************************/
 	function calculateVoteKeys() {
-		// calculate the vote keys
 		that.keyVector = new Object();
 
 		for (var col = 0; col < that.columns.length; col++){
 			var t = that.columns[col];
 			that.keyVector[t] = BigInteger.ZERO;
 			for (var id in that.participants){
-				var addval = that.getPubKey(id,t);
+				var addval = that.calcSharedKey(id,t);
 
 				that.keyVector[t] = that.keyVector[t].add(addval);
 				that.keyVector[t] = that.keyVector[t].mod(that.dcmod);
@@ -272,8 +294,11 @@ function Vote(participantArray, columnArray){
 	}
 
 
+	/**************************************************
+	 * calculate a DH secret with another participant *
+	 **************************************************/
 	var i = 0;
-	function keyRound() {
+	function calcNextDHKey() {
 		if (i >= that.participantArray.length) {
 			calculateVoteKeys();
 	    window.setTimeout('showSaveButton()', 1000);
@@ -293,11 +318,11 @@ function Vote(participantArray, columnArray){
 					function (result) {
 						that.participants[id]["dh"] = result;
 						localStorage.setItem(id,that.participants[id]["dh"]);
-						keyRound();
+						calcNextDHKey();
 					});
 		} else {
 			that.participants[id]["dh"] = new BigInteger(localStorage.getItem(id));
-			keyRound();
+			calcNextDHKey();
 		}
 	}
 }
