@@ -28,6 +28,10 @@ if (localStorage.getItem("id")){
 li += "</li>";
 $("tablist").insert({ bottom: li});
 
+var columns;
+var participants;
+var votevector = new Vote();
+
 var loginisdisplayed = false;
 function showLogin(){
 	if (!loginisdisplayed){
@@ -94,10 +98,11 @@ function getState(gpgID){
 function togglecheckbutton(id){
 	$(id).checked = !$(id).checked;
 }
+
 /**************************************************
  * insert HTML code, which shows the participants *
  **************************************************/
-function showParticipants(participants){
+function showParticipants(){
 	var row = "";
 	participants.each(function(participant){
 		row += "<tr class='participantrow' id='participant_" + participant + "'>";
@@ -163,11 +168,10 @@ function showParticipationRow(){
 	statusnode = 	$("status_" + id);
 	statusnode.insert({ before: participaterow});
 	statusnode.remove();
+	$("separator_top").remove();
+	$("separator_bottom").remove();
 }
 
-var columns;
-var votevector = new Vote();
-var num = 3;
 /***********************************************
  * fetch columns and participants              *
  * start display and precalculation when ready *
@@ -181,11 +185,11 @@ new Ajax.Request(extensiondir + 'webservices.cgi?service=getColumns&pollID=' + p
 			method: "get",
 			onFailure: function(){ alert('Failed to fetch participant list.') },
 			onSuccess: function(transport){
-				var participants = transport.responseText.split("\n");
+				participants = transport.responseText.split("\n");
 				if (participants.length > 0 && participants[0] != ""){
-					showParticipants(participants);
+					showParticipants();
 					if (participants.indexOf(localStorage.getItem("id")) != -1) {
-						votevector.startKeyCalc(participants, columns);
+						votevector.startKeyCalc();
 						showParticipationRow();
 					}
 				}
@@ -226,7 +230,7 @@ function showSaveButton(){
 	v.enable();
 }
 
-function Vote(participantArray, columnArray){
+function Vote(){
 	this.id = localStorage.getItem("id");
 	var that = this;
 
@@ -240,9 +244,8 @@ function Vote(participantArray, columnArray){
 	/*****************************************************************
 	 * Start all calculations, which can be done before vote casting *
 	 *****************************************************************/
-	this.startKeyCalc = function (participantArray, columnArray){
-		that.participantArray = participantArray.without(this.id);
-		that.columns = columnArray;
+	this.startKeyCalc = function (){
+		that.otherParticipantArray = participants.without(this.id);
 		calcNextDHKey();
 	}
 
@@ -291,8 +294,8 @@ function Vote(participantArray, columnArray){
 	function calculateVoteKeys() {
 		that.keyVector = new Object();
 
-		for (var col = 0; col < that.columns.length; col++){
-			var t = that.columns[col];
+		for (var col = 0; col < columns.length; col++){
+			var t = columns[col];
 			that.keyVector[t] = BigInteger.ZERO;
 			for (var id in that.participants){
 				var addval = that.calcSharedKey(id,t);
@@ -309,13 +312,13 @@ function Vote(participantArray, columnArray){
 	 **************************************************/
 	var i = 0;
 	function calcNextDHKey() {
-		if (i >= that.participantArray.length) {
+		if (i >= that.otherParticipantArray.length) {
 			calculateVoteKeys();
 	    window.setTimeout('showSaveButton()', 1000);
 			return;
 		}
 
-		var id = that.participantArray[i];
+		var id = that.otherParticipantArray[i];
 
 		i++;
 
