@@ -17,6 +17,7 @@
  * along with dudle.  If not, see <http:**www.gnu.org*licenses*>.           *
  ***************************************************************************/
 
+var giDHLENGTH = 786;
 var giNumTables = 3;
 var gaColumns;
 var gaParticipants;
@@ -29,8 +30,6 @@ if (gsMyID){
 	li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
 } else {
 	li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
-	li += "</li><li class='nonactive_tab'>";
-	li += "<a href='javascript:showRegister();'>&nbsp;Register&nbsp;</a>";
 }
 li += "</li>";
 $("tablist").insert({ bottom: li});
@@ -75,19 +74,49 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' +
 }});
 
 
-var loginisdisplayed = false;
+$("polltitle").insert({before: "<div id='login'></div>"});
 function showLogin(){
-	if (!loginisdisplayed){
-	var l = "Secret Key:<br /><textarea id='pass' cols='140' rows='3'></textarea><br />";
-	l += "<input type='button' value='Login' onclick='login();location.reload();' id='loginbutton' />";
-	$("polltitle").insert({before: l});
-	}
-	loginisdisplayed = true;
+	var _l = "<table class='settingstable'><tr>";
+	_l += "<td class='label'><label for='key'>Secret Key:</label></td>";
+	_l += "<td><textarea id='key' cols='100' rows='3'></textarea></td>";
+	_l += "</tr><tr>";
+	_l += "</td><td>";
+	_l += "<td class='separator_bottom'><input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
+	_l += "</tr><tr >";
+	_l += "</td><td>";
+	_l += "<td class='separator_top'><a href='javascript:showRegister();'>Register new Account</a></td>";
+	_l += "</tr></table>";
+	$('login').update(_l);
 }
 
 function showRegister(){
-	alert('TODO');
-	loginisdisplayed = true;
+	var seed = new SecureRandom();
+	goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
+
+	var _r = "<table class='settingstable'><tr>";
+	_r += "<td class='label'><label for='name'>Name:</label></td>";
+	_r += "<td><input id='name' type='text' /></td>";
+	_r += "</tr><tr>";
+	_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
+	_r += "<td><textarea disabled='disabled' id='key' type='text' cols='100' rows='3'>";
+	_r += goVoteVector.sec.toString(16) + "</textarea></td>";
+	_r += "</tr><tr>";
+	_r += "</td><td>";
+	_r += "<td><input type='button' value='Register' onclick='register()'/></td>";
+	_r += "</tr></table>";
+	$('login').update(_r);
+}
+
+function register(){
+	var name = $F('name');
+	var _pubkey = "NAME " + $F('name') + "\n";
+	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
+	new Ajax.Request(gsExtensiondir + "keyserver.cgi?service=setKey&gpgKey=" + escape(_pubkey),{
+		method: 'get',
+		onSuccess: function(transport){
+			alert("Please store this key to any secret location:\n"+goVoteVector.sec.toString(16));
+			location.reload();
+	}});
 }
 
 function fingerprint(pub){
@@ -99,14 +128,8 @@ function logout(){
 	location.reload();
 }
 function login(){
-	var sec = new BigInteger($F('pass'),16);
-	var pub = goVoteVector.g.modPow(sec,goVoteVector.dhmod);
-
-	var id = "0x" + SHA256_hash(pub.toString(16)).slice(56,64).toUpperCase();
-
-	localStorage.setItem("sec",sec);
-	localStorage.setItem("pub",pub);
-	localStorage.setItem("id",id);
+	goVoteVector.setSecKey(new BigInteger($F('key'),16));
+	location.reload();
 }
 
 /**********************************************************
@@ -309,7 +332,7 @@ function showSaveButton(){
 function Vote(){
 	var that = this;
 
-	switch (786){
+	switch (giDHLENGTH){
 	case 786:
 		that.dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFFF",16);
 		break;
@@ -325,6 +348,15 @@ function Vote(){
 	that.g = new BigInteger("2");
 
 	that.participants = new Object();
+
+	this.setSecKey = function(_key){
+		that.sec = _key;
+		that.pub = that.g.modPow(that.sec,that.dhmod);
+		that.id = "0x" + SHA256_hash(that.pub.toString(16)).slice(56,64).toUpperCase();
+		localStorage.setItem("sec",goVoteVector.sec);
+		localStorage.setItem("pub",goVoteVector.pub);
+		localStorage.setItem("id",goVoteVector.id);
+	}
 
 	/*****************************************************************
 	 * Start all calculations, which can be done before vote casting *
