@@ -238,13 +238,15 @@ function calcResult(){
 //					for (var id in that.participants){
 
 	var _resultMatrix = new Array();
+	var _colResults = new Array();
 
 	for (var _inverted = 0; _inverted < 2; _inverted++){
 		_resultMatrix[_inverted] = new Object();
+		_colResults[_inverted] = new Object();
 
 		gaColumns.each(function(_col){
 			_resultMatrix[_inverted][_col] = new Array();
-			var _colresult = BigInteger.ZERO;
+			_colResults[_inverted][_col] = BigInteger.ZERO;
 			var sumelement = $("sum_" + htmlid(_col));
 
 			for (var _table = 0; _table < giNumTables; _table++){
@@ -268,15 +270,23 @@ function calcResult(){
 				});
 				var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
 				if (result.compareTo(BigInteger.ZERO) < 0){
-					var attack = _inverted == 0 ? "decrease" : "increase"
-					alert("Somebody tried to "+attack+" column "+_col+" by "+result.abs()+"!!!");
+					var _attack = _inverted == 0 ? "decrease" : "increase";
+					alert("Somebody tried to "+_attack+" column "+_col+" by "+result.abs()+"!!!");
 					sumelement.setStyle("background-color:red");
 					sumelement.addClassName("wrong");
 				}
-				_colresult = _colresult.add(result);
+				_colResults[_inverted][_col] = _colResults[_inverted][_col].add(result);
 			}
-			var totalsum = (new BigInteger(sumelement.textContent)).add(_colresult);
-			sumelement.update(totalsum);
+			if (_inverted == 0){
+				var totalsum = (new BigInteger(sumelement.textContent)).add(_colResults[_inverted][_col]);
+				sumelement.update(totalsum);
+			} else {
+				if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) != 0) {
+					alert("Somebody sent inconsistent values at column "+_col+"!!!");
+					sumelement.setStyle("background-color:red");
+					sumelement.addClassName("wrong");
+				}
+			}
 		});
 	}
 }
