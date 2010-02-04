@@ -226,41 +226,59 @@ function showParticipationRow(){
  * calculate the result from anonymous votes and add it to the sum *
  *******************************************************************/
 function calcResult(){
-	var _resultMatrix = new Object();
-	gaColumns.each(function(_column){
-		_resultMatrix[_column] = new Array();
-		var _colresult = BigInteger.ZERO;
-		var sumelement = $("sum_" + htmlid(_column));
-		for (var table = 0; table < giNumTables; table++){
-			_resultMatrix[_column][table] = BigInteger.ZERO;
-			gaParticipants.each(function(_gpgID){
-				new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID + "&gpgID=" + _gpgID + "&timestamp=" + _column + "&tableindex=" + table + "&inverted=false" , {
-					method: "get",
-					asynchronous: false,
-					onSuccess: function(_transport){
-						_resultMatrix[_column][table] = _resultMatrix[_column][table].add(new BigInteger(_transport.responseText)).mod(goVoteVector.dcmod);
-					},
-					onFailure: function(_transport){
-						alert("Failed to fetch result for column " + _column + ", participant " + _gpgID + ", table " + table);
-					}
+//		that.keyMatrix = new Array();
+//		for (var inverted = 0; inverted < 2; inverted++){
+//
+//			that.keyMatrix[inverted] = new Object();
+//			gaColumns.each(function(col){
+//				that.keyMatrix[inverted][col] = new Array();
+//
+//				for (var tableindex = 0; tableindex < giNumTables;tableindex++){
+//					that.keyMatrix[inverted][col][tableindex] = BigInteger.ZERO;
+//					for (var id in that.participants){
+
+	var _resultMatrix = new Array();
+
+	for (var _inverted = 0; _inverted < 2; _inverted++){
+		_resultMatrix[_inverted] = new Object();
+
+		gaColumns.each(function(_col){
+			_resultMatrix[_inverted][_col] = new Array();
+			var _colresult = BigInteger.ZERO;
+			var sumelement = $("sum_" + htmlid(_col));
+
+			for (var _table = 0; _table < giNumTables; _table++){
+				_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
+				gaParticipants.each(function(_gpgID){
+					var req = gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID
+					req += "&gpgID=" + _gpgID;
+					req += "&timestamp=" + _col;
+					req += "&tableindex=" + _table;
+					req += "&inverted=" + (_inverted == 0 ? "false" : "true");
+					new Ajax.Request(req, {
+						method: "get",
+						asynchronous: false,
+						onSuccess: function(_transport){
+							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_transport.responseText)).mod(goVoteVector.dcmod);
+						},
+						onFailure: function(_transport){
+							alert("Failed to fetch result for column " + _col + ", participant " + _gpgID + "!");
+						}
+					});
 				});
-			});
-			var result = minabs(_resultMatrix[_column][table],goVoteVector.dcmod);
-			if (result.compareTo(BigInteger.ZERO) < 0){
-				alert("Somebody tried to decrease column " + _column + " by " + result.abs() + "!!!");
-				sumelement.setStyle("background-color:red");
-				sumelement.addClassName("wrong");
+				var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
+				if (result.compareTo(BigInteger.ZERO) < 0){
+					var attack = _inverted == 0 ? "decrease" : "increase"
+					alert("Somebody tried to "+attack+" column "+_col+" by "+result.abs()+"!!!");
+					sumelement.setStyle("background-color:red");
+					sumelement.addClassName("wrong");
+				}
+				_colresult = _colresult.add(result);
 			}
-			_colresult = _colresult.add(result);
-		}
-		if (goNumParticipants.compareTo(_colresult) < 0 && !sumelement.classNames().include("wrong")){
-			alert("Somebody tried to cheat using several tables (column: " + _column +")!!!");
-			sumelement.setStyle("background-color:red");
-			sumelement.addClassName("wrong");
-		}
-		var totalsum = (new BigInteger(sumelement.textContent)).add(_colresult);
-		sumelement.update(totalsum);
-	});
+			var totalsum = (new BigInteger(sumelement.textContent)).add(_colresult);
+			sumelement.update(totalsum);
+		});
+	}
 }
 /********************
  * minabs(5,6) = -1 *
@@ -330,20 +348,21 @@ function Vote(){
 	 *********************************/
 	this.save = function (){
 		var _failurehappend = false;
-		for (var inverted = 0; inverted < 2; inverted++){
-			gaColumns.each(function(col){
-				var randomTable = Math.round(Math.random()*(giNumTables-1));
-				var voteval = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
-				voteval = voteval.subtract(new BigInteger(inverted.toString())).abs();
-				that.keyMatrix[inverted][col][randomTable] = that.keyMatrix[inverted][col][randomTable].add(voteval);//.mod(this.dcmod);
 
-				for (var tableindex = 0; tableindex < giNumTables;tableindex++){
+		for (var _inverted = 0; _inverted < 2; _inverted++){
+			gaColumns.each(function(_col){
+				var randomTable = Math.round(Math.random()*(giNumTables-1));
+				var voteval = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
+				voteval = voteval.subtract(new BigInteger(_inverted.toString())).abs();
+				that.keyMatrix[_inverted][_col][randomTable] = that.keyMatrix[_inverted][_col][randomTable].add(voteval);//.mod(this.dcmod);
+
+				for (var _table = 0; _table < giNumTables;_table++){
 					var req = gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID
 					req += "&gpgID=" + gsMyID;
-					req += "&vote=" + that.keyMatrix[inverted][col][tableindex];
-					req += "&timestamp=" + col;
-					req += "&tableindex=" + tableindex;
-					req += "&inverted=" + (inverted == 0 ? "false" : "true");
+					req += "&vote=" + that.keyMatrix[_inverted][_col][_table];
+					req += "&timestamp=" + _col;
+					req += "&tableindex=" + _table;
+					req += "&inverted=" + (_inverted == 0 ? "false" : "true");
 					new Ajax.Request(req, {
 						method:'get',
 						asynchronous: false,
@@ -384,19 +403,19 @@ function Vote(){
 	 **************************************************************************/
 	function calculateVoteKeys() {
 		that.keyMatrix = new Array();
-		for (var inverted = 0; inverted < 2; inverted++){
+		for (var _inverted = 0; _inverted < 2; _inverted++){
 
-			that.keyMatrix[inverted] = new Object();
-			gaColumns.each(function(col){
-				that.keyMatrix[inverted][col] = new Array();
+			that.keyMatrix[_inverted] = new Object();
+			gaColumns.each(function(_col){
+				that.keyMatrix[_inverted][_col] = new Array();
 
-				for (var tableindex = 0; tableindex < giNumTables;tableindex++){
-					that.keyMatrix[inverted][col][tableindex] = BigInteger.ZERO;
+				for (var _table = 0; _table < giNumTables;_table++){
+					that.keyMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 					for (var id in that.participants){
-						var addval = that.calcSharedKey(id,col,tableindex,inverted);
+						var addval = that.calcSharedKey(id,_col,_table,_inverted);
 
-						that.keyMatrix[inverted][col][tableindex] = that.keyMatrix[inverted][col][tableindex].add(addval);
-						that.keyMatrix[inverted][col][tableindex] = that.keyMatrix[inverted][col][tableindex].mod(that.dcmod);
+						that.keyMatrix[_inverted][_col][_table] = that.keyMatrix[_inverted][_col][_table].add(addval);
+						that.keyMatrix[_inverted][_col][_table] = that.keyMatrix[_inverted][_col][_table].mod(that.dcmod);
 					}
 				}
 			});
