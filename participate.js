@@ -249,7 +249,7 @@ function calcResult(){
 				_colResults[_inverted][_col] = _colResults[_inverted][_col].add(result);
 			}
 			if (_inverted == 0){
-				var totalsum = (new BigInteger(sumelement.textContent)).add(_colResults[_inverted][_col]);
+				var totalsum = (new BigInteger(sumelement.innerHTML)).add(_colResults[_inverted][_col]);
 				sumelement.update(totalsum);
 			} else {
 				if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) != 0) {
@@ -324,14 +324,14 @@ function Vote(){
 	that.dcmod = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",16);
 	that.g = new BigInteger("2");
 
-	that.sec = new BigInteger(localStorage.getItem("sec"));
-	that.pub = new BigInteger(localStorage.getItem("pub"));
 	that.participants = new Object();
 
 	/*****************************************************************
 	 * Start all calculations, which can be done before vote casting *
 	 *****************************************************************/
 	this.startKeyCalc = function (){
+		that.sec = new BigInteger(localStorage.getItem("sec"));
+		that.pub = new BigInteger(localStorage.getItem("pub"));
 		that.otherParticipantArray = gaParticipants.without(gsMyID);
 		calcNextDHKey();
 	}
