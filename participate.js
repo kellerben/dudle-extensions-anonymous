@@ -324,7 +324,7 @@ function Vote(){
 			for (var i = 0; i < giNumTables; i++){
 				_voteMatrix[col][i] = BigInteger.ZERO
 			}
-			var randomTable = 0;
+			var randomTable = Math.round(Math.random()*(giNumTables-1));
 			_voteMatrix[col][randomTable] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 		});
 
