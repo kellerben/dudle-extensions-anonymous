@@ -99,31 +99,13 @@ function logout(){
 	location.reload();
 }
 function login(){
-	switch (786){
-	case 786:
-		var dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFFF",16);
-		break;
-	case 1024:
-		var dhmod = new BigInteger("179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194");
-		break;
-	case 1536:
-		var dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF",16);
-		break;
-	}
-
-	var dcmod = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",16);
-	var g = new BigInteger("2");
-
 	var sec = new BigInteger($F('pass'),16);
-	var pub = g.modPow(sec,dhmod);
+	var pub = goVoteVector.g.modPow(sec,goVoteVector.dhmod);
 
 	var id = "0x" + SHA256_hash(pub.toString(16)).slice(56,64).toUpperCase();
 
 	localStorage.setItem("sec",sec);
 	localStorage.setItem("pub",pub);
-	localStorage.setItem("g",g);
-	localStorage.setItem("dhmod",dhmod);
-	localStorage.setItem("dcmod",dcmod);
 	localStorage.setItem("id",id);
 }
 
@@ -226,17 +208,6 @@ function showParticipationRow(){
  * calculate the result from anonymous votes and add it to the sum *
  *******************************************************************/
 function calcResult(){
-//		that.keyMatrix = new Array();
-//		for (var inverted = 0; inverted < 2; inverted++){
-//
-//			that.keyMatrix[inverted] = new Object();
-//			gaColumns.each(function(col){
-//				that.keyMatrix[inverted][col] = new Array();
-//
-//				for (var tableindex = 0; tableindex < giNumTables;tableindex++){
-//					that.keyMatrix[inverted][col][tableindex] = BigInteger.ZERO;
-//					for (var id in that.participants){
-
 	var _resultMatrix = new Array();
 	var _colResults = new Array();
 
@@ -338,11 +309,23 @@ function showSaveButton(){
 function Vote(){
 	var that = this;
 
-	that.g = new BigInteger(localStorage.getItem("g"));
-	that.dhmod = new BigInteger(localStorage.getItem("dhmod"));
+	switch (786){
+	case 786:
+		that.dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFFF",16);
+		break;
+	case 1024:
+		that.dhmod = new BigInteger("179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194");
+		break;
+	case 1536:
+		that.dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF",16);
+		break;
+	}
+
+	that.dcmod = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",16);
+	that.g = new BigInteger("2");
+
 	that.sec = new BigInteger(localStorage.getItem("sec"));
 	that.pub = new BigInteger(localStorage.getItem("pub"));
-	that.dcmod = new BigInteger(localStorage.getItem("dcmod"));
 	that.participants = new Object();
 
 	/*****************************************************************
