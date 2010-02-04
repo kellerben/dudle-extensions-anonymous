@@ -136,7 +136,7 @@ function login(){
  * remove non-standard characters to give a valid html id *
  **********************************************************/
 function htmlid(s){
-	return s.gsub(" ",".");
+	return s.gsub(/[^A-Z^a-z^0-9^\-^_^:^\.]/,".");
 }
 
 /***************************************
@@ -248,7 +248,7 @@ function calcResult(){
 				gaParticipants.each(function(_gpgID){
 					var req = gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID
 					req += "&gpgID=" + _gpgID;
-					req += "&timestamp=" + _col;
+					req += "&timestamp=" + escape(_col);
 					req += "&tableindex=" + _table;
 					req += "&inverted=" + (_inverted == 0 ? "false" : "true");
 					new Ajax.Request(req, {
@@ -385,7 +385,7 @@ function Vote(){
 					var req = gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID
 					req += "&gpgID=" + gsMyID;
 					req += "&vote=" + that.keyMatrix[_inverted][_col][_table];
-					req += "&timestamp=" + _col;
+					req += "&timestamp=" + escape(_col);
 					req += "&tableindex=" + _table;
 					req += "&inverted=" + (_inverted == 0 ? "false" : "true");
 					new Ajax.Request(req, {
