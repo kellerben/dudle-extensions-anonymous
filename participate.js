@@ -245,12 +245,13 @@ function calcResult(){
 					}
 				});
 			});
-			if (goNumParticipants.compareTo(_resultMatrix[_column][table]) < 0){
-				alert("Somebody tried to cheat within one table (column: " + _column + ")!!!");
+			var result = minabs(_resultMatrix[_column][table],goVoteVector.dcmod);
+			if (result.compareTo(BigInteger.ZERO) < 0){
+				alert("Somebody tried to decrease column " + _column + " by " + result.abs() + "!!!");
 				sumelement.setStyle("background-color:red");
 				sumelement.addClassName("wrong");
 			}
-			_colresult = _colresult.add(_resultMatrix[_column][table]);
+			_colresult = _colresult.add(result);
 		}
 		if (goNumParticipants.compareTo(_colresult) < 0 && !sumelement.classNames().include("wrong")){
 			alert("Somebody tried to cheat using several tables (column: " + _column +")!!!");
@@ -261,10 +262,20 @@ function calcResult(){
 		sumelement.update(totalsum);
 	});
 }
+/********************
+ * minabs(5,6) = -1 *
+ * minabs(2,6) =  2 *
+ ********************/
+function minabs(_number, _modulo){
+	if(_number.compareTo(_number.subtract(_modulo).abs()) < 0){
+		return _number;
+	} else {
+		return _number.subtract(_modulo);
+	}
+}
 
-
-function pseudorandom(dh,uuid,col,tableindex){
-	var seed = SHA256_hash(uuid + col + tableindex);
+function pseudorandom(dh,uuid,col,tableindex,inverted){
+	var seed = SHA256_hash(uuid + col + tableindex + inverted);
 	//FIXME: use 256 bit and not only the first 128 bit of SHA256
 	var block = new Array(16);
 	for(var i = 0; i < 16; i++){
@@ -318,33 +329,31 @@ function Vote(){
 	 * called from the "Save"-Button *
 	 *********************************/
 	this.save = function (){
-		var _voteMatrix = new Object();
-		gaColumns.each(function(col){
-			_voteMatrix[col] = new Array();
-			for (var i = 0; i < giNumTables; i++){
-				_voteMatrix[col][i] = BigInteger.ZERO
-			}
-			var randomTable = Math.round(Math.random()*(giNumTables-1));
-			_voteMatrix[col][randomTable] = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
-		});
-
-		for (var key in this.keyMatrix){
-			for (var table = 0; table < giNumTables; table++){
-				_voteMatrix[key][table] = this.keyMatrix[key][table].add(_voteMatrix[key][table]).mod(this.dcmod);
-			}
-		}
-
 		var _failurehappend = false;
-		for (var column in _voteMatrix){
-			for (var table = 0; table < giNumTables; table++){
-				new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID + "&gpgID=" + gsMyID + "&vote=" + _voteMatrix[column][table] + "&timestamp=" + column + "&tableindex=" + table + "&inverted=false" , {
-					method:'get',
-					asynchronous: false,
-					onFailure: function(transport){
-						_failurehappend = true;
-				}});
-			}
+		for (var inverted = 0; inverted < 2; inverted++){
+			gaColumns.each(function(col){
+				var randomTable = Math.round(Math.random()*(giNumTables-1));
+				var voteval = $(htmlid(col)).checked ? BigInteger.ONE : BigInteger.ZERO;
+				voteval = voteval.subtract(new BigInteger(inverted.toString())).abs();
+				that.keyMatrix[inverted][col][randomTable] = that.keyMatrix[inverted][col][randomTable].add(voteval);//.mod(this.dcmod);
+
+				for (var tableindex = 0; tableindex < giNumTables;tableindex++){
+					var req = gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID
+					req += "&gpgID=" + gsMyID;
+					req += "&vote=" + that.keyMatrix[inverted][col][tableindex];
+					req += "&timestamp=" + col;
+					req += "&tableindex=" + tableindex;
+					req += "&inverted=" + (inverted == 0 ? "false" : "true");
+					new Ajax.Request(req, {
+						method:'get',
+						asynchronous: false,
+						onFailure: function(transport){
+							_failurehappend = true;
+					}});
+				}
+			});
 		}
+
 		if (_failurehappend){
 			alert("Failed to submit vote!");
 		} else {
@@ -356,13 +365,13 @@ function Vote(){
  	/*******************************************************
  	 * calculate one DC-Net key with one other participant *
  	 *******************************************************/
-	that.calcSharedKey = function (otherID,timeslot,tableindex){
+	that.calcSharedKey = function (otherID,timeslot,tableindex,inverted){
 		var cmp = new BigInteger(gsMyID).compareTo(new BigInteger(otherID));
 		if (cmp == 0){
 				return BigInteger.ZERO;
 		}
 
-		var ret = hash(pseudorandom(that.participants[otherID]["dh"],gsPollID,timeslot,tableindex));
+		var ret = hash(pseudorandom(that.participants[otherID]["dh"],gsPollID,timeslot,tableindex,inverted));
 		if (cmp > 0){
 			return ret.negate().mod(this.dcmod);
 		}
@@ -374,20 +383,24 @@ function Vote(){
 	 * calculate the DC-Net keys, a participant has to add to his vote vector *
 	 **************************************************************************/
 	function calculateVoteKeys() {
-		that.keyMatrix = new Object();
+		that.keyMatrix = new Array();
+		for (var inverted = 0; inverted < 2; inverted++){
 
-		gaColumns.each(function(col){
-			that.keyMatrix[col] = new Array();
-			for (var tableindex = 0; tableindex < giNumTables;tableindex++){
-				that.keyMatrix[col][tableindex] = BigInteger.ZERO;
-				for (var id in that.participants){
-					var addval = that.calcSharedKey(id,col,tableindex);
+			that.keyMatrix[inverted] = new Object();
+			gaColumns.each(function(col){
+				that.keyMatrix[inverted][col] = new Array();
 
-					that.keyMatrix[col][tableindex] = that.keyMatrix[col][tableindex].add(addval);
-					that.keyMatrix[col][tableindex] = that.keyMatrix[col][tableindex].mod(that.dcmod);
+				for (var tableindex = 0; tableindex < giNumTables;tableindex++){
+					that.keyMatrix[inverted][col][tableindex] = BigInteger.ZERO;
+					for (var id in that.participants){
+						var addval = that.calcSharedKey(id,col,tableindex,inverted);
+
+						that.keyMatrix[inverted][col][tableindex] = that.keyMatrix[inverted][col][tableindex].add(addval);
+						that.keyMatrix[inverted][col][tableindex] = that.keyMatrix[inverted][col][tableindex].mod(that.dcmod);
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 
