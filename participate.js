@@ -3,7 +3,7 @@
  *                                                                          *
  * This file is part of dudle.                                              *
  *                                                                          *
- * Dudle is free software: you can redistribute it and*or modify it under   *
+ * Dudle is free software: you can redistribute it and/or modify it under   *
  * the terms of the GNU Affero General Public License as published by       *
  * the Free Software Foundation, either version 3 of the License, or        *
  * (at your option) any later version.                                      *
@@ -14,25 +14,8 @@
  * License for more details.                                                *
  *                                                                          *
  * You should have received a copy of the GNU Affero General Public License *
- * along with dudle.  If not, see <http:**www.gnu.org*licenses*>.           *
+ * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
-
-var giDHLENGTH = 786;
-var giNumTables = 3;
-var gaColumns;
-var gaParticipants;
-var goNumParticipants;
-var gsMyID = localStorage.getItem("id");
-var goVoteVector = new Vote();
-
-var li = "<li class='nonactive_tab'>";
-if (gsMyID){
-	li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
-} else {
-	li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
-}
-li += "</li>";
-$("tablist").insert({ bottom: li});
 
 
 /*********************************************************
@@ -74,62 +57,9 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' +
 }});
 
 
-$("polltitle").insert({before: "<div id='login'></div>"});
-function showLogin(){
-	var _l = "<table class='settingstable'><tr>";
-	_l += "<td class='label'><label for='key'>Secret Key:</label></td>";
-	_l += "<td><textarea id='key' cols='100' rows='3'></textarea></td>";
-	_l += "</tr><tr>";
-	_l += "</td><td>";
-	_l += "<td class='separator_bottom'><input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
-	_l += "</tr><tr >";
-	_l += "</td><td>";
-	_l += "<td class='separator_top'><a href='javascript:showRegister();'>Register new Account</a></td>";
-	_l += "</tr></table>";
-	$('login').update(_l);
-}
-
-function showRegister(){
-	var seed = new SecureRandom();
-	goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
-
-	var _r = "<table class='settingstable'><tr>";
-	_r += "<td class='label'><label for='name'>Name:</label></td>";
-	_r += "<td><input id='name' type='text' /></td>";
-	_r += "</tr><tr>";
-	_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
-	_r += "<td><textarea disabled='disabled' id='key' type='text' cols='100' rows='3'>";
-	_r += goVoteVector.sec.toString(16) + "</textarea></td>";
-	_r += "</tr><tr>";
-	_r += "</td><td>";
-	_r += "<td><input type='button' value='Register' onclick='register()'/></td>";
-	_r += "</tr></table>";
-	$('login').update(_r);
-}
-
-function register(){
-	var name = $F('name');
-	var _pubkey = "NAME " + $F('name') + "\n";
-	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
-	new Ajax.Request(gsExtensiondir + "keyserver.cgi?service=setKey&gpgKey=" + escape(_pubkey),{
-		method: 'get',
-		onSuccess: function(transport){
-			alert("Please store this key to any secret location:\n"+goVoteVector.sec.toString(16));
-			location.reload();
-	}});
-}
 
 function fingerprint(pub){
 	return SHA256_hash(pub);
-}
-
-function logout(){
-	localStorage.clear();
-	location.reload();
-}
-function login(){
-	goVoteVector.setSecKey(new BigInteger($F('key'),16));
-	location.reload();
 }
 
 /**********************************************************
@@ -329,35 +259,32 @@ function showSaveButton(){
 	v.enable();
 }
 
+
+// TODO: transform into asynchronus call
+function fetchKey(id){
+
+	var req = new XMLHttpRequest();
+	req.open("POST",gsExtensiondir + "keyserver.cgi",false);
+	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+	req.send("service=getKey&gpgID=" + id.toString());
+	req.close;
+
+	if (req.status == 200){
+		var participant = {"id" : id};
+		var resp = req.responseText.split("\n");
+		for (var line = 0; line < resp.length;line++){
+			if (resp[line].startsWith("DHPUB ")){
+					participant["pub"] = new BigInteger(resp[line].gsub("DHPUB ",""),16);
+			}
+		}
+		return participant;
+	} else {
+		return 'Something went wrong! The server said: ' + req.responseText;
+	}
+}
+
+
 function Vote(){
-	var that = this;
-
-	switch (giDHLENGTH){
-	case 786:
-		that.dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFFF",16);
-		break;
-	case 1024:
-		that.dhmod = new BigInteger("179769313486231590770839156793787453197860296048756011706444423684197180216158519368947833795864925541502180565485980503646440548199239100050792877003355816639229553136239076508735759914822574862575007425302077447712589550957937778424442426617334727629299387668709205606050270810842907692932019128194");
-		break;
-	case 1536:
-		that.dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA237327FFFFFFFFFFFFFFFF",16);
-		break;
-	}
-
-	that.dcmod = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",16);
-	that.g = new BigInteger("2");
-
-	that.participants = new Object();
-
-	this.setSecKey = function(_key){
-		that.sec = _key;
-		that.pub = that.g.modPow(that.sec,that.dhmod);
-		that.id = "0x" + SHA256_hash(that.pub.toString(16)).slice(56,64).toUpperCase();
-		localStorage.setItem("sec",goVoteVector.sec);
-		localStorage.setItem("pub",goVoteVector.pub);
-		localStorage.setItem("id",goVoteVector.id);
-	}
-
 	/*****************************************************************
 	 * Start all calculations, which can be done before vote casting *
 	 *****************************************************************/
@@ -481,25 +408,3 @@ function Vote(){
 	}
 }
 
-// TODO: transform into asynchronus call
-function fetchKey(id){
-
-	var req = new XMLHttpRequest();
-	req.open("POST",gsExtensiondir + "keyserver.cgi",false);
-	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-	req.send("service=getKey&gpgID=" + id.toString());
-	req.close;
-
-	if (req.status == 200){
-		var participant = {"id" : id};
-		var resp = req.responseText.split("\n");
-		for (var line = 0; line < resp.length;line++){
-			if (resp[line].startsWith("DHPUB ")){
-					participant["pub"] = new BigInteger(resp[line].gsub("DHPUB ",""),16);
-			}
-		}
-		return participant;
-	} else {
-		return 'Something went wrong! The server said: ' + req.responseText;
-	}
-}

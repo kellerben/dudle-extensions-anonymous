@@ -34,6 +34,17 @@ when "."
 		$d.html.add_head_script("../extensions/dc-net/lib/prng4.js")
 		$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
 		$d.html.add_script("../extensions/dc-net/common.js")
+		$d.html.add_script("../extensions/dc-net/login_register.js")
 		$d.html.add_script("../extensions/dc-net/participate.js")
+	else
+		$d.html.add_head_script("extensions/dc-net/lib/prototype.js")
+		$d.html.add_head_script("extensions/dc-net/lib/jsbn.js")
+		$d.html.add_head_script("extensions/dc-net/lib/jsbn2.js")
+		$d.html.add_head_script("extensions/dc-net/lib/jssha256.js")
+		$d.html.add_head_script("extensions/dc-net/lib/base64.js")
+		$d.html.add_head_script("extensions/dc-net/lib/jsaes.js")
+		$d.html.add_head_script("extensions/dc-net/lib/prng4.js")
+		$d.html.add_head_script("extensions/dc-net/lib/rng.js")
+		$d.html.add_script("extensions/dc-net/login_register.js")
 	end
 end
