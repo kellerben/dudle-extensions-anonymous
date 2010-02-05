@@ -45,6 +45,7 @@ when "."
 		$d.html.add_head_script("extensions/dc-net/lib/jsaes.js")
 		$d.html.add_head_script("extensions/dc-net/lib/prng4.js")
 		$d.html.add_head_script("extensions/dc-net/lib/rng.js")
+		$d.html.add_script("extensions/dc-net/common.js")
 		$d.html.add_script("extensions/dc-net/login_register.js")
 	end
 end
