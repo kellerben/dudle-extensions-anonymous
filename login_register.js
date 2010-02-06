@@ -22,72 +22,74 @@ var giNumTables = 3;
 var gaColumns;
 var gaParticipants;
 var goNumParticipants;
-var gsMyID = localStorage.getItem("id");
 var goVoteVector = new Vote();
 
-var li = "<li class='nonactive_tab'>";
-if (gsMyID){
-	li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
-} else {
-	li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
-}
-li += "</li>";
-$("tablist").insert({ bottom: li});
+if ("localStorage" in window){
+	var gsMyID = localStorage.getItem("id");
+	var li = "<li class='nonactive_tab'>";
+	if (gsMyID){
+		li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
+	} else {
+		li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
+	}
+	li += "</li>";
+	$("tablist").insert({ bottom: li});
 
-$("polltitle").insert({before: "<div id='login'></div>"});
-function showLogin(){
-	var _l = "<table class='settingstable'><tr>";
-	_l += "<td class='label'><label for='key'>Secret Key:</label></td>";
-	_l += "<td><textarea id='key' cols='100' rows='3'></textarea></td>";
-	_l += "</tr><tr>";
-	_l += "</td><td>";
-	_l += "<td class='separator_bottom'><input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
-	_l += "</tr><tr >";
-	_l += "</td><td>";
-	_l += "<td class='separator_top'><a href='javascript:showRegister();'>Register new Account</a></td>";
-	_l += "</tr></table>";
-	$('login').update(_l);
-}
+	$("polltitle").insert({before: "<div id='login'></div>"});
+	function showLogin(){
+		var _l = "<table class='settingstable'><tr>";
+		_l += "<td class='label'><label for='key'>Secret Key:</label></td>";
+		_l += "<td><textarea id='key' cols='100' rows='3'></textarea></td>";
+		_l += "</tr><tr>";
+		_l += "</td><td>";
+		_l += "<td class='separator_bottom'><input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
+		_l += "</tr><tr >";
+		_l += "</td><td>";
+		_l += "<td class='separator_top'><a href='javascript:showRegister();'>Register new Account</a></td>";
+		_l += "</tr></table>";
+		$('login').update(_l);
+	}
 
-function showRegister(){
-	var seed = new SecureRandom();
-	goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
+	function showRegister(){
+		var seed = new SecureRandom();
+		goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
 
-	var _r = "<table class='settingstable'><tr>";
-	_r += "<td class='label'><label for='name'>Name:</label></td>";
-	_r += "<td><input id='name' type='text' /></td>";
-	_r += "</tr><tr>";
-	_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
-	_r += "<td><textarea disabled='disabled' id='key' type='text' cols='100' rows='3'>";
-	_r += goVoteVector.sec.toString(16) + "</textarea></td>";
-	_r += "</tr><tr>";
-	_r += "</td><td>";
-	_r += "<td><input type='button' value='Register' onclick='register()'/></td>";
-	_r += "</tr></table>";
-	$('login').update(_r);
-}
+		var _r = "<table class='settingstable'><tr>";
+		_r += "<td class='label'><label for='name'>Name:</label></td>";
+		_r += "<td><input id='name' type='text' /></td>";
+		_r += "</tr><tr>";
+		_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
+		_r += "<td><textarea disabled='disabled' id='key' type='text' cols='100' rows='3'>";
+		_r += goVoteVector.sec.toString(16) + "</textarea></td>";
+		_r += "</tr><tr>";
+		_r += "</td><td>";
+		_r += "<td><input type='button' value='Register' onclick='register()'/></td>";
+		_r += "</tr></table>";
+		$('login').update(_r);
+	}
 
-function register(){
-	var name = $F('name');
-	goVoteVector.storeKey();
-	var _pubkey = "NAME " + $F('name') + "\n";
-	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
-	new Ajax.Request(gsExtensiondir + "keyserver.cgi?service=setKey&gpgKey=" + escape(_pubkey),{
-		method: 'get',
-		onSuccess: function(transport){
-			alert("Please store this key to any secret location:\n"+goVoteVector.sec.toString(16));
-			location.reload();
-	}});
-}
+	function register(){
+		var name = $F('name');
+		goVoteVector.storeKey();
+		var _pubkey = "NAME " + $F('name') + "\n";
+		_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
+		new Ajax.Request(gsExtensiondir + "keyserver.cgi?service=setKey&gpgKey=" + escape(_pubkey),{
+			method: 'get',
+			onSuccess: function(transport){
+				alert("Please store this key to any secret location:\n"+goVoteVector.sec.toString(16));
+				location.reload();
+		}});
+	}
 
-function logout(){
-	localStorage.clear();
-	location.reload();
-}
-function login(){
-	goVoteVector.setSecKey(new BigInteger($F('key'),16));
-	goVoteVector.storeKey();
-	location.reload();
+	function logout(){
+		localStorage.clear();
+		location.reload();
+	}
+	function login(){
+		goVoteVector.setSecKey(new BigInteger($F('key'),16));
+		goVoteVector.storeKey();
+		location.reload();
+	}
 }
 
 function Vote(){
@@ -121,3 +123,4 @@ function Vote(){
 		localStorage.setItem("id",goVoteVector.id);
 	}
 }
+
