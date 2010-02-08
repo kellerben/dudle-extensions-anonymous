@@ -17,47 +17,6 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-
-/*********************************************************
- * fetch columns and participants                        *
- * show participants and start precalculation when ready *
- *********************************************************/
-new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' + gsPollID, {
-	method:'get',
-	onSuccess: function(transport){
-		gaColumns = transport.responseText.split("\n");
-
-		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollID=' + gsPollID,{
-			method: "get",
-			onFailure: function(){ alert('Failed to fetch participant list.') },
-			onSuccess: function(transport){
-				gaParticipants = transport.responseText.split("\n");
-				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
-					goNumParticipants = new BigInteger(gaParticipants.length.toString());
-					showParticipants();
-					getPollState(function(_pollState){
-						if (_pollState == "open"){
-							if (gaParticipants.indexOf(gsMyID) != -1) {
-								getState(gsMyID,function(_myStatus){
-									switch(_myStatus){
-									case "notVoted":
-									case "flying":
-										goVoteVector.startKeyCalc();
-										showParticipationRow();
-										break;
-									}
-								});
-							}
-						} else {
-							calcResult();
-						}
-					});
-				}
-		}});
-}});
-
-
-
 function fingerprint(pub){
 	return SHA256_hash(pub);
 }
@@ -284,127 +243,166 @@ function fetchKey(id){
 }
 
 
-function Vote(){
-	/*****************************************************************
-	 * Start all calculations, which can be done before vote casting *
-	 *****************************************************************/
-	this.startKeyCalc = function (){
-		that.sec = new BigInteger(localStorage.getItem("sec"));
-		that.pub = new BigInteger(localStorage.getItem("pub"));
-		that.otherParticipantArray = gaParticipants.without(gsMyID);
-		calcNextDHKey();
+/*****************************************************************
+ * Start all calculations, which can be done before vote casting *
+ *****************************************************************/
+Vote.prototype.startKeyCalc = function (){
+	this.sec = new BigInteger(localStorage.getItem("sec"));
+	this.pub = new BigInteger(localStorage.getItem("pub"));
+	this.otherParticipantArray = gaParticipants.without(gsMyID);
+	this.calcNextDHKey();
+}
+
+/*********************************
+ * called from the "Save"-Button *
+ *********************************/
+Vote.prototype.save = function (){
+	var _failurehappend = false;
+
+	for (var _inverted = 0; _inverted < 2; _inverted++){
+		for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
+			var _col = gaColumns[_colidx];
+			var randomTable = Math.round(Math.random()*(giNumTables-1));
+			var voteval = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
+			voteval = voteval.subtract(new BigInteger(_inverted.toString())).abs();
+			this.keyMatrix[_inverted][_col][randomTable] = this.keyMatrix[_inverted][_col][randomTable].add(voteval);//.mod(this.dcmod);
+
+			for (var _table = 0; _table < giNumTables;_table++){
+				var req = gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID
+				req += "&gpgID=" + gsMyID;
+				req += "&vote=" + this.keyMatrix[_inverted][_col][_table];
+				req += "&timestamp=" + escape(_col);
+				req += "&tableindex=" + _table;
+				req += "&inverted=" + (_inverted == 0 ? "false" : "true");
+				new Ajax.Request(req, {
+					method:'get',
+					asynchronous: false,
+					onFailure: function(transport){
+						_failurehappend = true;
+				}});
+			}
+		}
 	}
 
- 	/*********************************
-	 * called from the "Save"-Button *
-	 *********************************/
-	this.save = function (){
-		var _failurehappend = false;
+	if (_failurehappend){
+		alert("Failed to submit vote!");
+	} else {
+		location.reload();
+	}
+}
 
-		for (var _inverted = 0; _inverted < 2; _inverted++){
-			gaColumns.each(function(_col){
-				var randomTable = Math.round(Math.random()*(giNumTables-1));
-				var voteval = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
-				voteval = voteval.subtract(new BigInteger(_inverted.toString())).abs();
-				that.keyMatrix[_inverted][_col][randomTable] = that.keyMatrix[_inverted][_col][randomTable].add(voteval);//.mod(this.dcmod);
 
-				for (var _table = 0; _table < giNumTables;_table++){
-					var req = gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID
-					req += "&gpgID=" + gsMyID;
-					req += "&vote=" + that.keyMatrix[_inverted][_col][_table];
-					req += "&timestamp=" + escape(_col);
-					req += "&tableindex=" + _table;
-					req += "&inverted=" + (_inverted == 0 ? "false" : "true");
-					new Ajax.Request(req, {
-						method:'get',
-						asynchronous: false,
-						onFailure: function(transport){
-							_failurehappend = true;
-					}});
+/*******************************************************
+ * calculate one DC-Net key with one other participant *
+ *******************************************************/
+Vote.prototype.calcSharedKey = function (otherID,timeslot,tableindex,inverted){
+	var cmp = new BigInteger(gsMyID).compareTo(new BigInteger(otherID));
+	if (cmp == 0){
+			return BigInteger.ZERO;
+	}
+
+	var ret = hash(pseudorandom(this.participants[otherID]["dh"],gsPollID,timeslot,tableindex,inverted));
+	if (cmp > 0){
+		return ret.negate().mod(this.dcmod);
+	}
+	return ret.mod(this.dcmod);
+}
+
+
+/**************************************************************************
+ * calculate the DC-Net keys, a participant has to add to his vote vector *
+ **************************************************************************/
+Vote.prototype.calculateVoteKeys = function () {
+	this.keyMatrix = new Array();
+	for (var _inverted = 0; _inverted < 2; _inverted++){
+
+		this.keyMatrix[_inverted] = new Object();
+		for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
+			var _col = gaColumns[_colidx];
+			this.keyMatrix[_inverted][_col] = new Array();
+
+			for (var _table = 0; _table < giNumTables;_table++){
+				this.keyMatrix[_inverted][_col][_table] = BigInteger.ZERO;
+				for (var id in this.participants){
+					var addval = this.calcSharedKey(id,_col,_table,_inverted);
+
+					this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].add(addval);
+					this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].mod(this.dcmod);
 				}
-			});
-		}
-
-		if (_failurehappend){
-			alert("Failed to submit vote!");
-		} else {
-			location.reload();
-		}
-	}
- 
-
- 	/*******************************************************
- 	 * calculate one DC-Net key with one other participant *
- 	 *******************************************************/
-	that.calcSharedKey = function (otherID,timeslot,tableindex,inverted){
-		var cmp = new BigInteger(gsMyID).compareTo(new BigInteger(otherID));
-		if (cmp == 0){
-				return BigInteger.ZERO;
-		}
-
-		var ret = hash(pseudorandom(that.participants[otherID]["dh"],gsPollID,timeslot,tableindex,inverted));
-		if (cmp > 0){
-			return ret.negate().mod(this.dcmod);
-		}
-		return ret.mod(this.dcmod);
-	}
-
- 
-	/**************************************************************************
-	 * calculate the DC-Net keys, a participant has to add to his vote vector *
-	 **************************************************************************/
-	function calculateVoteKeys() {
-		that.keyMatrix = new Array();
-		for (var _inverted = 0; _inverted < 2; _inverted++){
-
-			that.keyMatrix[_inverted] = new Object();
-			gaColumns.each(function(_col){
-				that.keyMatrix[_inverted][_col] = new Array();
-
-				for (var _table = 0; _table < giNumTables;_table++){
-					that.keyMatrix[_inverted][_col][_table] = BigInteger.ZERO;
-					for (var id in that.participants){
-						var addval = that.calcSharedKey(id,_col,_table,_inverted);
-
-						that.keyMatrix[_inverted][_col][_table] = that.keyMatrix[_inverted][_col][_table].add(addval);
-						that.keyMatrix[_inverted][_col][_table] = that.keyMatrix[_inverted][_col][_table].mod(that.dcmod);
-					}
-				}
-			});
-		}
-	}
-
-
-	/**************************************************
-	 * calculate a DH secret with another participant *
-	 **************************************************/
-	var i = 0;
-	function calcNextDHKey() {
-		if (i >= that.otherParticipantArray.length) {
-			calculateVoteKeys();
-	    window.setTimeout('showSaveButton()', 1000);
-			return;
-		}
-
-		var id = that.otherParticipantArray[i];
-
-		i++;
-
-		that.participants[id] = new Object();
-		if (localStorage.getItem(id) == null){
-			that.participants[id] = fetchKey(id);
-	
-			// calculate the dh secret
-		 that.participants[id]["pub"].modPow(that.sec,that.dhmod,
-					function (result) {
-						that.participants[id]["dh"] = result;
-						localStorage.setItem(id,that.participants[id]["dh"]);
-						calcNextDHKey();
-					});
-		} else {
-			that.participants[id]["dh"] = new BigInteger(localStorage.getItem(id));
-			calcNextDHKey();
+			}
 		}
 	}
 }
 
+
+/**************************************************
+ * calculate a DH secret with another participant *
+ **************************************************/
+Vote.prototype.calcNextDHKey = (function(){
+		var i = 0;
+		return function() {
+			if (i >= this.otherParticipantArray.length) {
+				this.calculateVoteKeys();
+				window.setTimeout('showSaveButton()', 1000);
+				return;
+			}
+
+			var id = this.otherParticipantArray[i];
+
+			i++;
+
+			this.participants[id] = new Object();
+			if (localStorage.getItem(id) == null){
+				this.participants[id] = fetchKey(id);
+
+				// calculate the dh secret
+				this.participants[id]["pub"].modPow(this.sec,this.dhmod,
+						function (result) {
+							goVoteVector.participants[id]["dh"] = result;
+							localStorage.setItem(id,result);
+							goVoteVector.calcNextDHKey();
+						});
+			} else {
+				this.participants[id]["dh"] = new BigInteger(localStorage.getItem(id));
+				this.calcNextDHKey();
+			}
+		}
+})();
+
+/*********************************************************
+ * fetch columns and participants                        *
+ * show participants and start precalculation when ready *
+ *********************************************************/
+new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' + gsPollID, {
+	method:'get',
+	onSuccess: function(transport){
+		gaColumns = transport.responseText.split("\n");
+
+		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollID=' + gsPollID,{
+			method: "get",
+			onFailure: function(){ alert('Failed to fetch participant list.') },
+			onSuccess: function(transport){
+				gaParticipants = transport.responseText.split("\n");
+				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
+					goNumParticipants = new BigInteger(gaParticipants.length.toString());
+					showParticipants();
+					getPollState(function(_pollState){
+						if (_pollState == "open"){
+							if (gaParticipants.indexOf(gsMyID) != -1) {
+								getState(gsMyID,function(_myStatus){
+									switch(_myStatus){
+									case "notVoted":
+									case "flying":
+										goVoteVector.startKeyCalc();
+										showParticipationRow();
+										break;
+									}
+								});
+							}
+						} else {
+							calcResult();
+						}
+					});
+				}
+		}});
+}});
