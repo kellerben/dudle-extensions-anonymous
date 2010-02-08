@@ -38,28 +38,38 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 			$("currentUsers").update(participanttable);
 		}
 
-		// Add Participants
-		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllKeys', {
-			method:'get',
-			onSuccess: function(transport){
-				var allusers = transport.responseText.split("\n");
+		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getPollState&pollID=' + gsPollID,{
+			method: "get",
+			onSuccess: function(pollstate){
+				if (pollstate.responseText == "open\n"){
+					// Add Participants
+					new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllKeys', {
+						method:'get',
+						onSuccess: function(transport){
+							var allusers = transport.responseText.split("\n");
 
-				var addParticipantsSelect = "<div><select id='addParticipant'>";
-				allusers.each(function(user){
-					if (!participants.include(user)){
-						addParticipantsSelect += "<option value='" + user + "' id='" + user + "' title='" + user + "'>fetching user name for " + user + " ...</option>";
-					}
-				});
-				
-				addParticipantsSelect += "</select><input type='button' value='Invite' onclick='addParticipant();' /></div>";
+							var addParticipantsSelect = "<div><select id='addParticipant'>";
+							allusers.each(function(user){
+								if (!participants.include(user)){
+									addParticipantsSelect += "<option value='" + user + "' id='" + user + "' title='" + user + "'>fetching user name for " + user + " ...</option>";
+								}
+							});
+							
+							addParticipantsSelect += "</select><input type='button' value='Invite' onclick='addParticipant();' /></div>";
 
-				$("addUsers").update(addParticipantsSelect);
+							$("addUsers").update(addParticipantsSelect);
 
-				allusers.each(function(user){updateName(user)});
+							allusers.each(function(user){updateName(user)});
 
-			},
-			onFailure: function(){ alert('Failed to fetch keys from keyserver.') }
-		});
+						},
+						onFailure: function(){ alert('Failed to fetch keys from keyserver.') }
+					});
+				} else {
+					$("privacy_enhanced").update("Participants of Privacy-Enhanced Poll");
+					participants.each(function(user){updateName(user)});
+				}
+
+		}});
 	}
 });
 
