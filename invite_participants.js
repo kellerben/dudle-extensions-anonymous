@@ -41,7 +41,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getPollState&pollID=' + gsPollID,{
 			method: "get",
 			onSuccess: function(pollstate){
-				if (pollstate.responseText == "open\n"){
+				if (pollstate.responseText == "open"){
 					// Add Participants
 					new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllKeys', {
 						method:'get',
