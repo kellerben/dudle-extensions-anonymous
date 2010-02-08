@@ -34,7 +34,7 @@ class Poll
 		{ "return" => "open, wenn noch nicht alle gewählt haben, sonst closed" }
 	end
 	def webservice_getPollState
-		return "open" unless $dc
+		return "open" if $dc.empty?
 		ret = true
 		rett = ""
 		$dc["participants"].each{|p|
