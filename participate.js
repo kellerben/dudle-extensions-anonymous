@@ -73,7 +73,7 @@ function showParticipants(){
 				switch (stat){
 					case "voted":
 						classname = 'ayes';
-						statustext = 'Has voted.';
+						statustext = 'Has voted anonymously.';
 						break;
 					case 'notVoted':
 						classname = 'cno';
