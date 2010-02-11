@@ -154,7 +154,7 @@ function calcResult(){
 				var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
 				if (result.compareTo(BigInteger.ZERO) < 0){
 					var _attack = _inverted == 0 ? "decrease" : "increase";
-					alert("Somebody tried to "+_attack+" column "+_col+" by "+result.abs()+"!!!");
+					$('comments').insert({before: "<div class='warning'>Somebody tried to "+_attack+" column "+_col+" by "+result.abs()+"!!!</div>"});
 					sumelement.setStyle("background-color:red");
 					sumelement.addClassName("wrong");
 				}
@@ -165,7 +165,7 @@ function calcResult(){
 				sumelement.update(totalsum);
 			} else {
 				if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) != 0) {
-					alert("Somebody sent inconsistent values at column "+_col+"!!!");
+					$('comments').insert({before: "<div class='warning'>Somebody sent inconsistent values at column "+_col+"!!!</div>"});
 					sumelement.setStyle("background-color:red");
 					sumelement.addClassName("wrong");
 				}
