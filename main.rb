@@ -21,8 +21,8 @@
 case $d.tab
 when "invite_participants.cgi"
 	$d.html.add_head_script("../extensions/dc-net/lib/prototype.js")
-	$d.html.add_script("../extensions/dc-net/common.js")
-	$d.html.add_script("../extensions/dc-net/invite_participants.js")
+	$d.html.add_script_file("../extensions/dc-net/common.js")
+	$d.html.add_script_file("../extensions/dc-net/invite_participants.js")
 when "." 
 	if $d.is_poll?
 		$d.html.add_head_script("../extensions/dc-net/lib/prototype.js")
@@ -33,9 +33,9 @@ when "."
 		$d.html.add_head_script("../extensions/dc-net/lib/jsaes.js")
 		$d.html.add_head_script("../extensions/dc-net/lib/prng4.js")
 		$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
-		$d.html.add_script("../extensions/dc-net/common.js")
-		$d.html.add_script("../extensions/dc-net/login_register.js")
-		$d.html.add_script("../extensions/dc-net/participate.js")
+		$d.html.add_script_file("../extensions/dc-net/common.js")
+		$d.html.add_script_file("../extensions/dc-net/login_register.js")
+		$d.html.add_script_file("../extensions/dc-net/participate.js")
 	else
 		$d.html.add_head_script("extensions/dc-net/lib/prototype.js")
 		$d.html.add_head_script("extensions/dc-net/lib/jsbn.js")
@@ -45,7 +45,8 @@ when "."
 		$d.html.add_head_script("extensions/dc-net/lib/jsaes.js")
 		$d.html.add_head_script("extensions/dc-net/lib/prng4.js")
 		$d.html.add_head_script("extensions/dc-net/lib/rng.js")
-		$d.html.add_script("extensions/dc-net/common.js")
-		$d.html.add_script("extensions/dc-net/login_register.js")
+		$d.html.add_script_file("extensions/dc-net/common.js")
+		$d.html.add_script("gsExtensiondir='extensions/dc-net/';")
+		$d.html.add_script_file("extensions/dc-net/login_register.js")
 	end
 end
