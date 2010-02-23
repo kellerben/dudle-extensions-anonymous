@@ -131,6 +131,9 @@ function calcResult(){
 			_resultMatrix[_inverted][_col] = new Array();
 			_colResults[_inverted][_col] = BigInteger.ZERO;
 			var sumelement = $("sum_" + htmlid(_col));
+			if (_inverted == 0){
+				sumelement.setStyle("color: white; background-color: black");
+			};
 
 			for (var _table = 0; _table < giNumTables; _table++){
 				_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
