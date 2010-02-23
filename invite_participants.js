@@ -30,10 +30,10 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 		});
 
 		$("participanttable").select("td.name").each(function(td){
-			td.insert({after:"<td><input type='checkbox' disabled='disabled' /></td>"});
+			td.insert({after:"<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
 		});
 		
-		$("add_participant_input_td").insert({after:"<td><input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox()' /></td>"});
+		$("add_participant_input_td").insert({after:"<td style='text-align:center'><input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox()' /></td>"});
 
 		$("savebutton").writeAttribute("onclick", "addParticipant();");
 		$("savebutton").writeAttribute("type", "button");
@@ -43,8 +43,8 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 		if (participants.length > 0 && participants[0] != ""){
 			var privparticipantrows = "";
 			participants.each(function(participant){
-				privparticipantrows += "<tr><td title='" + participant + "' id='" + participant + "'>fetching user name for "+ participant +" ...</td>";
-				privparticipantrows += "<td><input type='checkbox' disabled='disabled' checked='checked' /></td>"
+				privparticipantrows += "<tr class='participantrow'><td title='" + participant + "' id='" + participant + "'>fetching user name for "+ participant +" ...</td>";
+				privparticipantrows += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>"
 				privparticipantrows += "</tr>";
 			});
 
