@@ -74,6 +74,17 @@ class Keyserver
 			return "User not found!"
 		end
 	end
+	def Keyserver.webservicedescription_Keyserver_searchId
+		{ "return" => "gpgKey OR HTTP404 if user is unknown",
+			"input" => ["name"]}
+	end
+	def webservice_searchId
+		$u.each{|user,key|
+			return gpgid(key) if key.scan(/^NAME (.*)$/).flatten[0].to_s == $cgi["name"].chomp
+		}
+		$header["status"] = "404 Not Found"
+		return "User not found!"
+	end
 	def Keyserver.webservicedescription_Keyserver_searchKey
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
 			"input" => ["name"]}
