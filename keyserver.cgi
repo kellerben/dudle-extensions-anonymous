@@ -85,6 +85,18 @@ class Keyserver
 		$header["status"] = "404 Not Found"
 		return "User not found!"
 	end
+	def Keyserver.webservicedescription_Keyserver_searchName
+		{ "return" => "list of possible names",
+			"input" => ["search"]}
+	end
+	def webservice_searchName
+		ret = []
+		$u.each{|user,key|
+			name = key.scan(/^NAME (.*)$/).flatten[0].to_s
+			ret << name unless name.downcase.scan($cgi["search"].downcase).empty?
+		}
+		return "<ul><li>#{ret.join('</li><li>')}</li></ul>".gsub("<li></li>","")
+	end
 	def store(data)
 		File.open("keyserverdata.yaml","w"){|f|
 			f << data.to_yaml

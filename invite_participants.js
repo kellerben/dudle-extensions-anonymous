@@ -22,7 +22,23 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 	onFailure: function(){ alert('Failed to fetch participant list.') },
 	onSuccess: function(transport){
 
-		$("wizzard_navigation").insert({
+		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
+		new Ajax.Autocompleter('add_participant_input','autocomplete',gsExtensiondir + 'keyserver.cgi',{paramName:"search",parameters:"service=searchName"} );
+
+		$("participanttable").select("th").each(function(th){
+			th.insert({after:"<th>Privacy Enhanced</th>"});
+		});
+
+		$("participanttable").select("td.name").each(function(td){
+			td.insert({after:"<td><input type='checkbox' disabled='disabled' checked='checked' /></td>"});
+		});
+		
+		$("add_participant_input_td").insert({after:"<td><input id='add_participant_check_privacy_enhanced' type='checkbox' /></td>"});
+
+		$("savebutton").writeAttribute("onclick", "addParticipant();");
+		$("savebutton").writeAttribute("type", "button");
+
+/*		$("wizzard_navigation").insert({
 			after: "<h2 id='privacy_enhanced'>Invite Participants to Privacy-Enhanced Poll</h2><div id='currentUsers'></div><div id='addUsers'></div>"
 		});
 
@@ -69,16 +85,18 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 					participants.each(function(user){updateName(user)});
 				}
 
-		}});
+		}});*/
 	}
 });
 
-
 function addParticipant(){
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		method:"get",
-		parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: $F("addParticipant")},
-		onSuccess: function(){location.reload();}
-	});
+	if ($F("add_participant_check_privacy_enhanced")){
+		new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+			method:"get",
+			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: $F("add_participant_input")},
+			onSuccess: function(){location.reload();}
+		});
+	} else {
+		$("invite_participants_form").submit();
+	}
 }
-
