@@ -24,6 +24,6 @@ gsPollID = gsPollID[gsPollID.length-2];
 function updateName(gpgID){ 
 	new Ajax.Updater(gpgID,gsExtensiondir + 'keyserver.cgi?service=getName&gpgID=' + gpgID,{ 
 		method:'get',
-		onFailure: function(){$(gpgID).update("Failed to fetch name for" + gpgID)}
+		onFailure: function(){$(gpgID).update("Failed to fetch name for " + gpgID)}
 	});
 }
