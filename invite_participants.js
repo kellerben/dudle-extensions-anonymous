@@ -23,7 +23,11 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 	onSuccess: function(transport){
 
 		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
-		new Ajax.Autocompleter('add_participant_input','autocomplete',gsExtensiondir + 'keyserver.cgi',{paramName:"search",parameters:"service=searchName"} );
+		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllNames', {
+			method:'get',
+			onSuccess: function(transport){
+				new Autocompleter.Local('add_participant_input','autocomplete',transport.responseText.split("\n"));
+		}});
 
 		$("participanttable").select("th").each(function(th){
 			th.insert({after:"<th>Privacy Enhanced</th>"});

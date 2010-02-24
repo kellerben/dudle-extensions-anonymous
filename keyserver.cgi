@@ -61,6 +61,12 @@ class Keyserver
 	def webservice_listAllKeys
 		$u.keys.sort.join("\n")
 	end
+	def Keyserver.webservicedescription_Keyserver_listAllNames
+		{ "return" => "list of Names of registered keys" }
+	end
+	def webservice_listAllNames
+		$u.values.collect{|key| key.scan(/^NAME (.*)$/).flatten[0]}.join("\n")
+	end
 	def Keyserver.webservicedescription_Keyserver_getName
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
 			"input" => ["gpgID"]}
