@@ -22,6 +22,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 	onFailure: function(){ alert('Failed to fetch participant list.') },
 	onSuccess: function(transport){
 
+		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
 		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
 		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllNames', {
 			method:'get',
