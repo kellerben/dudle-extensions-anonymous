@@ -211,7 +211,11 @@ class Poll
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
-		$dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i][$cgi["inverted"] == "true" ? 1 : 0].to_s
+		if $dc[$cgi["gpgID"]][$cgi["timestamp"]]
+			return $dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i][$cgi["inverted"] == "true" ? 1 : 0].to_s
+		else
+			return "Invalid Timestamp"
+		end
 	end
 
 	def Poll.webservicedescription_2ResultPublication_getVoteSignature
