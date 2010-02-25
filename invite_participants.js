@@ -21,30 +21,13 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 	method: "get",
 	onFailure: function(){ alert('Failed to fetch participant list.') },
 	onSuccess: function(transport){
-
-		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
-		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
-		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllNames', {
-			method:'get',
-			onSuccess: function(transport){
-				new Autocompleter.Local('add_participant_input','autocomplete',transport.responseText.split("\n"));
-		}});
+		// Add existing participants
 
 		$("participanttable").select("th").each(function(th){
 			th.insert({after:"<th>Privacy Enhanced</th>"});
 		});
 
-		$("participanttable").select("td.name").each(function(td){
-			td.insert({after:"<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
-		});
-		
-		$("add_participant_input_td").insert({after:"<td style='text-align:center'><input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox()' /></td>"});
-
-		$("savebutton").writeAttribute("onclick", "addParticipant();");
-		$("savebutton").writeAttribute("type", "button");
-
 		var participants = transport.responseText.split("\n");
-
 		if (participants.length > 0 && participants[0] != ""){
 			var privparticipantrows = "";
 			participants.each(function(participant){
@@ -55,17 +38,26 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 
 			$("participanttable").select("tr")[0].insert({after:privparticipantrows});
 		}
-/*		
-
-		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getPollState&pollID=' + gsPollID,{
-			method: "get",
-			onSuccess: function(pollstate){
-				if (pollstate.responseText == "open"){
-					// Add Participants
-*/
-
-
 		participants.each(function(user){updateName(user)});
+		
+		// Modify participation form
+		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
+		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
+		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllNames', {
+			method:'get',
+			onSuccess: function(transport){
+				new Autocompleter.Local('add_participant_input','autocomplete',transport.responseText.split("\n"));
+		}});
+
+
+		$("participanttable").select("td.name").each(function(td){
+			td.insert({after:"<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
+		});
+		
+		$("add_participant_input_td").insert({after:"<td style='text-align:center'><input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox()' /></td>"});
+
+		$("savebutton").writeAttribute("onclick", "addParticipant();");
+		$("savebutton").writeAttribute("type", "button");
 	}
 });
 
