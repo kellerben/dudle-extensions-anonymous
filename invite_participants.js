@@ -52,7 +52,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 				privparticipantrows += "</tr>";
 			});
 
-			$("participanttable").select("tr.participantrow").last().insert({after:privparticipantrows});
+			$("participanttable").select("tr")[0].insert({after:privparticipantrows});
 		}
 /*		
 
