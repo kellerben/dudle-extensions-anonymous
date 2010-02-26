@@ -275,22 +275,22 @@ Vote.prototype.save = function (){
 	}
 
 	// write vote string
-	var _votestr = "";
+	var _voteobj = new Object();
 	for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
 		var _col = gaColumns[_colidx];
-		_votestr += _col + "\n";
+		_voteobj[_col] = new Array();
 		for (var _table = 0; _table < giNumTables;_table++){
+			_voteobj[_col][_table] = new Array();
 			for (var _inverted = 0; _inverted < 2; _inverted++){
-				_votestr += this.keyMatrix[_inverted][_col][_table].toString(16) + "\n";
+				_voteobj[_col][_table][_inverted] = this.keyMatrix[_inverted][_col][_table].toString(16);
 			}
 		}
-		_votestr += "\n";
 	}
 
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: {service: 'setTotalVote', pollID: gsPollID, vote: _votestr},
+		parameters: {service: 'setTotalVote', pollID: gsPollID, gpgID: gsMyID, vote: Object.toJSON(_voteobj), signature: 'TODO'},
 		onSuccess: function(transport){
-			alert(transport.responseText);
+			location.reload();
 	}});
 }
 
