@@ -42,7 +42,7 @@ function getState(_sGpgID, _successFunction){
 /* similar to getState */
 function getPollState(_successFunction){
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
-		parameters: {service: 'getPollState', pollID: gsPollID, gpgID: _sGpgID},
+		parameters: {service: 'getPollState', pollID: gsPollID},
 		method: 'get',
 		onSuccess: function(_t){_successFunction(_t.responseText)}
 	});
