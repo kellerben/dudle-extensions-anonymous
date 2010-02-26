@@ -260,8 +260,8 @@ Vote.prototype.startKeyCalc = function (){
  * called from the "Save"-Button *
  *********************************/
 Vote.prototype.save = function (){
-	var _failurehappend = false;
 
+	// choose random table 
 	for (var _inverted = 0; _inverted < 2; _inverted++){
 		for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
 			var _col = gaColumns[_colidx];
@@ -269,29 +269,27 @@ Vote.prototype.save = function (){
 			var voteval = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 			voteval = voteval.subtract(new BigInteger(_inverted.toString())).abs();
 			this.keyMatrix[_inverted][_col][randomTable] = this.keyMatrix[_inverted][_col][randomTable].add(voteval);//.mod(this.dcmod);
-
-			for (var _table = 0; _table < giNumTables;_table++){
-				var req = gsExtensiondir + 'webservices.cgi?service=setVote&pollID=' + gsPollID
-				req += "&gpgID=" + gsMyID;
-				req += "&vote=" + this.keyMatrix[_inverted][_col][_table];
-				req += "&timestamp=" + escape(_col);
-				req += "&tableindex=" + _table;
-				req += "&inverted=" + (_inverted == 0 ? "false" : "true");
-				new Ajax.Request(req, {
-					method:'get',
-					asynchronous: false,
-					onFailure: function(transport){
-						_failurehappend = true;
-				}});
-			}
 		}
 	}
 
-	if (_failurehappend){
-		alert("Failed to submit vote!");
-	} else {
-		location.reload();
+	// write vote string
+	var _votestr = "";
+	for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
+		var _col = gaColumns[_colidx];
+		_votestr += _col + "\n";
+		for (var _table = 0; _table < giNumTables;_table++){
+			for (var _inverted = 0; _inverted < 2; _inverted++){
+				_votestr += this.keyMatrix[_inverted][_col][_table].toString(16) + "\n";
+			}
+		}
+		_votestr += "\n";
 	}
+
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		parameters: {service: 'setTotalVote', pollID: gsPollID, vote: _votestr},
+		onSuccess: function(transport){
+			alert(transport.responseText);
+	}});
 }
 
 

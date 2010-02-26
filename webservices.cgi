@@ -85,7 +85,7 @@ class Poll
 	end
 	def webservice_addParticipant
 		$dc["participants"] ||= []
-		$dc["participants"] << $cgi["gpgID"]
+		$dc["participants"] << $c["gpgID"]
 		$dc["participants"].uniq!
 		store_dc($dc)
 	end
@@ -100,6 +100,43 @@ class Poll
 	###################################################################
 	# Vote Casting
 	###################################################################
+	VOTEDESCR = <<FOO 
+eigene Teilsumme:
+<ul>
+<li>{0,1}</li>
+<li>+ Schlüssel aller Teilnehmer, die noch nicht gewählt haben</li>
+<li>+ Schlüssel zu allen Teilnehmern in deren getUsedKeys man selbst steht</li>
+</ul>
+Format:<br />
+t_1<br />
+vote_{t_1,j_1,n}<br />
+vote_{t_1,j_1,i}<br />
+...<br />
+...<br />
+vote_{t_1,j_I,n}<br />
+vote_{t_1,j_I,i}<br />
+<br />
+...<br />
+...<br />
+<br />
+t_T<br />
+vote_{t_T,j_1,n}<br />
+vote_{t_T,j_1,i}<br />
+...<br />
+...<br />
+vote_{t_T,j_I,n}<br />
+vote_{t_T,j_I,i}<br />
+
+FOO
+	def Poll.webservicedescription_1VoteCasting_setTotalVote
+		{ "return" => '"HTTP202" OR "HTTP403"',
+			"input" => ["gpgID", "vote", "signature"],
+			"vote" => VOTEDESCR
+		}
+	end
+	def webservice_setTotalVote
+		$c.inspect
+	end
 	def Poll.webservicedescription_1VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403"',
 			"input" => ["gpgID", "vote", "timestamp", "tableindex", "inverted"],
@@ -109,11 +146,11 @@ class Poll
 	end
 	def webservice_setVote
 		# TODO return 403 if necessary
-		gpgID = $cgi["gpgID"]
-		vote = $cgi["vote"].to_i
-		timestamp = $cgi["timestamp"]
-		tableindex = $cgi["tableindex"].to_i
-		inverted = $cgi["inverted"] == "true" ? 1 : 0
+		gpgID = $c["gpgID"]
+		vote = $c["vote"].to_i
+		timestamp = $c["timestamp"]
+		tableindex = $c["tableindex"].to_i
+		inverted = $c["inverted"] == "true" ? 1 : 0
 
 		$dc[gpgID] ||= {}
 		$dc[gpgID][timestamp] ||= []
@@ -142,7 +179,7 @@ class Poll
 	end
 	def webservice_setVoteSignature
 		# TODO return 403 if getState == "voted" && getState fertig implementiert
-		$dc[$cgi["gpgID"]]["signature"] = $cgi["signature"]
+		$dc[$c["gpgID"]]["signature"] = $c["signature"]
 		$header["status"] = "202 Accepted"
 		store_dc($dc)
 	end
@@ -161,7 +198,7 @@ class Poll
 		end
 	end
 	def webservice_getState
-		getState($cgi["gpgID"])
+		getState($c["gpgID"])
 	end
 
 	def Poll.webservicedescription_1VoteCasting_getUsedKeys
@@ -173,7 +210,7 @@ class Poll
 		$dc[gpgID]["usedKeys"].to_a
 	end
 	def webservice_getUsedKeys
-		getUsedKeys($cgi["gpgID"]).join("\n")
+		getUsedKeys($c["gpgID"]).join("\n")
 	end
 
 	def Poll.webservicedescription_1VoteCasting_setKickOutKey
@@ -211,8 +248,8 @@ class Poll
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
-		if $dc[$cgi["gpgID"]][$cgi["timestamp"]]
-			return $dc[$cgi["gpgID"]][$cgi["timestamp"]][$cgi["tableindex"].to_i][$cgi["inverted"] == "true" ? 1 : 0].to_s
+		if $dc[$c["gpgID"]][$c["timestamp"]]
+			return $dc[$c["gpgID"]][$c["timestamp"]][$c["tableindex"].to_i][$c["inverted"] == "true" ? 1 : 0].to_s
 		else
 			return "Invalid Timestamp"
 		end
@@ -223,7 +260,7 @@ class Poll
 			"input" => ["gpgID"] }
 	end
 	def webservice_getVoteSignature
-		$dc[$cgi["gpgID"]]["signature"]
+		$dc[$c["gpgID"]]["signature"]
 	end
 	
 	def Poll.webservicedescription_2ResultPublication_getKickOutKey
@@ -253,7 +290,7 @@ if __FILE__ == $0
 
 require "pp"
 require "cgi"
-$cgi = CGI.new
+$c = CGI.new
 $header = {}
 
 webservices = {}
@@ -266,11 +303,11 @@ Poll.methods.collect{|m|
 	all << webservice
 }
 
-if all.include?($cgi["service"])
+if all.include?($c["service"])
 	$header = {"type" => "text/plain"}
 
-	if $cgi.include?("pollID") && File.directory?("../../#{$cgi["pollID"]}/")
-		Dir.chdir("../../#{$cgi["pollID"]}/")
+	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/")
+		Dir.chdir("../../#{$c["pollID"]}/")
 		load "../dudle.rb"
 		$d = Dudle.new
 
@@ -280,12 +317,12 @@ if all.include?($cgi["service"])
 			$dc = {}
 		end
 
-		$cgi.out($header){
-			$d.table.send("webservice_#{$cgi["service"]}")
+		$c.out($header){
+			$d.table.send("webservice_#{$c["service"]}")
 		}
 	else
 		$header["status"] = "404 Not Found"
-		$cgi.out($header){"The requested poll was not found!"}
+		$c.out($header){"The requested poll was not found!"}
 	end
 
 else
@@ -328,13 +365,13 @@ webservices.sort.each{|category,ws|
 		d = Poll.send("webservicedescription_#{category}_#{w}")
 		$out << <<TITLE
 <h2>#{w}(#{d["input"].to_a.join(", ")})</h2>
-<form method='get' action=''>
+<form method='post' action=''>
 <div>
 <input type='hidden' name='service' value='#{w}' />
 <table class='settingstable'>
 <tr>
 	<td><label for="#{w}pollID">pollID:</label></td>
-	<td><input id="#{w}pollID" size='16' type='text' name='pollID' value='#{$cgi["pollID"]}' /></td>
+	<td><input id="#{w}pollID" size='16' type='text' name='pollID' value='#{$c["pollID"]}' /></td>
 </tr>
 TITLE
 
@@ -355,7 +392,7 @@ ROW
 	<td class="shorttextcolumn" colspan='2' style='width: 25em'>#{CGI.escapeHTML(d["return"])}</td>
 </tr>
 <tr>
-	<td></td><td><input type='submit' value='#{Poll.instance_methods.include?("webservice_" + w) ? "call" : "TODO' disabled='disabled"}' /></td>
+	<td></td><td><input type='submit' value='#{Poll.instance_methods.include?("webservice_" + w) ? "Call" : "TODO' disabled='disabled"}' /></td>
 </tr>
 </table>
 </div>
@@ -390,7 +427,7 @@ getCommentText(pollID, commentID)
         Inhalt des Kommentars
 COMMENT
 
-$cgi.out($header){ 
+$c.out($header){ 
 	$out
 }
 
