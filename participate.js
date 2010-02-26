@@ -122,61 +122,57 @@ function showParticipationRow(){
  * calculate the result from anonymous votes and add it to the sum *
  *******************************************************************/
 function calcResult(){
-	var _resultMatrix = new Array();
-	var _colResults = new Array();
 
-	for (var _inverted = 0; _inverted < 2; _inverted++){
-		_resultMatrix[_inverted] = new Object();
-		_colResults[_inverted] = new Object();
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		method: "get",
+		parameters: { service: "getTotalVote", pollID: gsPollID },
+		onSuccess: function(_transport){
+			_totalVote = _transport.responseText.evalJSON();
 
-		gaColumns.each(function(_col){
-			_resultMatrix[_inverted][_col] = new Array();
-			_colResults[_inverted][_col] = BigInteger.ZERO;
-			var sumelement = $("sum_" + htmlid(_col));
-			if (_inverted == 0){
-				sumelement.setStyle("color: white; background-color: black");
-			};
+			var _resultMatrix = new Array();
+			var _colResults = new Array();
 
-			for (var _table = 0; _table < giNumTables; _table++){
-				_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
-				gaParticipants.each(function(_gpgID){
-					var req = gsExtensiondir + 'webservices.cgi?service=getVote&pollID=' + gsPollID
-					req += "&gpgID=" + _gpgID;
-					req += "&timestamp=" + escape(_col);
-					req += "&tableindex=" + _table;
-					req += "&inverted=" + (_inverted == 0 ? "false" : "true");
-					new Ajax.Request(req, {
-						method: "get",
-						asynchronous: false,
-						onSuccess: function(_transport){
-							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_transport.responseText)).mod(goVoteVector.dcmod);
-						},
-						onFailure: function(_transport){
-							alert("Failed to fetch result for column " + _col + ", participant " + _gpgID + "!");
+			for (var _inverted = 0; _inverted < 2; _inverted++){
+				_resultMatrix[_inverted] = new Object();
+				_colResults[_inverted] = new Object();
+
+				gaColumns.each(function(_col){
+					_resultMatrix[_inverted][_col] = new Array();
+					_colResults[_inverted][_col] = BigInteger.ZERO;
+					var sumelement = $("sum_" + htmlid(_col));
+					if (_inverted == 0){
+						sumelement.setStyle("color: white; background-color: black");
+					};
+
+					for (var _table = 0; _table < giNumTables; _table++){
+						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
+						
+						gaParticipants.each(function(_gpgID){
+							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted],16)).mod(goVoteVector.dcmod);
+						});
+
+						var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
+						if (result.compareTo(BigInteger.ZERO) < 0){
+							var _attack = _inverted == 0 ? "decrease" : "increase";
+							$('comments').insert({before: "<div class='warning'>Somebody tried to "+_attack+" column "+_col+" by "+result.abs()+"!!!</div>"});
+							sumelement.setStyle("background-color:red");
+							sumelement.addClassName("wrong");
 						}
-					});
+						_colResults[_inverted][_col] = _colResults[_inverted][_col].add(result);
+					}
+					if (_inverted == 0){
+						var totalsum = (new BigInteger(sumelement.innerHTML)).add(_colResults[_inverted][_col]);
+						sumelement.update(totalsum);
+					} else {
+						if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) != 0) {
+							$('comments').insert({before: "<div class='warning'>Somebody sent inconsistent values at column "+_col+"!!!</div>"});
+							sumelement.setStyle("background-color:red");
+							sumelement.addClassName("wrong");
+						}
+					}
 				});
-				var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
-				if (result.compareTo(BigInteger.ZERO) < 0){
-					var _attack = _inverted == 0 ? "decrease" : "increase";
-					$('comments').insert({before: "<div class='warning'>Somebody tried to "+_attack+" column "+_col+" by "+result.abs()+"!!!</div>"});
-					sumelement.setStyle("background-color:red");
-					sumelement.addClassName("wrong");
-				}
-				_colResults[_inverted][_col] = _colResults[_inverted][_col].add(result);
 			}
-			if (_inverted == 0){
-				var totalsum = (new BigInteger(sumelement.innerHTML)).add(_colResults[_inverted][_col]);
-				sumelement.update(totalsum);
-			} else {
-				if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) != 0) {
-					$('comments').insert({before: "<div class='warning'>Somebody sent inconsistent values at column "+_col+"!!!</div>"});
-					sumelement.setStyle("background-color:red");
-					sumelement.addClassName("wrong");
-				}
-			}
-		});
-	}
+	}});
 }
 /********************
  * minabs(5,6) = -1 *

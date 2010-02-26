@@ -283,6 +283,29 @@ FOO
 			return "Invalid Timestamp"
 		end
 	end
+	def Poll.webservicedescription_2ResultPublication_getTotalVote
+		{ "return" => 'Alle Summen aller Teilnehmer oder "HTTP403", falls Wahlgang noch nicht beendet',
+			}
+	end
+	def webservice_getTotalVote
+		if webservice_getPollState == "open"
+			$header["status"] = "403 Forbidden"
+			return "Die Umfrage wurde noch nicht beendet!"
+		end
+		ret = $dc
+		ret.delete("participants")
+		ret.each_value{|p|
+			p.delete("usedKeys")
+			p.each_value{|tab|
+				tab.each{|norm_inv|
+					norm_inv.collect!{|i| i.to_s(16)}
+				}
+			}
+		}
+
+#		return ret.pretty_inspect
+		return ret.to_json
+	end
 
 	def Poll.webservicedescription_2ResultPublication_getVoteSignature
 		{ "return" => 'Signatur, der betreffenden Wahl oder "HTTP403", falls Wahlgang noch nicht beendet',
@@ -394,7 +417,7 @@ webservices.sort.each{|category,ws|
 		d = Poll.send("webservicedescription_#{category}_#{w}")
 		$out << <<TITLE
 <h2>#{w}(#{d["input"].to_a.join(", ")})</h2>
-<form method='post' action=''>
+<form method='get' action=''>
 <div>
 <input type='hidden' name='service' value='#{w}' />
 <table class='settingstable'>
