@@ -49,7 +49,7 @@ var Vote = function (){
 }
 
 var giDHLENGTH = 786;
-var giNumTables = 10;
+var giNumTables = 3;
 var gaColumns;
 var gaParticipants;
 var goNumParticipants;
