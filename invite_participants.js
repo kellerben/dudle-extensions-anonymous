@@ -17,8 +17,9 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollID=' + gsPollID,{
+new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
 	method: "get",
+	parameters: { service: 'getParticipants', pollID: gsPollID},
 	onFailure: function(){ alert('Failed to fetch participant list.') },
 	onSuccess: function(transport){
 		// Add existing participants
@@ -43,7 +44,8 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 		// Modify participation form
 		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
 		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
-		new Ajax.Request(gsExtensiondir + 'keyserver.cgi?service=listAllNames', {
+		new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+			parameters: {service: 'listAllNames'},
 			method:'get',
 			onSuccess: function(transport){
 				new Autocompleter.Local('add_participant_input','autocomplete',transport.responseText.split("\n"));
@@ -64,7 +66,6 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollI
 function addParticipant(){
 	if ($F("add_participant_check_privacy_enhanced")){
 		new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-			method:"get",
 			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
 			onSuccess: function(){location.reload();}
 		});

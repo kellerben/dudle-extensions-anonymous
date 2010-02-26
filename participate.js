@@ -33,14 +33,16 @@ function htmlid(s){
  * _successFunction with it            *
  ***************************************/
 function getState(_sGpgID, _successFunction){
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getState&pollID=' + gsPollID + "&gpgID=" + _sGpgID,{
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
+		parameters: {service: 'getState', pollID: gsPollID, gpgID: _sGpgID},
 		method: 'get',
 		onSuccess: function(_t){_successFunction(_t.responseText)}
 	});
 }
 /* similar to getState */
 function getPollState(_successFunction){
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getPollState&pollID=' + gsPollID,{
+	new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
+		parameters: {service: 'getPollState', pollID: gsPollID, gpgID: _sGpgID},
 		method: 'get',
 		onSuccess: function(_t){_successFunction(_t.responseText)}
 	});
@@ -374,12 +376,14 @@ Vote.prototype.calcNextDHKey = (function(){
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *
  *********************************************************/
-new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getColumns&pollID=' + gsPollID, {
+new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+	parameters: {service: 'getColumns', pollID: gsPollID},
 	method:'get',
 	onSuccess: function(transport){
 		gaColumns = transport.responseText.split("\n");
 
-		new Ajax.Request(gsExtensiondir + 'webservices.cgi?service=getParticipants&pollID=' + gsPollID,{
+		new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
+			parameters: {service: 'getParticipants', pollID: gsPollID},
 			method: "get",
 			onFailure: function(){ alert('Failed to fetch participant list.') },
 			onSuccess: function(transport){

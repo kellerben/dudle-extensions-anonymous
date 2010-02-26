@@ -49,7 +49,7 @@ var Vote = function (){
 }
 
 var giDHLENGTH = 786;
-var giNumTables = 3;
+var giNumTables = 10;
 var gaColumns;
 var gaParticipants;
 var goNumParticipants;
@@ -105,8 +105,8 @@ if ("localStorage" in window){
 		goVoteVector.storeKey();
 		var _pubkey = "NAME " + $F('name') + "\n";
 		_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
-		new Ajax.Request(gsExtensiondir + "keyserver.cgi?service=setKey&gpgKey=" + escape(_pubkey),{
-			method: 'get',
+		new Ajax.Request(gsExtensiondir + "keyserver.cgi",{
+			parameters: {service: 'setKey', gpgKey: escape(_pubkey)},
 			onFailure: function(transport){
 				alert("Failed to store key at server: " + transport.responseText);
 			},
