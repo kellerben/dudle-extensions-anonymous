@@ -20,6 +20,7 @@
 ############################################################################
 
 require "pp"
+require "json"
 class Poll
 	###################################################################
 	# Poll Details
@@ -108,6 +109,9 @@ eigene Teilsumme:
 <li>+ Schlüssel zu allen Teilnehmern in deren getUsedKeys man selbst steht</li>
 </ul>
 Format:<br />
+vote[column][tableindex][inverted ? 1 : 0].toJSON()
+FOO
+comment = <<FOO
 t_1<br />
 vote_{t_1,j_1,n}<br />
 vote_{t_1,j_1,i}<br />
@@ -135,7 +139,32 @@ FOO
 		}
 	end
 	def webservice_setTotalVote
-		$c.inspect
+		gpgID = $c["gpgID"]
+		$dc[gpgID] ||= {}
+
+		JSON.parse($c["vote"]).each{|col,votearray|
+			$dc[gpgID][col] ||= []
+			votearray.each_with_index{|norm_inv,tableindex|
+				$dc[gpgID][col][tableindex] ||= []
+				norm_inv.each_with_index{|vote,inverted|
+					$dc[gpgID][col][tableindex][inverted] = vote.to_i(16)
+				}
+			}
+		}
+
+		participants = {"voted" => [], "notVoted" => []}
+		($dc["participants"] - [gpgID]).each{|p|
+			participants[getState(p)] << p
+		}
+		usedKeys = participants["notVoted"]
+		participants["voted"].each{|p|
+			usedKeys << p if getUsedKeys(p).include?(gpgID)
+		}
+
+		$dc[gpgID]["usedKeys"] = usedKeys
+
+		$header["status"] = "202 Accepted"
+		store_dc($dc)
 	end
 	def Poll.webservicedescription_1VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403"',
