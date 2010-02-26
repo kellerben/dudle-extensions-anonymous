@@ -39,7 +39,12 @@ class Keyserver
 	end
 	
 	def getKey(gpgid)
-		$u["0x" + gpgid.to_s.scan(/^0x(.*)$/).flatten[0].upcase]
+		hex = gpgid.to_s.scan(/^0x(.*)$/).flatten[0]
+		if hex
+			return $u["0x" + hex.upcase]
+		else
+			return false
+		end
 	end
 
 	def Keyserver.webservicedescription_Keyserver_getKey
