@@ -43,7 +43,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
 		
 		// Modify participation form
 		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
-		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:relative;'></div>"});
+		$("add_participant_input").insert({after:"<div id='autocomplete' class='autocomplete' style='display: none; position:absolute;'></div>"});
 		new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			parameters: {service: 'listAllNames'},
 			method:'get',
