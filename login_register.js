@@ -106,7 +106,7 @@ if ("localStorage" in window){
 		var _pubkey = "NAME " + $F('name') + "\n";
 		_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
 		new Ajax.Request(gsExtensiondir + "keyserver.cgi",{
-			parameters: {service: 'setKey', gpgKey: escape(_pubkey)},
+			parameters: {service: 'setKey', gpgKey: _pubkey},
 			onFailure: function(transport){
 				alert("Failed to store key at server: " + transport.responseText);
 			},
