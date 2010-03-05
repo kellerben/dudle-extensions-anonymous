@@ -24,14 +24,24 @@ require "digest/sha2"
 class Keyserver
 	def gpgid(key)
 		dhpubkey = key.scan(/DHPUB ([\da-fA-F]*)/).flatten[0]
+		raise "Bad key format"
 		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase[56..64]
 	end
 	def Keyserver.webservicedescription_Keyserver_setKey
-		{ "return" => "202",
+		{ "return" => "202 or 400 if key bad formated",
 			"input" => ["gpgKey"]}
 	end
 	def webservice_setKey
-		id = gpgid($cgi["gpgKey"])
+		begin
+			id = gpgid($cgi["gpgKey"])
+		rescue => e
+			if e.message == "Bad key format"
+				$header["status"] = "400 Bad Request"
+				return e.message
+			else
+				raise e
+			end
+		end
 		$u[id] = $cgi["gpgKey"]
 		store($u)
 		$header["status"] = "202 Accepted"
