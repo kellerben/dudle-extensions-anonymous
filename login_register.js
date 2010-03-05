@@ -77,20 +77,29 @@ if ("localStorage" in window){
 		_l += "<td class='separator_bottom'><input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
 		_l += "</tr><tr >";
 		_l += "</td><td>";
-		_l += "<td class='separator_top'><a href='javascript:showRegister();'>Register new Account</a></td>";
+		_l += "<td class='separator_top'><a href='javascript:showRegister(\"\");'>Register new Account</a></td>";
 		_l += "</tr></table>";
 		$('login').update(_l);
 	}
 
-	function showRegister(){
-		var seed = new SecureRandom();
-		goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
-
+	function showRegister(_name){
+		if (!goVoteVector.sec){
+			var seed = new SecureRandom();
+			goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
+		}
 		var _r = "<table class='settingstable'><tr>";
 		_r += "<td class='label'><label for='name'>Name:</label></td>";
-		_r += "<td><input id='name' type='text' /></td>";
+		_r += "<td><input id='name' type='text' value='"+ _name +"' /></td>";
 		_r += "</tr><tr>";
-		_r += "<td></td>";
+		_r += "</td><td>";
+		_r += "<td><input type='button' value='Previous' disabled='disabled'/>";
+		_r += "<input type='button' value='Next' onclick='secondRegisterStep()'/></td>";
+		_r += "</tr></table>";
+		$('login').update(_r);
+	}
+	function secondRegisterStep(){
+		var _r = "<table class='settingstable'><tr>";
+		_r += "</td><td>";
 		_r += "<td>Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).</td>";
 		_r += "</tr><tr>";
 		_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
@@ -103,12 +112,13 @@ if ("localStorage" in window){
 		_r += goVoteVector.sec.toString(16);
 		_r += "';})();\">";
 		_r += 'insert dudle key'+'</a>.';
-
 		_r += "</td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
-		_r += "<td><input type='button' value='Register' onclick='register()'/></td>";
+		_r += "<td><input type='button' value='Previous' onclick='showRegister(\"" + $F('name') + "\");' />";
+		_r += "<input type='button' value='Finish' onclick='register()'/></td>";
 		_r += "</tr></table>";
+		_r += "<input type='hidden' id='name' value='" + $F('name') + "' />";
 		$('login').update(_r);
 	}
 
