@@ -91,7 +91,7 @@ if ("localStorage" in window){
 		_r += "<td><input id='name' type='text' /></td>";
 		_r += "</tr><tr>";
 		_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
-		_r += "<td><textarea disabled='disabled' id='key' type='text' cols='100' rows='3'>";
+		_r += "<td><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
 		_r += goVoteVector.sec.toString(16) + "</textarea></td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
