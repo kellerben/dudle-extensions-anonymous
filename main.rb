@@ -17,39 +17,28 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+def logintab(basedir)
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/prototype.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/jsbn.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/jsbn2.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/jssha256.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/base64.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/jsaes.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/prng4.js")
+	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/rng.js")
+	$d.html.add_script("var gsExtensiondir='#{basedir}/extensions/dc-net/';")
+	$d.html.add_script_file("#{basedir}/extensions/dc-net/common.js")
+	$d.html.add_script_file("#{basedir}/extensions/dc-net/login_register.js")
+end
+
+logintab($d.is_poll? ? ".." : ".")
 
 case $d.tab
 when "invite_participants.cgi"
-	$d.html.add_head_script("../extensions/dc-net/lib/prototype.js")
 	$d.html.add_head_script("../extensions/dc-net/lib/scriptaculous-effects.js")
 	$d.html.add_head_script("../extensions/dc-net/lib/scriptaculous-controls.js")
-	$d.html.add_script_file("../extensions/dc-net/common.js")
 	$d.html.add_script_file("../extensions/dc-net/invite_participants.js")
 	$d.html.add_css("../extensions/dc-net/invite_participants.css")
 when "." 
-	if $d.is_poll?
-		$d.html.add_head_script("../extensions/dc-net/lib/prototype.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jsbn.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jsbn2.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jssha256.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/base64.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jsaes.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/prng4.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
-		$d.html.add_script_file("../extensions/dc-net/common.js")
-		$d.html.add_script_file("../extensions/dc-net/login_register.js")
-		$d.html.add_script_file("../extensions/dc-net/participate.js")
-	else
-		$d.html.add_head_script("extensions/dc-net/lib/prototype.js")
-		$d.html.add_head_script("extensions/dc-net/lib/jsbn.js")
-		$d.html.add_head_script("extensions/dc-net/lib/jsbn2.js")
-		$d.html.add_head_script("extensions/dc-net/lib/jssha256.js")
-		$d.html.add_head_script("extensions/dc-net/lib/base64.js")
-		$d.html.add_head_script("extensions/dc-net/lib/jsaes.js")
-		$d.html.add_head_script("extensions/dc-net/lib/prng4.js")
-		$d.html.add_head_script("extensions/dc-net/lib/rng.js")
-		$d.html.add_script_file("extensions/dc-net/common.js")
-		$d.html.add_script("gsExtensiondir='extensions/dc-net/';")
-		$d.html.add_script_file("extensions/dc-net/login_register.js")
-	end
+	$d.html.add_script_file("../extensions/dc-net/participate.js") if $d.is_poll?
 end

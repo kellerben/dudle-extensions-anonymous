@@ -17,7 +17,6 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-var gsExtensiondir='../extensions/dc-net/';
 var gsPollID = (location.href).split("/");
 gsPollID = gsPollID[gsPollID.length-2];
 
