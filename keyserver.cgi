@@ -24,7 +24,7 @@ require "digest/sha2"
 class Keyserver
 	def gpgid(key)
 		dhpubkey = key.scan(/DHPUB ([\da-fA-F]*)/).flatten[0]
-		raise "Bad key format"
+		raise "Bad key format" unless dhpubkey
 		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase[56..64]
 	end
 	def Keyserver.webservicedescription_Keyserver_setKey
