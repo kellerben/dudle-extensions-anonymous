@@ -296,7 +296,9 @@ FOO
 		ret.delete("participants")
 		ret.each_value{|p|
 			p.delete("usedKeys")
+			p.delete("signature") #FIXME: implement sig
 			p.each_value{|tab|
+				tab.compact! #FIXME: trudle starts with tableindex = 1
 				tab.each{|norm_inv|
 					norm_inv.collect!{|i| i.to_s(16)}
 				}
