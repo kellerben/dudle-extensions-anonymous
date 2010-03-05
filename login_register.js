@@ -90,9 +90,21 @@ if ("localStorage" in window){
 		_r += "<td class='label'><label for='name'>Name:</label></td>";
 		_r += "<td><input id='name' type='text' /></td>";
 		_r += "</tr><tr>";
+		_r += "<td></td>";
+		_r += "<td>Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).</td>";
+		_r += "</tr><tr>";
 		_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
 		_r += "<td><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
 		_r += goVoteVector.sec.toString(16) + "</textarea></td>";
+		_r += "</tr><tr>";
+		_r += "<td></td>";
+		_r += "<td>Alternatively, you may bookmark this link, which inserts the key into the login field: ";
+		_r += "<a href=\"javascript:(function(){document.getElementById('key').value='";
+		_r += goVoteVector.sec.toString(16);
+		_r += "';})();\">";
+		_r += 'insert dudle key'+'</a>.';
+
+		_r += "</td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
 		_r += "<td><input type='button' value='Register' onclick='register()'/></td>";
@@ -111,7 +123,6 @@ if ("localStorage" in window){
 				alert("Failed to store key at server: " + transport.responseText);
 			},
 			onSuccess: function(transport){
-				alert("Please store this key to any secret location:\n"+goVoteVector.sec.toString(16));
 				location.reload();
 		}});
 	}
