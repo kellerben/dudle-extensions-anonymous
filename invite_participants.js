@@ -80,14 +80,17 @@ function checkcheckbox(){
 	$("registerederror").update("");
 	if ($F("add_participant_check_privacy_enhanced")){
 		$("savebutton").disable();
+		$("savebutton").value = "Checking username";
 		new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			method:"get",
 			parameters: { service: 'searchId', name: $F("add_participant_input")},
 			onSuccess: function(transport){
 				gsKeyId = transport.responseText;
 				$("savebutton").enable();
+				$("savebutton").value = "Invite";
 			},
 			onFailure: function(transport){
+				$("savebutton").value = "Invite";
 				$("registerederror").update("<td colspan='3' class='warning'>Only registered users can participate privacy-enhanced.</td>");
 			}
 		});
