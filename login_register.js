@@ -63,28 +63,40 @@ var gsMyID;
 
 if ("localStorage" in window){
 	gsMyID = localStorage.getItem("id");
-	var li = "<li class='nonactive_tab'>";
-	if (gsMyID){
-		li += "<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>";
-	} else {
-		li += "<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>";
-	}
-	li += "</li>";
-	$("tablist").insert({ bottom: li});
 
-	$("polltitle").insert({before: "<div id='login'></div>"});
+	$("tablist").insert({ bottom: "<li id='loginLogoutTab' class='nonactive_tab' />"});
+	function showLoginTab(){
+		$('loginLogoutTab').update("<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>");
+	}
+	function showLogoutTab(){
+		$('loginLogoutTab').update("<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>");
+	}
+
+	if (gsMyID){
+		showLogoutTab();
+	} else {
+		showLoginTab();
+	}
+
+	var gContent = $('content').innerHTML;
+	var gActiveTab = $('active_tab');
+	function showContent(){
+		$('content').update(gContent);
+		//TODO: $('active_tab')
+	}
 	function showLogin(){
 		var _l = "<table class='settingstable'><tr>";
 		_l += "<td class='label'><label for='key'>Secret Key:</label></td>";
 		_l += "<td><textarea id='key' cols='100' rows='3'></textarea></td>";
 		_l += "</tr><tr>";
 		_l += "</td><td>";
-		_l += "<td class='separator_bottom'><input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
+		_l += "<td><input type='button' value='Cancel' onClick='showContent()'/> ";
+		_l += "<input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
 		_l += "</tr><tr >";
 		_l += "</td><td>";
 		_l += "<td class='separator_top'><a href='javascript:showRegister(\"\");'>Register new Account</a></td>";
 		_l += "</tr></table>";
-		$('login').update(_l);
+		$('content').update(_l);
 	}
 
 	function showRegister(_name){
@@ -93,10 +105,10 @@ if ("localStorage" in window){
 		_r += "<td><input id='name' type='text' value='"+ _name +"' /></td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
-		_r += "<td><input type='button' value='Previous' disabled='disabled'/>";
+		_r += "<td><input type='button' value='Cancel' onClick='showLogin()'/> ";
 		_r += "<input disabled='disabled' type='button' id='next' value='Please wait while calculating a secret key ...' onclick='secondRegisterStep()'/></td>";
 		_r += "</tr></table>";
-		$('login').update(_r);
+		$('content').update(_r);
 		if (!goVoteVector.sec){
 			var seed = new SecureRandom();
 			goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed),function(){
@@ -126,11 +138,11 @@ if ("localStorage" in window){
 		_r += "</td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
-		_r += "<td><input type='button' value='Previous' onclick='showRegister(\"" + $F('name') + "\");' />";
+		_r += "<td><input type='button' value='Previous' onclick='showRegister(\"" + $F('name') + "\");' /> ";
 		_r += "<input type='button' value='Finish' onclick='register()'/></td>";
 		_r += "</tr></table>";
 		_r += "<input type='hidden' id='name' value='" + $F('name') + "' />";
-		$('login').update(_r);
+		$('content').update(_r);
 	}
 
 	function register(){
@@ -150,14 +162,15 @@ if ("localStorage" in window){
 
 	function logout(){
 		localStorage.clear();
-		location.reload();
+		showLoginTab();
 	}
 	function login(){
 		$("loginbutton").value = "Please wait while calculating the public key ...";
 		$("loginbutton").disabled = true;
 		goVoteVector.setSecKey(new BigInteger($F('key'),16),function(){
 			goVoteVector.storeKey();
-			location.reload();
+			$('content').update(gContent);
+			showLogoutTab();
 		});
 	}
 }
