@@ -36,10 +36,15 @@ var Vote = function (){
 	this.dcmod = new BigInteger("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",16);
 	this.g = new BigInteger("2");
 
-	this.setSecKey = function(_key){
+	this.setSecKey = function(_key, callafterwards){
 		this.sec = _key;
-		this.pub = this.g.modPow(this.sec,this.dhmod);
-		this.id = "0x" + SHA256_hash(this.pub.toString(16)).slice(56,64).toUpperCase();
+		window.setTimeout(function(){
+			goVoteVector.g.modPow(goVoteVector.sec,goVoteVector.dhmod,function(result){
+				goVoteVector.pub = result;
+				goVoteVector.id = "0x" + SHA256_hash(goVoteVector.pub.toString(16)).slice(56,64).toUpperCase();
+				callafterwards();
+			})
+		}, 1);
 	}
 	this.storeKey = function(){
 		localStorage.setItem("sec",goVoteVector.sec);
@@ -83,19 +88,25 @@ if ("localStorage" in window){
 	}
 
 	function showRegister(_name){
-		if (!goVoteVector.sec){
-			var seed = new SecureRandom();
-			goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed));
-		}
 		var _r = "<table class='settingstable'><tr>";
 		_r += "<td class='label'><label for='name'>Name:</label></td>";
 		_r += "<td><input id='name' type='text' value='"+ _name +"' /></td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
 		_r += "<td><input type='button' value='Previous' disabled='disabled'/>";
-		_r += "<input type='button' value='Next' onclick='secondRegisterStep()'/></td>";
+		_r += "<input disabled='disabled' type='button' id='next' value='please wait while calculating a secret key' onclick='secondRegisterStep()'/></td>";
 		_r += "</tr></table>";
 		$('login').update(_r);
+		if (!goVoteVector.sec){
+			var seed = new SecureRandom();
+			goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed),function(){
+				$('next').enable();
+				$('next').value = 'Next';
+			});
+		} else {
+				$('next').enable();
+				$('next').value = 'Next';
+		}
 	}
 	function secondRegisterStep(){
 		var _r = "<table class='settingstable'><tr>";
@@ -111,7 +122,7 @@ if ("localStorage" in window){
 		_r += "<a href=\"javascript:(function(){document.getElementById('key').value='";
 		_r += goVoteVector.sec.toString(16);
 		_r += "';})();\">";
-		_r += 'insert dudle key'+'</a>.';
+		_r += 'insert dudle key ('+ $F('name') +')</a>.';
 		_r += "</td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
@@ -142,9 +153,10 @@ if ("localStorage" in window){
 		location.reload();
 	}
 	function login(){
-		goVoteVector.setSecKey(new BigInteger($F('key'),16));
-		goVoteVector.storeKey();
-		location.reload();
+		goVoteVector.setSecKey(new BigInteger($F('key'),16),function(){
+			goVoteVector.storeKey();
+			location.reload();
+		});
 	}
 }
 
