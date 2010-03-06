@@ -78,11 +78,17 @@ if ("localStorage" in window){
 		showLoginTab();
 	}
 
+	var gActiveTabInnerHTML = $('active_tab').innerHTML
 	var gContent = $('content').innerHTML;
-	var gActiveTab = $('active_tab');
+
 	var showContent = function(){
 		$('content').update(gContent);
-		//TODO: $('active_tab')
+		$('active_tab').removeClassName("nonactive_tab");
+		$('active_tab').addClassName("active_tab");
+		$('loginLogoutTab').addClassName("nonactive_tab");
+		$('loginLogoutTab').removeClassName("active_tab");
+		showLoginTab();
+		$('active_tab').update(gActiveTabInnerHTML);
 	}
 	function showLogin(){
 		var _l = "<table class='settingstable'><tr>";
@@ -97,6 +103,14 @@ if ("localStorage" in window){
 		_l += "<td class='separator_top'><a href='javascript:showRegister(\"\");'>Register new Account</a></td>";
 		_l += "</tr></table>";
 		$('content').update(_l);
+		$('active_tab').removeClassName("active_tab");
+		$('active_tab').addClassName("nonactive_tab");
+		$('loginLogoutTab').addClassName("active_tab");
+		$('loginLogoutTab').removeClassName("nonactive_tab");
+
+		$('loginLogoutTab').update('&nbsp;Login&nbsp;');
+		$('active_tab').update('<a href="javascript:showContent()">'+ gActiveTabInnerHTML + '</a>');
+
 	}
 
 	function showRegister(_name){
