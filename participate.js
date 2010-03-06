@@ -368,6 +368,9 @@ Vote.prototype.calcNextDHKey = (function(){
 		}
 })();
 
+showContent = function(){
+	location.reload();
+}
 /*********************************************************
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *

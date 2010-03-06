@@ -80,7 +80,7 @@ if ("localStorage" in window){
 
 	var gContent = $('content').innerHTML;
 	var gActiveTab = $('active_tab');
-	function showContent(){
+	var showContent = function(){
 		$('content').update(gContent);
 		//TODO: $('active_tab')
 	}
@@ -156,7 +156,8 @@ if ("localStorage" in window){
 				alert("Failed to store key at server: " + transport.responseText);
 			},
 			onSuccess: function(transport){
-				location.reload();
+				showLogoutTab();
+				showContent();
 		}});
 	}
 
@@ -169,7 +170,7 @@ if ("localStorage" in window){
 		$("loginbutton").disabled = true;
 		goVoteVector.setSecKey(new BigInteger($F('key'),16),function(){
 			goVoteVector.storeKey();
-			$('content').update(gContent);
+			showContent();
 			showLogoutTab();
 		});
 	}

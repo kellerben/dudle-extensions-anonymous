@@ -98,3 +98,7 @@ function checkcheckbox(){
 		$("savebutton").enable();
 	}
 }
+
+showContent = function(){
+	location.reload();
+}
