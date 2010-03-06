@@ -94,7 +94,7 @@ if ("localStorage" in window){
 		_r += "</tr><tr>";
 		_r += "</td><td>";
 		_r += "<td><input type='button' value='Previous' disabled='disabled'/>";
-		_r += "<input disabled='disabled' type='button' id='next' value='please wait while calculating a secret key' onclick='secondRegisterStep()'/></td>";
+		_r += "<input disabled='disabled' type='button' id='next' value='Please wait while calculating a secret key ...' onclick='secondRegisterStep()'/></td>";
 		_r += "</tr></table>";
 		$('login').update(_r);
 		if (!goVoteVector.sec){
@@ -153,6 +153,8 @@ if ("localStorage" in window){
 		location.reload();
 	}
 	function login(){
+		$("loginbutton").value = "Please wait while calculating the public key ...";
+		$("loginbutton").disabled = true;
 		goVoteVector.setSecKey(new BigInteger($F('key'),16),function(){
 			goVoteVector.storeKey();
 			location.reload();
