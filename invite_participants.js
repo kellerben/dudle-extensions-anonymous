@@ -67,7 +67,7 @@ function addParticipant(){
 	if ($F("add_participant_check_privacy_enhanced")){
 		new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
-			onSuccess: function(){location.reload();}
+			onSuccess: function(){location.assign(location.href);}
 		});
 	} else {
 		$("invite_participants_form").submit();
@@ -100,5 +100,5 @@ function checkcheckbox(){
 }
 
 showContent = function(){
-	location.reload();
+	location.assign(location.href);
 }

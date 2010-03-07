@@ -286,7 +286,7 @@ Vote.prototype.save = function (){
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		parameters: {service: 'setTotalVote', pollID: gsPollID, gpgID: gsMyID, vote: Object.toJSON(_voteobj), signature: 'TODO'},
 		onSuccess: function(transport){
-			location.reload();
+			location.assign(location.href);
 	}});
 }
 
@@ -369,7 +369,7 @@ Vote.prototype.calcNextDHKey = (function(){
 })();
 
 showContent = function(){
-	location.reload();
+	location.assign(location.href);
 }
 /*********************************************************
  * fetch columns and participants                        *
