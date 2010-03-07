@@ -88,7 +88,7 @@ class Poll
 		$dc["participants"] ||= []
 		$dc["participants"] << $c["gpgID"]
 		$dc["participants"].uniq!
-		store_dc($dc)
+		store_dc($dc,"Anonymous Participant Invited.")
 	end
 
 	def Poll.webservicedescription_0Initialization_getDuration
@@ -164,7 +164,7 @@ FOO
 		$dc[gpgID]["usedKeys"] = usedKeys
 
 		$header["status"] = "202 Accepted"
-		store_dc($dc)
+		store_dc($dc, "Participant " + gpgID + " voted anonymously.")
 	end
 	def Poll.webservicedescription_1VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403"',
@@ -198,7 +198,7 @@ FOO
 		$dc[gpgID]["usedKeys"] = usedKeys
 
 		$header["status"] = "202 Accepted"
-		store_dc($dc)
+		store_dc($dc, "Method setVote is deprecated!")
 	end
 	
 	def Poll.webservicedescription_1VoteCasting_setVoteSignature
@@ -210,7 +210,7 @@ FOO
 		# TODO return 403 if getState == "voted" && getState fertig implementiert
 		$dc[$c["gpgID"]]["signature"] = $c["signature"]
 		$header["status"] = "202 Accepted"
-		store_dc($dc)
+		store_dc($dc, "Method setVoteSignature is deprecated!")
 	end
 
 	def Poll.webservicedescription_1VoteCasting_getState
@@ -331,12 +331,14 @@ FOO
 #	def webservicedescription_getKickOutSignature
 #	end
 
-	def store_dc(data)
-		File.open("dc_data.yaml","w"){|f|
-			f << data.to_yaml
-		}
-		"Sucessfully Stored"
-	end
+end
+
+def store_dc(data,comment)
+	File.open("dc_data.yaml","w"){|f|
+		f << data.to_yaml
+	}
+	VCS.commit(comment)
+	"Sucessfully Stored"
 end
 
 
@@ -369,6 +371,9 @@ if all.include?($c["service"])
 			$dc = YAML::load_file("dc_data.yaml")
 		else
 			$dc = {}
+			File.open("dc_data.yaml","w").close
+			VCS.add("dc_data.yaml")
+			store_dc($dc,"Initialized for anonymous Voting.")
 		end
 
 		$c.out($header){
