@@ -18,7 +18,7 @@
 ############################################################################
 
 def logintab(basedir)
-	$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po' />")
+	$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po' />")
 	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/Gettext.js")
 	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/prototype.js")
 	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/jsbn.js")
