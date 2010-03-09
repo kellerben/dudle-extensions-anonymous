@@ -64,7 +64,7 @@ msgstr "Name:"
 
 #: login_register.js:123
 msgid "Please wait while calculating a secret key ..."
-msgstr "Bitte warten sie, ein geheimer Schlüssel wird berechnet ..."
+msgstr "Bitte warten Sie, ein geheimer Schlüssel wird berechnet ..."
 
 #: login_register.js:130 login_register.js:134
 msgid "Next"
@@ -75,15 +75,15 @@ msgid ""
 "Please store the secret key somewhere at your computer (e.&thinsp;g., by "
 "copying it to a textfile)."
 msgstr ""
-"Bitte speichern sie den geheimen Schlüssel in ihrem Computer (z.&thinsp;b. "
-"indem sie ihn in eine Textdatei kopieren)."
+"Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;b. "
+"indem Sie ihn in eine Textdatei kopieren)."
 
 #: login_register.js:147
 msgid ""
 "Alternatively, you may bookmark this link, which inserts the key into the "
 "login field:"
 msgstr ""
-"Alternativ können sie ein Lesezeichen dieses Links erstellen, welcher den "
+"Alternativ können Sie ein Lesezeichen dieses Links erstellen, welcher den "
 "Schlüssel in das Loginfeld kopiert:"
 
 #: login_register.js:151
@@ -104,7 +104,7 @@ msgstr "Konnte Schlüssel nicht am server registrieren:"
 
 #: login_register.js:183
 msgid "Please wait while calculating the public key ..."
-msgstr "Bitte warten sie, der öffentliche Schlüssel wird berechnet ..."
+msgstr "Bitte warten Sie, der öffentliche Schlüssel wird berechnet ..."
 
 #: participate.js:62
 msgid "Fetching Name for %1 ..."
