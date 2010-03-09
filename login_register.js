@@ -66,10 +66,10 @@ if ("localStorage" in window){
 
 	$("tablist").insert({ bottom: "<li id='loginLogoutTab' class='nonactive_tab' />"});
 	function showLoginTab(){
-		$('loginLogoutTab').update("<a href='javascript:showLogin();'>&nbsp;Login&nbsp;</a>");
+		$('loginLogoutTab').update("<a href='javascript:showLogin();'>&nbsp;" + gt.gettext("Login") + "&nbsp;</a>");
 	}
 	function showLogoutTab(){
-		$('loginLogoutTab').update("<a href='javascript:logout();'>&nbsp;Logout&nbsp;</a>");
+		$('loginLogoutTab').update("<a href='javascript:logout();'>&nbsp;" + gt.gettext("Logout") + "&nbsp;</a>");
 	}
 
 	if (gsMyID){
@@ -92,15 +92,15 @@ if ("localStorage" in window){
 	}
 	function showLogin(){
 		var _l = "<table class='settingstable'><tr>";
-		_l += "<td class='label'><label for='key'>Secret Key:</label></td>";
+		_l += "<td class='label'><label for='key'>" + gt.gettext("Secret Key:")+"</label></td>";
 		_l += "<td><textarea id='key' cols='100' rows='3'></textarea></td>";
 		_l += "</tr><tr>";
 		_l += "</td><td>";
-		_l += "<td><input type='button' value='Cancel' onClick='showContent()'/> ";
-		_l += "<input type='button' value='Login' onclick='login()' id='loginbutton' /></td>";
+		_l += "<td><input type='button' value='" + gt.gettext("Cancel")+"' onClick='showContent()'/> ";
+		_l += "<input type='button' value='" + gt.gettext("Login")+"' onclick='login()' id='loginbutton' /></td>";
 		_l += "</tr><tr >";
 		_l += "</td><td>";
-		_l += "<td class='separator_top'><a href='javascript:showRegister(\"\");'>Register new Account</a></td>";
+		_l += "<td class='separator_top'><a href='javascript:showRegister(\"\");'>"+gt.gettext("Register new Account")+"</a></td>";
 		_l += "</tr></table>";
 		$('content').update(_l);
 		$('active_tab').removeClassName("active_tab");
@@ -108,52 +108,52 @@ if ("localStorage" in window){
 		$('loginLogoutTab').addClassName("active_tab");
 		$('loginLogoutTab').removeClassName("nonactive_tab");
 
-		$('loginLogoutTab').update('&nbsp;Login&nbsp;');
+		$('loginLogoutTab').update('&nbsp;' + gt.gettext("Login") + '&nbsp;');
 		$('active_tab').update('<a href="javascript:showContent()">'+ gActiveTabInnerHTML + '</a>');
 
 	}
 
 	function showRegister(_name){
 		var _r = "<table class='settingstable'><tr>";
-		_r += "<td class='label'><label for='name'>Name:</label></td>";
+		_r += "<td class='label'><label for='name'>" + gt.gettext("Name:") + "</label></td>";
 		_r += "<td><input id='name' type='text' value='"+ _name +"' /></td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
-		_r += "<td><input type='button' value='Cancel' onClick='showLogin()'/> ";
-		_r += "<input disabled='disabled' type='button' id='next' value='Please wait while calculating a secret key ...' onclick='secondRegisterStep()'/></td>";
+		_r += "<td><input type='button' value='" + gt.gettext("Cancel")+"' onClick='showLogin()'/> ";
+		_r += "<input disabled='disabled' type='button' id='next' value='"+ gt.gettext("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
 		_r += "</tr></table>";
 		$('content').update(_r);
 		if (!goVoteVector.sec){
 			var seed = new SecureRandom();
 			goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed),function(){
 				$('next').enable();
-				$('next').value = 'Next';
+				$('next').value = gt.gettext('Next');
 			});
 		} else {
 				$('next').enable();
-				$('next').value = 'Next';
+				$('next').value = gt.gettext('Next');
 		}
 	}
 	function secondRegisterStep(){
 		var _r = "<table class='settingstable'><tr>";
 		_r += "</td><td>";
-		_r += "<td>Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).</td>";
+		_r += "<td>" + gt.gettext("Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).") + "</td>";
 		_r += "</tr><tr>";
-		_r += "<td class='label'><label for='key'>Secret Key:</label></td>";
+		_r += "<td class='label'><label for='key'>" + gt.gettext("Secret Key:") + "</label></td>";
 		_r += "<td><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
 		_r += goVoteVector.sec.toString(16) + "</textarea></td>";
 		_r += "</tr><tr>";
 		_r += "<td></td>";
-		_r += "<td>Alternatively, you may bookmark this link, which inserts the key into the login field: ";
-		_r += "<a href=\"javascript:(function(){document.getElementById('key').value='";
+		_r += "<td>" + gt.gettext("Alternatively, you may bookmark this link, which inserts the key into the login field:");
+		_r += " <a href=\"javascript:(function(){document.getElementById('key').value='";
 		_r += goVoteVector.sec.toString(16);
 		_r += "';})();\">";
-		_r += 'insert dudle key ('+ $F('name') +')</a>.';
+		_r += Gettext.strargs(gt.gettext('insert dudle key (%1)'),[$F('name')]) + '</a>.';
 		_r += "</td>";
 		_r += "</tr><tr>";
 		_r += "</td><td>";
-		_r += "<td><input type='button' value='Previous' onclick='showRegister(\"" + $F('name') + "\");' /> ";
-		_r += "<input type='button' value='Finish' onclick='register()'/></td>";
+		_r += "<td><input type='button' value='" + gt.gettext("Previous")+"' onclick='showRegister(\"" + $F('name') + "\");' /> ";
+		_r += "<input type='button' value='" + gt.gettext("Finish")+"' onclick='register()'/></td>";
 		_r += "</tr></table>";
 		_r += "<input type='hidden' id='name' value='" + $F('name') + "' />";
 		$('content').update(_r);
@@ -167,7 +167,7 @@ if ("localStorage" in window){
 		new Ajax.Request(gsExtensiondir + "keyserver.cgi",{
 			parameters: {service: 'setKey', gpgKey: _pubkey},
 			onFailure: function(transport){
-				alert("Failed to store key at server: " + transport.responseText);
+				alert(gt.gettext("Failed to store key, the server said:") + " " + transport.responseText);
 			},
 			onSuccess: function(transport){
 				showLogoutTab();
@@ -180,7 +180,7 @@ if ("localStorage" in window){
 		showLoginTab();
 	}
 	function login(){
-		$("loginbutton").value = "Please wait while calculating the public key ...";
+		$("loginbutton").value = gt.gettext("Please wait while calculating the public key ...");
 		$("loginbutton").disabled = true;
 		goVoteVector.setSecKey(new BigInteger($F('key'),16),function(){
 			goVoteVector.storeKey();

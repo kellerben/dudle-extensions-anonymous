@@ -20,19 +20,19 @@
 new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
 	method: "get",
 	parameters: { service: 'getParticipants', pollID: gsPollID},
-	onFailure: function(){ alert('Failed to fetch participant list.') },
+	onFailure: function(){ alert(gt.gettext('Failed to fetch participant list.')) },
 	onSuccess: function(transport){
 		// Add existing participants
 
 		$("participanttable").select("th").each(function(th){
-			th.insert({after:"<th>Privacy Enhanced</th>"});
+			th.insert({after:"<th>" + gt.gettext("Privacy Enhanced") + "</th>"});
 		});
 
 		var participants = transport.responseText.split("\n");
 		if (participants.length > 0 && participants[0] != ""){
 			var privparticipantrows = "";
 			participants.each(function(participant){
-				privparticipantrows += "<tr class='participantrow'><td title='" + participant + "' id='" + participant + "'>fetching user name for "+ participant +" ...</td>";
+				privparticipantrows += "<tr class='participantrow'><td title='" + participant + "' id='" + participant + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."),[participant]) + "</td>";
 				privparticipantrows += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>"
 				privparticipantrows += "</tr>";
 			});
@@ -80,18 +80,18 @@ function checkcheckbox(){
 	$("registerederror").update("");
 	if ($F("add_participant_check_privacy_enhanced")){
 		$("savebutton").disable();
-		$("savebutton").value = "Checking username";
+		$("savebutton").value = gt.gettext("Checking Username");
 		new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			method:"get",
 			parameters: { service: 'searchId', name: $F("add_participant_input")},
 			onSuccess: function(transport){
 				gsKeyId = transport.responseText;
 				$("savebutton").enable();
-				$("savebutton").value = "Invite";
+				$("savebutton").value = gt.gettext("Invite");
 			},
 			onFailure: function(transport){
-				$("savebutton").value = "Invite";
-				$("registerederror").update("<td colspan='3' class='warning'>Only registered users can participate privacy-enhanced.</td>");
+				$("savebutton").value = gt.gettext("Invite");
+				$("registerederror").update("<td colspan='3' class='warning'>" + gt.gettext("Only registered users can participate privacy-enhanced.") + "</td>");
 			}
 		});
 	} else {

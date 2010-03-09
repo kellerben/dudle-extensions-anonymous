@@ -1,0 +1,163 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-09 12:06+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: common.js:27
+msgid "Failed to fetch name for %1."
+msgstr "Konnte Namen von %1 nicht holen."
+
+#: invite_participants.js:23 participate.js:387
+msgid "Failed to fetch participant list."
+msgstr "Konnte die Liste der Teilnehmer nicht laden."
+
+#: invite_participants.js:28
+msgid "Privacy Enhanced"
+msgstr "Datenschutzfreundlich"
+
+#: invite_participants.js:35
+msgid "fetching user name for %1 ..."
+msgstr "hole Benutzername für %1 ..."
+
+#: invite_participants.js:83
+msgid "Checking Username"
+msgstr "Überprüfe Benutzername"
+
+#: invite_participants.js:90 invite_participants.js:93
+msgid "Invite"
+msgstr "Einladen"
+
+#: invite_participants.js:94
+msgid "Only registered users can participate privacy-enhanced."
+msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
+
+#: login_register.js:69 login_register.js:100 login_register.js:111
+msgid "Login"
+msgstr "Login"
+
+#: login_register.js:72
+msgid "Logout"
+msgstr "Logout"
+
+#: login_register.js:95 login_register.js:142
+msgid "Secret Key:"
+msgstr "Geheimer Schlüssel:"
+
+#: login_register.js:99 login_register.js:122
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: login_register.js:103
+msgid "Register new Account"
+msgstr "Neuen Account anlegen"
+
+#: login_register.js:118
+msgid "Name:"
+msgstr "Name:"
+
+#: login_register.js:123
+msgid "Please wait while calculating a secret key ..."
+msgstr "Bitte warten sie, ein geheimer Schlüssel wird berechnet ..."
+
+#: login_register.js:130 login_register.js:134
+msgid "Next"
+msgstr "Weiter"
+
+#: login_register.js:140
+msgid ""
+"Please store the secret key somewhere at your computer (e.&thinsp;g., by "
+"copying it to a textfile)."
+msgstr ""
+"Bitte speichern sie den geheimen Schlüssel in ihrem Computer (z.&thinsp;b. "
+"indem sie ihn in eine Textdatei kopieren)."
+
+#: login_register.js:147
+msgid ""
+"Alternatively, you may bookmark this link, which inserts the key into the "
+"login field:"
+msgstr ""
+"Alternativ können sie ein Lesezeichen dieses Links erstellen, welcher den "
+"Schlüssel in das Loginfeld kopiert:"
+
+#: login_register.js:151
+msgid "insert dudle key (%1)"
+msgstr "dudle Schlüssel einfügen (%1)"
+
+#: login_register.js:155
+msgid "Previous"
+msgstr "Zurück"
+
+#: login_register.js:156
+msgid "Finish"
+msgstr "Fertig"
+
+#: login_register.js:170
+msgid "Failed to store key, the server said:"
+msgstr "Konnte Schlüssel nicht am server registrieren:"
+
+#: login_register.js:183
+msgid "Please wait while calculating the public key ..."
+msgstr "Bitte warten sie, der öffentliche Schlüssel wird berechnet ..."
+
+#: participate.js:62
+msgid "Fetching Name for %1 ..."
+msgstr "Hole status für %1 ..."
+
+#: participate.js:63
+msgid "Fetching status ..."
+msgstr "Hole status ..."
+
+#: participate.js:74
+msgid "Failed to fetch status."
+msgstr "Konnte Status nicht holen."
+
+#: participate.js:78
+msgid "Has voted anonymously."
+msgstr "Hat anonym abgestimmt."
+
+#: participate.js:82
+msgid "Has not voted yet."
+msgstr "Hat noch nicht abgestimmt."
+
+#: participate.js:86
+msgid "Is to be removed."
+msgstr "Soll entfernt werden."
+
+#: participate.js:90
+msgid "Is removed."
+msgstr "Wurde entfernt."
+
+#: participate.js:110
+msgid "Calculating keys ..."
+msgstr "Berechne Schlüssel ..."
+
+#: participate.js:156
+msgid "decrease"
+msgstr "erniedrigen"
+
+#: participate.js:156
+msgid "increase"
+msgstr "erhöhen"
+
+#: participate.js:157
+msgid "Somebody tried to %1 column %2 by %3!!!"
+msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
+
+#: participate.js:168
+msgid "Somebody sent inconsistent values at column %1!!!"
+msgstr "Jemand hat inkonsistente Werte für Spalte %1 gesendet!!!"
+
+#: participate.js:218
+msgid "Save"
+msgstr "Speichern"
+
+#: participate.js:242
+msgid "Something went wrong! The server said:"
+msgstr "Serverfehler:"

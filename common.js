@@ -24,6 +24,8 @@ function updateName(gpgID){
 	new Ajax.Updater(gpgID,gsExtensiondir + 'keyserver.cgi',{
 		parameters: { service: "getName", gpgID: gpgID },
 		method:'get',
-		onFailure: function(){$(gpgID).update("Failed to fetch name for " + gpgID)}
+		onFailure: function(){$(gpgID).update(Gettext.strargs(gt.gettext("Failed to fetch name for %1."),[gpgID]))}
 	});
 }
+
+var gt = new Gettext({ 'domain' : 'dudle_dc-net' });

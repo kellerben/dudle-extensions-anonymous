@@ -59,8 +59,8 @@ function showParticipants(){
 	var row = "";
 	gaParticipants.each(function(participant){
 		row += "<tr class='participantrow' id='participant_" + participant + "'>";
-		row += "<td class='name' title='" + participant + "' id='" + participant + "'>Fetching Name for " + participant + "...</td>";
-		row += "<td class='undecided' colspan='" + gaColumns.length + "' id='status_"+participant+"'>Fetching status...</td>";
+		row += "<td class='name' title='" + participant + "' id='" + participant + "'>" + Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant]) + "</td>";
+		row += "<td class='undecided' colspan='" + gaColumns.length + "' id='status_"+participant+"'>" + gt.gettext("Fetching status ...")+"</td>";
 		row += "<td class='invisible'></td></tr>";
 	});
 	$("separator_top").insert({ before: row });
@@ -71,23 +71,23 @@ function showParticipants(){
 		updateName(participant);
 		getState(participant, function(stat){
 				var classname = "undecided";
-				var statustext = "Failed to fetch Status";
+				var statustext = gt.gettext("Failed to fetch status.");
 				switch (stat){
 					case "voted":
 						classname = 'ayes';
-						statustext = 'Has voted anonymously.';
+						statustext = gt.gettext('Has voted anonymously.');
 						break;
 					case 'notVoted':
 						classname = 'cno';
-						statustext = 'Has not voted yet.';
+						statustext = gt.gettext('Has not voted yet.');
 						break;
 					case 'flying':
 						classname = 'bmaybe';
-						statustext = 'Is to be removed.';
+						statustext = gt.gettext('Is to be removed.');
 						break;
 					case 'kickedOut':
 						classname = 'ayes';
-						statustext = 'Is removed.';
+						statustext = gt.gettext('Is removed.');
 						break;
 				}
 				row = $("status_" + participant);
@@ -107,7 +107,7 @@ function showParticipationRow(){
 		participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
 		participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
 	});
-	participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='Calculating keys ...' disabled='disabled'></td>";
+	participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>";
 
 
 	$("add_participant").remove();
@@ -153,8 +153,8 @@ function calcResult(){
 
 						var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
 						if (result.compareTo(BigInteger.ZERO) < 0){
-							var _attack = _inverted == 0 ? "decrease" : "increase";
-							$('comments').insert({before: "<div class='warning'>Somebody tried to "+_attack+" column "+_col+" by "+result.abs()+"!!!</div>"});
+							var _attack = _inverted == 0 ? gt.gettext("decrease") : gt.gettext("increase");
+							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody tried to %1 column %2 by %3!!!"), [_attack,_col,result.abs()])+"</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
 						}
@@ -165,7 +165,7 @@ function calcResult(){
 						sumelement.update(totalsum);
 					} else {
 						if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) != 0) {
-							$('comments').insert({before: "<div class='warning'>Somebody sent inconsistent values at column "+_col+"!!!</div>"});
+							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody sent inconsistent values at column %1!!!"),[_col]) + "</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
 						}
@@ -215,7 +215,7 @@ function hash(block){
 
 function showSaveButton(){
 	var v = $("votebutton");
-	v.value="Save";
+	v.value=gt.gettext("Save");
 	v.enable();
 }
 
@@ -239,7 +239,7 @@ function fetchKey(id){
 		}
 		return participant;
 	} else {
-		return 'Something went wrong! The server said: ' + req.responseText;
+		return gt.gettext('Something went wrong! The server said:') + " " + req.responseText;
 	}
 }
 
@@ -384,7 +384,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
 			parameters: {service: 'getParticipants', pollID: gsPollID},
 			method: "get",
-			onFailure: function(){ alert('Failed to fetch participant list.') },
+			onFailure: function(){ alert(gt.gettext('Failed to fetch participant list.')) },
 			onSuccess: function(transport){
 				gaParticipants = transport.responseText.split("\n");
 				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
