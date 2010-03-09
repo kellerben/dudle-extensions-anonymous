@@ -17,22 +17,24 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-default: locale/de/dudle_dc-net.mo
+DOMAIN=dudle_dc-net
 
-locale/dudle_dc-net.pot: *.js
+default: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
+
+locale/$(DOMAIN).pot: *.js
 	rm -f locale/dudle_dc-net.pot
 	xgettext -L Python *.js -o $@
 
 %.mo: %.po
 	rmsgfmt $*.po -o $*.mo
 
-locale/%/dudle_dc-net.po: locale/dudle_dc-net.pot
-	msgmerge locale/$*/dudle_dc-net.po locale/dudle_dc-net.pot >/tmp/dudle_dc-net_$*_tmp.po
-	if [ "`msgcomm -u /tmp/dudle_dc-net_$*_tmp.po locale/$*/dudle_dc-net.po`" ];then\
-		mv /tmp/dudle_dc-net_$*_tmp.po locale/$*/dudle_dc-net.po;\
+locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
+	msgmerge locale/$*/$(DOMAIN).po locale/$(DOMAIN).pot >/tmp/$(DOMAIN)_$*_tmp.po
+	if [ "`msgcomm -u /tmp/$(DOMAIN)_$*_tmp.po locale/$*/$(DOMAIN).po`" ];then\
+		mv /tmp/$(DOMAIN)_$*_tmp.po locale/$*/$(DOMAIN).po;\
 	else\
-		touch locale/$*/dudle_dc-net.po;\
+		touch locale/$*/$(DOMAIN).po;\
 	fi
-	if [ "`postats -f locale/$*/dudle_dc-net.po|tail -n1 |cut -d"(" -f3|cut -d")" -f1`" = "100%\n" ];\
-		then poedit locale/$*/dudle_dc-net.po;\
+	if [ "`postats -f locale/$*/$(DOMAIN).po|tail -n1 |cut -d"(" -f3|cut -d")" -f1`" = "100%\n" ];\
+		then poedit locale/$*/$(DOMAIN).po;\
 	fi
