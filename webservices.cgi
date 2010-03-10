@@ -57,6 +57,7 @@ class Poll
 	end
 	def webservice_getTimeStamps
 		# FIXME, when it should work for seconds or pollhead
+		# FIXME stripout time-strings
 		@head.columns.collect{|t| "#{t}:00+01:00" }.join("\n")
 	end
 	
@@ -133,24 +134,46 @@ vote_{t_T,j_I,i}<br />
 
 FOO
 	def Poll.webservicedescription_1VoteCasting_setTotalVote
-		{ "return" => '"HTTP202" OR "HTTP403"',
+		{ "return" => '"HTTP202" OR "HTTP403" OR "HTTP400"',
 			"input" => ["gpgID", "vote", "signature"],
 			"vote" => VOTEDESCR
 		}
 	end
 	def webservice_setTotalVote
 		gpgID = $c["gpgID"]
-		$dc[gpgID] ||= {}
 
-		JSON.parse($c["vote"]).each{|col,votearray|
-			$dc[gpgID][col] ||= []
-			votearray.each_with_index{|norm_inv,tableindex|
-				$dc[gpgID][col][tableindex] ||= []
-				norm_inv.each_with_index{|vote,inverted|
-					$dc[gpgID][col][tableindex][inverted] = vote.to_i(16)
+		unless $dc["participants"].include?(gpgID)
+			$header["status"] = "403 Forbidden"
+			return "You are not allowed to vote."
+		end
+		unless true #FIXME: check signature
+			$header["status"] = "403 Forbidden"
+			return "The signature is wrong."
+		end
+
+		$dc[gpgID] ||= {}
+		
+		begin
+			h = JSON.parse($c["vote"])
+		rescue => e
+			$header["status"] = "400 Bad Request"
+			return "invalid json format: #{e}"
+		end
+
+		begin
+			h.each{|col,votearray|
+				$dc[gpgID][col] ||= []
+				votearray.each_with_index{|norm_inv,tableindex|
+					$dc[gpgID][col][tableindex] ||= []
+					norm_inv.each_with_index{|vote,inverted|
+						$dc[gpgID][col][tableindex][inverted] = vote.to_i(16)
+					}
 				}
 			}
-		}
+		rescue => e
+			$header["status"] = "400 Bad Request"
+			return "vote has invalid structure: #{e}"
+		end
 
 		participants = {"voted" => [], "notVoted" => []}
 		($dc["participants"] - [gpgID]).each{|p|
