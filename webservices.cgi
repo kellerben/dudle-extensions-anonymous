@@ -57,8 +57,14 @@ class Poll
 	end
 	def webservice_getTimeStamps
 		# FIXME, when it should work for seconds or pollhead
-		# FIXME stripout time-strings
-		@head.columns.collect{|t| "#{t}:00+01:00" }.join("\n")
+		# FIXME time-strings are stripped out
+		@head.columns.collect{|t|
+			if t =~ /^\d\d\d\d-\d\d-\d\d \d\d:\d\d$/
+				"#{t}:00+01:00" 
+			else
+				nil
+			end
+		}.compact.join("\n")
 	end
 	
 	def Poll.webservicedescription_0Initialization_getColumns
