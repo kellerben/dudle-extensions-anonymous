@@ -147,17 +147,22 @@ FOO
 	end
 	def webservice_setTotalVote
 		gpgID = $c["gpgID"]
+		signature = $c["signature"]
 
 		unless $dc["participants"].include?(gpgID)
 			$header["status"] = "403 Forbidden"
 			return "You are not allowed to vote."
 		end
+		
+
 		unless true #FIXME: check signature
 			$header["status"] = "403 Forbidden"
 			return "The signature is wrong."
+		else
+			$dc[gpgID] ||= {}
+			$dc[$c["gpgID"]]["signature"] = signature
 		end
 
-		$dc[gpgID] ||= {}
 		
 		begin
 			h = JSON.parse($c["vote"])
