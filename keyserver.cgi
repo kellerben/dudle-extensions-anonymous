@@ -19,6 +19,8 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+$:.push("../../")
+require "git.rb"
 require "digest/sha2"
 
 class Keyserver
@@ -43,7 +45,7 @@ class Keyserver
 			end
 		end
 		$u[id] = $cgi["gpgKey"]
-		store($u)
+		store("Public Key of #{id} added.")
 		$header["status"] = "202 Accepted"
 		"Key with #{id} sucessfully stored"
 	end
@@ -129,10 +131,13 @@ class Keyserver
 		}
 		return "<ul><li>#{ret.join('</li><li>')}</li></ul>".gsub("<li></li>","")
 	end
-	def store(data)
-		File.open("keyserverdata.yaml","w"){|f|
-			f << data.to_yaml
+	def store(comment)
+		Dir.chdir("keyserverdata")
+		File.open("data.yaml","w"){|f|
+			f << $u.to_yaml
 		}
+		VCS.commit(comment)
+		Dir.chdir("..")
 	end
 end
 
@@ -159,10 +164,19 @@ Keyserver.methods.collect{|m|
 
 if all.include?($cgi["service"])
 	k = Keyserver.new
-	if File.exist?("keyserverdata.yaml")
-		$u = YAML::load_file("keyserverdata.yaml")
+	if File.exist?("keyserverdata/data.yaml")
+		$u = YAML::load_file("keyserverdata/data.yaml")
 	else
+		Dir.mkdir("keyserverdata")
+		Dir.chdir("keyserverdata")
+		VCS.init
 		$u = {}
+		File.open("data.yaml","w"){|f|
+			f << $u.to_yaml
+		}
+		VCS.add("data.yaml")
+		VCS.commit("init keyserver")
+		Dir.chdir("..")
 	end
 	$header["type"] = "text/plain"
 	$out = k.send("webservice_#{$cgi["service"]}")
