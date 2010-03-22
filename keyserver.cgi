@@ -45,7 +45,7 @@ class Keyserver
 			end
 		end
 		$u[id] = $cgi["gpgKey"]
-		store("Public Key of #{id} added.")
+		store("Public Key #{id} added.")
 		$header["status"] = "202 Accepted"
 		"Key with #{id} sucessfully stored"
 	end
