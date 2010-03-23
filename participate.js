@@ -94,20 +94,19 @@ function calcResult(){
 		method: "get",
 		parameters: { service: "getVote", pollID: gsPollID },
 		onSuccess: function(_transport){
-			_totalVote = _transport.responseText.evalJSON();
+			var _totalVoteSeveralCols = _transport.responseText.evalJSON();
+			var _totalVote = new Object();
 
 			var _resultMatrix = new Array();
 			var _colResults = new Array();
-/*			$H(_totalVote).each(function(_participant){
-				$H(_participant.value[0]["vote"]).each(function(_vote){
-					for (var _inverted = 0; _inverted < 2; _inverted++){
-						_resultMatrix[_inverted] = new Object();
-						_colResults[_inverted] = new Object();
-					alert(_vote.value.inspect());
-					}
+			$H(_totalVoteSeveralCols).each(function(_participant){
+				_totalVote[_participant.key] = new Object();
+				$A(_participant.value).each(function(_vote){
+					$H(_vote["vote"]).each(function(_colvote){
+						_totalVote[_participant.key][_colvote.key] = _colvote.value;
+					});
 				});
 			});
-*/
 
 			for (var _inverted = 0; _inverted < 2; _inverted++){
 				_resultMatrix[_inverted] = new Object();
@@ -125,7 +124,7 @@ function calcResult(){
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
 						$H(goParticipants).keys().each(function(_gpgID){
-							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][0]["vote"][_col][_table][_inverted],16)).mod(goVoteVector.dcmod);
+							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted],16)).mod(goVoteVector.dcmod);
 						});
 
 						var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
