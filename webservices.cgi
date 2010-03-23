@@ -251,7 +251,7 @@ FOO
 		}
 	end
 	def getUsedKeys(gpgID)
-		$dc[gpgID]["usedKeys"].to_a
+		$dc[gpgID][0]["usedKeys"].to_a
 	end
 	def webservice_getUsedKeys
 		getUsedKeys($c["gpgID"]).join("\n")
