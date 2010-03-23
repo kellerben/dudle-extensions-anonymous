@@ -28,18 +28,10 @@ function htmlid(s){
 	return s.gsub(/[^A-Z^a-z^0-9^\-^_^:^\.]/,".");
 }
 
-/***************************************
- * fetches status of _sGpgID and calls *
- * _successFunction with it            *
- ***************************************/
-function getState(_sGpgID, _successFunction){
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
-		parameters: {service: 'getState', pollID: gsPollID, gpgID: _sGpgID},
-		method: 'get',
-		onSuccess: function(_t){_successFunction(_t.responseText)}
-	});
-}
-/* similar to getState */
+/****************************************
+ * fetches status of gsPollID and calls *
+ * _successFunction with it             *
+ ****************************************/
 function getPollState(_successFunction){
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
 		parameters: {service: 'getPollState', pollID: gsPollID},
@@ -56,66 +48,41 @@ function togglecheckbutton(id){
  * insert HTML code, which shows the participants *
  **************************************************/
 function showParticipants(){
-	var row = "";
-	gaParticipants.each(function(participant){
-		row += "<tr class='participantrow' id='participant_" + participant + "'>";
-		row += "<td class='name' title='" + participant + "' id='" + participant + "'>" + Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant]) + "</td>";
-		row += "<td class='undecided' colspan='" + gaColumns.length + "' id='status_"+participant+"'>" + gt.gettext("Fetching status ...")+"</td>";
-		row += "<td class='invisible'></td></tr>";
+	$H(goParticipants).each(function(participant){
+		var row = "<tr class='participantrow' id='participant_" + participant.key + "'>";
+		row += "<td class='name' title='" + participant.key + "' id='" + participant.key + "'>" + Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant.key]) + "</td>";
+		$H(participant.value).keys().sort().each(function(column){
+			var classname;
+			var statustitle;
+			var statustext;
+			switch (participant.value[column]){
+				case "voted":
+					classname = 'voted';
+					statustitle = gt.gettext('Has voted anonymously.');
+					statustext = gsVoted;
+					break;
+				case 'notVoted':
+					classname = 'undecided';
+					statustitle = gt.gettext('Has not voted yet.');
+					statustext = gsUnknown;
+					break;
+				case 'flying':
+					classname = 'bmaybe';
+					statustitle = gt.gettext('Is to be removed.');
+					statustext = gsFlying;
+					break;
+				case 'kickedOut':
+					classname = 'undecided';
+					statustitle = gt.gettext('Is removed.');
+					statustext = gsKickedOut;
+					break;
+			}
+			row += "<td class='"+classname+"' id='" + htmlid(column+"."+participant.key) +"' title='"+statustitle+"'>"+ statustext+"</td>";
+		});
+		row += "<td class='invisible'id='" + htmlid("last.edit."+participant.key) +"'></td></tr>";
+		$("separator_top").insert({ before: row });
+		updateName(participant.key);
 	});
-	$("separator_top").insert({ before: row });
-
-
-	// give everything humanreadable names
-	gaParticipants.each(function(participant){
-		updateName(participant);
-		getState(participant, function(stat){
-				var classname = "undecided";
-				var statustext = gt.gettext("Failed to fetch status.");
-				switch (stat){
-					case "voted":
-						classname = 'ayes';
-						statustext = gt.gettext('Has voted anonymously.');
-						break;
-					case 'notVoted':
-						classname = 'cno';
-						statustext = gt.gettext('Has not voted yet.');
-						break;
-					case 'flying':
-						classname = 'bmaybe';
-						statustext = gt.gettext('Is to be removed.');
-						break;
-					case 'kickedOut':
-						classname = 'ayes';
-						statustext = gt.gettext('Is removed.');
-						break;
-				}
-				row = $("status_" + participant);
-				row.update(statustext);
-				row.removeClassName("undecided");
-				row.addClassName(classname);
-			})
-	});
-}
-
-/*********************************************************
- * insert HTML code, which shows the row with checkboxes *
- *********************************************************/
-function showParticipationRow(){
-	participaterow = "";
-	gaColumns.each(function(col){
-		participaterow += "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
-		participaterow += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
-	});
-	participaterow += "<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>";
-
-
-	$("add_participant").remove();
-	statusnode = 	$("status_" + gsMyID);
-	statusnode.insert({ before: participaterow});
-	statusnode.remove();
-	$("separator_top").remove();
-	$("separator_bottom").remove();
 }
 
 /*******************************************************************
@@ -131,6 +98,16 @@ function calcResult(){
 
 			var _resultMatrix = new Array();
 			var _colResults = new Array();
+/*			$H(_totalVote).each(function(_participant){
+				$H(_participant.value[0]["vote"]).each(function(_vote){
+					for (var _inverted = 0; _inverted < 2; _inverted++){
+						_resultMatrix[_inverted] = new Object();
+						_colResults[_inverted] = new Object();
+					alert(_vote.value.inspect());
+					}
+				});
+			});
+*/
 
 			for (var _inverted = 0; _inverted < 2; _inverted++){
 				_resultMatrix[_inverted] = new Object();
@@ -147,8 +124,8 @@ function calcResult(){
 					for (var _table = 0; _table < giNumTables; _table++){
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
-						gaParticipants.each(function(_gpgID){
-							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted],16)).mod(goVoteVector.dcmod);
+						$H(goParticipants).keys().each(function(_gpgID){
+							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][0]["vote"][_col][_table][_inverted],16)).mod(goVoteVector.dcmod);
 						});
 
 						var result = minabs(_resultMatrix[_inverted][_col][_table],goVoteVector.dcmod);
@@ -250,7 +227,7 @@ function fetchKey(id){
 Vote.prototype.startKeyCalc = function (){
 	this.sec = new BigInteger(localStorage.getItem("sec"));
 	this.pub = new BigInteger(localStorage.getItem("pub"));
-	this.otherParticipantArray = gaParticipants.without(gsMyID);
+	this.otherParticipantArray = $H(goParticipants).keys().without(gsMyID);
 	this.calcNextDHKey();
 }
 
@@ -375,6 +352,8 @@ showContent = function(){
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *
  *********************************************************/
+var gaColumns;
+var goParticipants;
 new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	parameters: {service: 'getColumns', pollID: gsPollID},
 	method:'get',
@@ -382,31 +361,38 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		gaColumns = transport.responseText.split("\n");
 
 		new Ajax.Request(gsExtensiondir + 'webservices.cgi',{
-			parameters: {service: 'getParticipants', pollID: gsPollID},
+			parameters: {service: 'getTotalParticipants', pollID: gsPollID},
 			method: "get",
 			onFailure: function(){ alert(gt.gettext('Failed to fetch participant list.')) },
 			onSuccess: function(transport){
-				gaParticipants = transport.responseText.split("\n");
-				if (gaParticipants.length > 0 && gaParticipants[0] != ""){
-					goNumParticipants = new BigInteger(gaParticipants.length.toString());
-					showParticipants();
-					getPollState(function(_pollState){
-						if (_pollState == "open"){
-							if (gaParticipants.indexOf(gsMyID) != -1) {
-								getState(gsMyID,function(_myStatus){
-									switch(_myStatus){
-									case "notVoted":
-									case "flying":
+				goParticipants = transport.responseText.evalJSON();
+				showParticipants();
+				getPollState(function(_pollState){
+					if (_pollState == "open"){
+							var participationVisible = true;
+							$H(goParticipants[gsMyID]).each(function(col){
+								switch(col.value){
+								case "notVoted":
+								case "flying":
+									/* insert participation checkboxes */
+									var td = "<td title='"+col.key+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col.key)+"');\">";
+									td += "<input id='"+htmlid(col.key)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col.key)+"');\"/></td>";
+									$(htmlid(col.key + "." + gsMyID)).replace(td);
+
+									if (participationVisible){
+										participationVisible = false;
+										$("last.edit."+gsMyID).update("<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>");
+										$("add_participant").remove();
+										$("separator_top").remove();
+										$("separator_bottom").remove();
 										goVoteVector.startKeyCalc();
-										showParticipationRow();
-										break;
 									}
-								});
-							}
-						} else {
-							calcResult();
-						}
-					});
-				}
+									break;
+								}
+							});
+					} else {
+						calcResult();
+					}
+				});
 		}});
 }});

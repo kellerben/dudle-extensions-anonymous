@@ -55,9 +55,6 @@ var Vote = function (){
 
 var giDHLENGTH = 786;
 var giNumTables = 3;
-var gaColumns;
-var gaParticipants;
-var goNumParticipants;
 var goVoteVector = new Vote();
 var gsMyID;
 

@@ -44,5 +44,17 @@ when "invite_participants.cgi"
 	$d.html.add_script_file("../extensions/dc-net/invite_participants.js")
 	$d.html.add_css("../extensions/dc-net/invite_participants.css")
 when "." 
-	$d.html.add_script_file("../extensions/dc-net/participate.js") if $d.is_poll?
+	if $d.is_poll?
+		$d.html.add_script(<<SCRIPT
+var gsUnknown = '#{UNKNOWN}';
+var gsKickOut = '#{DELETE}';
+var gsVoted = '#{PASSWORDSTAR}';
+var gsFlying = '⚠';
+var gsKickedOut = '𝄐';
+SCRIPT
+# ⚠⬚⸪𝄽𝄐✉◌#
+)
+		$d.html.add_script_file("../extensions/dc-net/participate.js")
+		$d.html.add_css("../extensions/dc-net/participate.css")
+	end
 end

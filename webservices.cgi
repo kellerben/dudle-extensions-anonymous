@@ -37,9 +37,10 @@ class Poll
 	def webservice_getPollState
 		return "open" if $dc.empty?
 		ret = true
-		rett = ""
 		$dc["participants"].each{|p|
-			ret = false unless $dc[p]
+			@head.columns.each{|c|
+				ret = false unless $dc[p]
+			}
 		}
 		ret ? "closed" : "open"
 	end
@@ -83,6 +84,32 @@ class Poll
 			return $dc["participants"].join("\n")
 		else
 			return ""
+		end
+	end
+
+	def Poll.webservicedescription_0Initialization_getTotalParticipants
+		{ "return" => "Liste der GPG-IDs aller Teilnehmer"}
+	end
+	def webservice_getTotalParticipants
+		ret = {}
+		$dc["participants"].each{|p|
+			ret[p] = {}
+			@head.columns.each{|c|
+				ret[p][c] = getColumnState(p,c)
+			}
+		}
+		return ret.to_json
+	end
+	def getColumnState(gpgId,column)
+		if $dc != nil && $dc[gpgId]
+			ret = "notVoted"
+			$dc[gpgId].each{|votes|
+				ret = "voted" if votes["vote"].include?(column)
+			}
+			return ret
+		else
+			#TODO flying!!
+			return "notVoted"
 		end
 	end
 
@@ -159,8 +186,8 @@ FOO
 			$header["status"] = "403 Forbidden"
 			return "The signature is wrong."
 		else
-			$dc[gpgID] ||= {}
-			$dc[$c["gpgID"]]["signature"] = signature
+			$dc[gpgID] ||= []
+			$dc[gpgID] << {"signature" => signature}
 		end
 		
 		begin
@@ -171,12 +198,13 @@ FOO
 		end
 
 		begin
+			$dc[gpgID].last["vote"] ||= {}
 			h.each{|col,votearray|
-				$dc[gpgID][col] ||= []
+				$dc[gpgID].last["vote"][col] ||= []
 				votearray.each_with_index{|norm_inv,tableindex|
-					$dc[gpgID][col][tableindex] ||= []
+					$dc[gpgID].last["vote"][col][tableindex] ||= []
 					norm_inv.each_with_index{|vote,inverted|
-						$dc[gpgID][col][tableindex][inverted] = vote.to_i(16)
+						$dc[gpgID].last["vote"][col][tableindex][inverted] = vote.to_i(16)
 					}
 				}
 			}
@@ -194,7 +222,7 @@ FOO
 			usedKeys << p if getUsedKeys(p).include?(gpgID)
 		}
 
-		$dc[gpgID]["usedKeys"] = usedKeys
+		$dc[gpgID].last["usedKeys"] = usedKeys
 
 		$header["status"] = "202 Accepted"
 		store_dc($dc, "Participant " + gpgID + " voted anonymously.")
@@ -266,19 +294,16 @@ FOO
 		end
 		ret = $dc
 		ret.delete("participants")
-		ret.each_value{|p|
-			p.delete("usedKeys")
-			sig = p.delete("signature")
-			p.each_value{|tab|
-				tab.compact! #FIXME: trudle starts with tableindex = 1
-				tab.each{|norm_inv|
-					norm_inv.collect!{|i| i.to_s(16)}
+		ret.each_value{|votes|
+			votes.each{|v|
+				v.delete("usedKeys")
+				v['vote'].each_value{|tab|
+					tab.each{|norm_inv|
+						norm_inv.collect!{|i| i.to_s(16)}
+					}
 				}
 			}
-			p['signature'] = sig
 		}
-
-#		return ret.pretty_inspect
 		return ret.to_json
 	end
 
