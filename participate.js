@@ -125,7 +125,7 @@ function calcResult(){
 
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		method: "get",
-		parameters: { service: "getTotalVote", pollID: gsPollID },
+		parameters: { service: "getVote", pollID: gsPollID },
 		onSuccess: function(_transport){
 			_totalVote = _transport.responseText.evalJSON();
 
@@ -284,7 +284,7 @@ Vote.prototype.save = function (){
 	}
 
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: {service: 'setTotalVote', pollID: gsPollID, gpgID: gsMyID, vote: Object.toJSON(_voteobj), signature: 'TODO'},
+		parameters: {service: 'setVote', pollID: gsPollID, gpgID: gsMyID, vote: Object.toJSON(_voteobj), signature: 'TODO'},
 		onSuccess: function(transport){
 			location.assign(location.href);
 	}});

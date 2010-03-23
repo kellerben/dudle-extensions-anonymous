@@ -139,13 +139,13 @@ vote_{t_T,j_I,n}<br />
 vote_{t_T,j_I,i}<br />
 
 FOO
-	def Poll.webservicedescription_1VoteCasting_setTotalVote
+	def Poll.webservicedescription_1VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403" OR "HTTP400"',
 			"input" => ["gpgID", "vote", "signature"],
 			"vote" => VOTEDESCR
 		}
 	end
-	def webservice_setTotalVote
+	def webservice_setVote
 		gpgID = $c["gpgID"]
 		signature = $c["signature"]
 
@@ -198,52 +198,6 @@ FOO
 
 		$header["status"] = "202 Accepted"
 		store_dc($dc, "Participant " + gpgID + " voted anonymously.")
-	end
-	def Poll.webservicedescription_1VoteCasting_setVote
-		{ "return" => '"HTTP202" OR "HTTP403"',
-			"input" => ["gpgID", "vote", "timestamp", "tableindex", "inverted"],
-			"vote" => "eigene Teilsumme ({0,1} + Schlüssel aller Teilnehmer, die noch nicht gewählt haben + Schlüssel zu allen Teilnehmern in deren getUsedKeys man selbst steht)",
-			"inverted" => "true, wenn tableindex für invertierte tabelle steht"
-		}
-	end
-	def webservice_setVote
-		# TODO return 403 if necessary
-		gpgID = $c["gpgID"]
-		vote = $c["vote"].to_i
-		timestamp = $c["timestamp"]
-		tableindex = $c["tableindex"].to_i
-		inverted = $c["inverted"] == "true" ? 1 : 0
-
-		$dc[gpgID] ||= {}
-		$dc[gpgID][timestamp] ||= []
-		$dc[gpgID][timestamp][tableindex] ||= []
-		$dc[gpgID][timestamp][tableindex][inverted] = vote
-
-		participants = {"voted" => [], "notVoted" => []}
-		($dc["participants"] - [gpgID]).each{|p|
-			participants[getState(p)] << p
-		}
-		usedKeys = participants["notVoted"]
-		participants["voted"].each{|p|
-			usedKeys << p if getUsedKeys(p).include?(gpgID)
-		}
-
-		$dc[gpgID]["usedKeys"] = usedKeys
-
-		$header["status"] = "202 Accepted"
-		store_dc($dc, "Method setVote is deprecated!")
-	end
-	
-	def Poll.webservicedescription_1VoteCasting_setVoteSignature
-		{ "return" => '"HTTP202" if the signature is correct (votes are stored persistant in this case) OR "HTTP403" otherwise',
-			"input" => ["gpgID", "signature"],
-			"signature" => 'for (t in timestamps){for (i in tableindizes){sigstring += t + i + vote}};sign(sigstring)' }
-	end
-	def webservice_setVoteSignature
-		# TODO return 403 if getState == "voted" && getState fertig implementiert
-		$dc[$c["gpgID"]]["signature"] = $c["signature"]
-		$header["status"] = "202 Accepted"
-		store_dc($dc, "Method setVoteSignature is deprecated!")
 	end
 
 	def Poll.webservicedescription_1VoteCasting_getState
@@ -302,25 +256,10 @@ FOO
 	# Result Publication
 	###################################################################
 	def Poll.webservicedescription_2ResultPublication_getVote
-		{ "return" => 'Teilsumme des Teilnehmers oder "HTTP403", falls Wahlgang noch nicht beendet',
-			"input" => ["gpgID", "timestamp", "tableindex", "inverted"]}
-	end
-	def webservice_getVote
-		if webservice_getPollState == "open"
-			$header["status"] = "403 Forbidden"
-			return "Die Umfrage wurde noch nicht beendet!"
-		end
-		if $dc[$c["gpgID"]][$c["timestamp"]]
-			return $dc[$c["gpgID"]][$c["timestamp"]][$c["tableindex"].to_i][$c["inverted"] == "true" ? 1 : 0].to_s
-		else
-			return "Invalid Timestamp"
-		end
-	end
-	def Poll.webservicedescription_2ResultPublication_getTotalVote
 		{ "return" => 'Alle Summen aller Teilnehmer oder "HTTP403", falls Wahlgang noch nicht beendet',
 			}
 	end
-	def webservice_getTotalVote
+	def webservice_getVote
 		if webservice_getPollState == "open"
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
@@ -343,14 +282,6 @@ FOO
 		return ret.to_json
 	end
 
-	def Poll.webservicedescription_2ResultPublication_getVoteSignature
-		{ "return" => 'Signatur, der betreffenden Wahl oder "HTTP403", falls Wahlgang noch nicht beendet',
-			"input" => ["gpgID"] }
-	end
-	def webservice_getVoteSignature
-		$dc[$c["gpgID"]]["signature"]
-	end
-	
 	def Poll.webservicedescription_2ResultPublication_getKickOutKey
 		{ "return" => 'symmetrischer Schlüssel (vor Hash)',
 			"input" => ["gpgIDSender", "gpgIDLeaver", "timestamp", "tableindex", "inverted"] }
