@@ -92,12 +92,14 @@ class Poll
 	end
 	def webservice_getTotalParticipants
 		ret = {}
-		$dc["participants"].each{|p|
-			ret[p] = {}
-			@head.columns.each{|c|
-				ret[p][c] = getColumnState(p,c)
+		if $dc["participants"]
+			$dc["participants"].each{|p|
+				ret[p] = {}
+				@head.columns.each{|c|
+					ret[p][c] = getColumnState(p,c)
+				}
 			}
-		}
+		end
 		return ret.to_json
 	end
 	def getColumnState(gpgId,column)
