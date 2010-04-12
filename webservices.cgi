@@ -124,7 +124,7 @@ class Poll
 		$dc["participants"] ||= []
 		$dc["participants"] << $c["gpgID"]
 		$dc["participants"].uniq!
-		store_dc($dc,"Anonymous Participant Invited.")
+		store_dc($dc,"Participant "+ $c["gpgID"] + " invited for anonymous voting")
 	end
 
 	def Poll.webservicedescription_0Initialization_getDuration
@@ -227,7 +227,7 @@ FOO
 		$dc[gpgID].last["usedKeys"] = usedKeys
 
 		$header["status"] = "202 Accepted"
-		store_dc($dc, "Participant " + gpgID + " voted anonymously.")
+		store_dc($dc, "Participant " + gpgID + " voted anonymously")
 	end
 
 	def Poll.webservicedescription_1VoteCasting_getState
@@ -365,7 +365,7 @@ if all.include?($c["service"])
 			$dc = {}
 			File.open("dc_data.yaml","w").close
 			VCS.add("dc_data.yaml")
-			store_dc($dc,"Initialized for anonymous Voting.")
+			store_dc($dc,"Initialized for anonymous voting")
 		end
 
 		$c.out($header){
