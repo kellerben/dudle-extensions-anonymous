@@ -95,24 +95,17 @@ class Poll
 		if $dc["participants"]
 			$dc["participants"].each{|p|
 				ret[p] = {}
-				@head.columns.each{|c|
-					ret[p][c] = getColumnState(p,c)
-				}
+				if $dc[p]
+					ret[p] = {"voted" =>[]}
+					$dc[p].each{|vote|
+						ret[p]["voted"] << [vote["vote"].keys, vote["usedKeys"]]
+					}
+
+				end
 			}
+			#TODO flying!!
 		end
 		return ret.to_json
-	end
-	def getColumnState(gpgId,column)
-		if $dc != nil && $dc[gpgId]
-			ret = "notVoted"
-			$dc[gpgId].each{|votes|
-				ret = "voted" if votes["vote"].include?(column)
-			}
-			return ret
-		else
-			#TODO flying!!
-			return "notVoted"
-		end
 	end
 
 	def Poll.webservicedescription_0Initialization_addParticipant

@@ -51,11 +51,20 @@ function showParticipants(){
 	$H(goParticipants).each(function(participant){
 		var row = "<tr class='participantrow' id='participant_" + participant.key + "'>";
 		row += "<td class='name' title='" + participant.key + "' id='" + participant.key + "'>" + Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant.key]) + "</td>";
-		$H(participant.value).keys().sort().each(function(column){
+		gaColumns.each(function(column){
+			var state = "notVoted";
+			if ($H(participant.value).keys().indexOf("voted") != -1){
+				participant.value["voted"].each(function(vote){
+					if (vote[0].indexOf(column) != -1){
+						state = "voted";
+					}
+				});
+			}
+
 			var classname;
 			var statustitle;
 			var statustext;
-			switch (participant.value[column]){
+			switch (state){
 				case "voted":
 					classname = 'voted';
 					statustitle = gt.gettext('Has voted anonymously.');
