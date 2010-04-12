@@ -301,25 +301,44 @@ Vote.prototype.calcSharedKey = function (otherID,timeslot,tableindex,inverted){
  * calculate the DC-Net keys, a participant has to add to his vote vector *
  **************************************************************************/
 Vote.prototype.calculateVoteKeys = function () {
+	// initialize keyMatrix with 0
 	this.keyMatrix = new Array();
 	for (var _inverted = 0; _inverted < 2; _inverted++){
-
 		this.keyMatrix[_inverted] = new Object();
 		for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
 			var _col = gaColumns[_colidx];
 			this.keyMatrix[_inverted][_col] = new Array();
-
 			for (var _table = 0; _table < giNumTables;_table++){
 				this.keyMatrix[_inverted][_col][_table] = BigInteger.ZERO;
-				for (var id in this.participants){
-					var addval = this.calcSharedKey(id,_col,_table,_inverted);
-
-					this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].add(addval);
-					this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].mod(this.dcmod);
+			}
+		}
+	}
+	for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
+		var _col = gaColumns[_colidx];
+		for (var _id in this.participants){
+			if (usedMyKey(_id,_col)){
+				for (var _inverted = 0; _inverted < 2; _inverted++){
+					for (var _table = 0; _table < giNumTables;_table++){
+						var addval = this.calcSharedKey(_id,_col,_table,_inverted);
+						this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].add(addval);
+						this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].mod(this.dcmod);
+					}
 				}
 			}
 		}
 	}
+}
+function usedMyKey(id,col){
+	if (typeof(goParticipants[id]['voted']) == 'undefined'){
+		return true;
+	}
+	var ret = false;
+	goParticipants[id]['voted'].each(function(_vote){
+		if (_vote[1].indexOf(gsMyID) != -1){
+			ret = true;
+		}
+	});
+	return ret;
 }
 
 
