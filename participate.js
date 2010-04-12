@@ -44,6 +44,18 @@ function togglecheckbutton(id){
 	$(id).checked = !$(id).checked;
 }
 
+function getState(participant,column){
+	var state = "notVoted";
+	if ($H(goParticipants[participant]).keys().indexOf("voted") != -1){
+		goParticipants[participant]["voted"].each(function(vote){
+			if (vote[0].indexOf(column) != -1){
+				state = "voted";
+			}
+		});
+	}
+	return state;
+}
+
 /**************************************************
  * insert HTML code, which shows the participants *
  **************************************************/
@@ -52,19 +64,11 @@ function showParticipants(){
 		var row = "<tr class='participantrow' id='participant_" + participant.key + "'>";
 		row += "<td class='name' title='" + participant.key + "' id='" + participant.key + "'>" + Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant.key]) + "</td>";
 		gaColumns.each(function(column){
-			var state = "notVoted";
-			if ($H(participant.value).keys().indexOf("voted") != -1){
-				participant.value["voted"].each(function(vote){
-					if (vote[0].indexOf(column) != -1){
-						state = "voted";
-					}
-				});
-			}
 
 			var classname;
 			var statustitle;
 			var statustext;
-			switch (state){
+			switch (getState(participant.key,column)){
 				case "voted":
 					classname = 'voted';
 					statustitle = gt.gettext('Has voted anonymously.');
@@ -378,14 +382,14 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 				getPollState(function(_pollState){
 					if (_pollState == "open"){
 							var participationVisible = true;
-							$H(goParticipants[gsMyID]).each(function(col){
-								switch(col.value){
+							gaColumns.each(function(col){
+								switch(getState(gsMyID,col)){
 								case "notVoted":
 								case "flying":
 									/* insert participation checkboxes */
-									var td = "<td title='"+col.key+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col.key)+"');\">";
-									td += "<input id='"+htmlid(col.key)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col.key)+"');\"/></td>";
-									$(htmlid(col.key + "." + gsMyID)).replace(td);
+									var td = "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
+									td += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
+									$(htmlid(col + "." + gsMyID)).replace(td);
 
 									if (participationVisible){
 										participationVisible = false;
