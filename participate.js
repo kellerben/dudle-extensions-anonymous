@@ -183,7 +183,6 @@ function pseudorandom(dh,uuid,col,tableindex,inverted){
 		block[i] = new BigInteger(seed.charAt(i*2) + seed.charAt(i*2+1),16);
 	}
 	
-	AES_Init();
 
 	seed = SHA256_hash(dh.toString());
 	var key = new Array(32);
@@ -193,8 +192,6 @@ function pseudorandom(dh,uuid,col,tableindex,inverted){
 
 	AES_ExpandKey(key);
 	AES_Encrypt(block, key);
-
-	AES_Done();
 	return block;
 }
 
@@ -313,6 +310,7 @@ Vote.prototype.calculateVoteKeys = function () {
 			}
 		}
 	}
+	AES_Init();
 	for (var _colidx = 0; _colidx < gaColumns.length; _colidx++){
 		var _col = gaColumns[_colidx];
 		for (var _id in this.participants){
@@ -327,6 +325,7 @@ Vote.prototype.calculateVoteKeys = function () {
 			}
 		}
 	}
+	AES_Done();
 }
 function usedMyKey(id,col){
 	if (typeof(goParticipants[id]['voted']) == 'undefined'){
