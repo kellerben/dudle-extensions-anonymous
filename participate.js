@@ -17,6 +17,45 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
+var gParticipantTds;
+
+function showLogin(_participant){
+	$("add_participant").remove();
+	$("separator_top").remove();
+	$("separator_bottom").remove();
+
+	var _username = $(_participant).innerHTML;
+	var _l = "<td class='label'><label for='key'>";
+	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"),[_username]);
+	_l += "</label></td>";
+
+	_l += "<td id='td.key' colspan='"+ gaColumns.length +"'><textarea id='key' cols='100' rows='2'></textarea></td>";
+	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next")+"' onClick='login()'/>";
+	_l += "<br /><input type='button' value='" + gt.gettext("Cancel")+"' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
+	_l += "</td>";
+
+
+	var _ptr = $("participant_" + _participant);
+	gParticipantTds = _ptr.innerHTML;
+	_ptr.insert({
+		before: "<tr id='separator_top'><td colspan='"+(gaColumns.length + 2)+"' class='invisible'></td></tr>",
+		after: "<tr id='separator_bottom'><td colspan='"+(gaColumns.length + 2)+"' class='invisible'></td></tr>"
+	});
+	_ptr.update(_l);
+}
+
+function login(){
+	var key = new BigInteger($F('key'),16);
+	$("td.key").update(gt.gettext("Calculating the public key ..."));
+	$("loginbutton").value = gt.gettext("Please wait ...");
+	$("loginbutton").disabled = true;
+	goVoteVector.setSecKey(key,function(){
+		$("td.key").parentNode.replace(gParticipantTds);
+		goVoteVector.storeKey();
+		insertParticipationCheckboxes();
+	});
+}
+
 function fingerprint(pub){
 	return SHA256_hash(pub);
 }
@@ -62,7 +101,15 @@ function getState(participant,column){
 function showParticipants(){
 	$H(goParticipants).each(function(participant){
 		var row = "<tr class='participantrow' id='participant_" + participant.key + "'>";
-		row += "<td class='name' title='" + participant.key + "' id='" + participant.key + "'>" + Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant.key]) + "</td>";
+		row += "<td class='name' title='" + participant.key + "' id='"+ participant.key +"_td'>";
+		row += "<a href='javascript:showLogin(\""+ participant.key +"\")' title='" + gt.gettext("Edit User") + "'>";
+
+		row += "<span id='" + participant.key + "'>";
+		row += Gettext.strargs(gt.gettext("Fetching Name for %1 ..."),[participant.key]) + "</span>";
+
+		row += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
+		row += "</td>";
+
 		gaColumns.each(function(column){
 
 			var classname;
@@ -92,7 +139,7 @@ function showParticipants(){
 			}
 			row += "<td class='"+classname+"' id='" + htmlid(column+"."+participant.key) +"' title='"+statustitle+"'>"+ statustext+"</td>";
 		});
-		row += "<td class='invisible'id='" + htmlid("last.edit."+participant.key) +"'></td></tr>";
+		row += "<td class='invisible' id='" + htmlid("lastedit_"+participant.key) +"'></td></tr>";
 		$("separator_top").insert({ before: row });
 		updateName(participant.key);
 	});
@@ -375,9 +422,6 @@ Vote.prototype.calcNextDHKey = (function(){
 		}
 })();
 
-showContent = function(){
-	location.assign(location.href);
-}
 /*********************************************************
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *
@@ -399,30 +443,36 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 				showParticipants();
 				getPollState(function(_pollState){
 					if (_pollState == "open"){
-							var participationVisible = true;
-							gaColumns.each(function(col){
-								switch(getState(gsMyID,col)){
-								case "notVoted":
-								case "flying":
-									/* insert participation checkboxes */
-									var td = "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
-									td += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
-									$(htmlid(col + "." + gsMyID)).replace(td);
-
-									if (participationVisible){
-										participationVisible = false;
-										$("last.edit."+gsMyID).update("<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>");
-										$("add_participant").remove();
-										$("separator_top").remove();
-										$("separator_bottom").remove();
-										goVoteVector.startKeyCalc();
-									}
-									break;
-								}
-							});
+						insertParticipationCheckboxes();
 					} else {
 						calcResult();
 					}
 				});
 		}});
 }});
+
+function insertParticipationCheckboxes(){
+	var participationVisible = true;
+	gaColumns.each(function(col){
+		switch(getState(gsMyID,col)){
+		case "notVoted":
+		case "flying":
+			/* insert participation checkboxes */
+			var td = "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
+			td += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
+			$(htmlid(col + "." + gsMyID)).replace(td);
+
+			if (participationVisible){
+				participationVisible = false;
+				$("lastedit_"+gsMyID).update("<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>");
+				if ($("add_participant")){
+					$("add_participant").remove();
+					$("separator_top").remove();
+					$("separator_bottom").remove();
+				}
+				goVoteVector.startKeyCalc();
+			}
+			break;
+		}
+	});
+}
