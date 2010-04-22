@@ -34,6 +34,7 @@ when "invite_participants.cgi"
 	$d.html.add_head_script("../extensions/dc-net/lib/scriptaculous-effects.js")
 	$d.html.add_head_script("../extensions/dc-net/lib/scriptaculous-controls.js")
 
+	$d.html.add_script_file("../extensions/dc-net/common.js")
 	$d.html.add_script_file("../extensions/dc-net/invite_participants.js")
 	$d.html.add_css("../extensions/dc-net/invite_participants.css")
 
@@ -59,6 +60,7 @@ SCRIPT
 		$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
 
 		$d.html.add_script_file("../extensions/dc-net/common.js")
+		$d.html.add_script_file("../extensions/dc-net/login_register_common.js")
 		$d.html.add_script_file("../extensions/dc-net/participate.js")
 		$d.html.add_css("../extensions/dc-net/participate.css")
 	end
@@ -73,5 +75,6 @@ unless $d.is_poll?
 	$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
 
 	$d.html.add_script_file("extensions/dc-net/common.js")
+	$d.html.add_script_file("../extensions/dc-net/login_register_common.js")
 	$d.html.add_script_file("extensions/dc-net/register.js")
 end
