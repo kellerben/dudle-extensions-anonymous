@@ -56,9 +56,13 @@ function login(){
 	$("loginbutton").value = gt.gettext("Please wait ...");
 	$("loginbutton").disabled = true;
 	goVoteVector.setSecKey(key,function(){
-		$("td.key").parentNode.replace(gParticipantTds);
-		goVoteVector.storeKey();
-		insertParticipationCheckboxes();
+		if ("participant_" + goVoteVector.id == gActiveParticipant.id ){
+			goVoteVector.storeKey();
+			$("td.key").parentNode.replace(gParticipantTds);
+			insertParticipationCheckboxes();
+		} else {
+			$("td.key").update(gt.gettext("Wrong key!"));
+		}
 	});
 }
 
