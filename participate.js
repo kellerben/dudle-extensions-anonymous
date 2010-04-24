@@ -18,9 +18,15 @@
  ***************************************************************************/
 
 var gParticipantTds;
+var gActiveParticipant;
 
 function showLogin(_participant){
-	$("add_participant").remove();
+	if ($("add_participant")){
+		$("add_participant").remove();
+	} else {
+		gActiveParticipant.update(gParticipantTds); 
+	}
+	
 	$("separator_top").remove();
 	$("separator_bottom").remove();
 
@@ -35,13 +41,13 @@ function showLogin(_participant){
 	_l += "</td>";
 
 
-	var _ptr = $("participant_" + _participant);
-	gParticipantTds = _ptr.innerHTML;
-	_ptr.insert({
+	gActiveParticipant = $("participant_" + _participant);
+	gParticipantTds = gActiveParticipant.innerHTML;
+	gActiveParticipant.insert({
 		before: "<tr id='separator_top'><td colspan='"+(gaColumns.length + 2)+"' class='invisible'></td></tr>",
 		after: "<tr id='separator_bottom'><td colspan='"+(gaColumns.length + 2)+"' class='invisible'></td></tr>"
 	});
-	_ptr.update(_l);
+	gActiveParticipant.update(_l);
 }
 
 function login(){
