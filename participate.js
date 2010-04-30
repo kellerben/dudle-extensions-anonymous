@@ -61,7 +61,7 @@ function login(){
 		$("loginbutton").disabled = true;
 		goVoteVector.setSecKey(key,function(){
 			if ("participant_" + goVoteVector.id == gActiveParticipant.id ){
-				$("td.key").parentNode.replace(gParticipantTds);
+				gActiveParticipant.update(gParticipantTds);
 				insertParticipationCheckboxes();
 			} else {
 				$("td.key").update(gt.gettext("You entered a wrong key!"));
