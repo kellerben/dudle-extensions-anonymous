@@ -445,32 +445,6 @@ END
 	}
 }
 
-c = <<COMMENT
-global
-
-getKey(gpgID)
-        return: gpgKey
-        über BouncyCastle oder Runtime.exec("gpg ...")
-
-getDeadline(pollID)
-        return: timestamp
-        Enddatum der Abstimmung
-
-getCommentIDs(pollID)
-        return: List<commentID>
-        Liste aller Comment-IDs zu dieser Umfrage
-
-getCommentWriter(pollID, commentID)
-        return: userPseudonym
-
-getCommentTime(pollID, commentID)
-        return: timestamp
-
-getCommentText(pollID, commentID)
-        return: content
-        Inhalt des Kommentars
-COMMENT
-
 $c.out($header){ 
 	$out
 }
