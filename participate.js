@@ -57,11 +57,10 @@ function login(){
 	$("loginbutton").disabled = true;
 	goVoteVector.setSecKey(key,function(){
 		if ("participant_" + goVoteVector.id == gActiveParticipant.id ){
-			goVoteVector.storeKey();
 			$("td.key").parentNode.replace(gParticipantTds);
 			insertParticipationCheckboxes();
 		} else {
-			$("td.key").update(gt.gettext("Wrong key!"));
+			$("td.key").update(gt.gettext("You entered a wrong key!"));
 		}
 	});
 }
@@ -291,9 +290,7 @@ function fetchKey(id){
  * Start all calculations, which can be done before vote casting *
  *****************************************************************/
 Vote.prototype.startKeyCalc = function (){
-	this.sec = new BigInteger(localStorage.getItem("sec"));
-	this.pub = new BigInteger(localStorage.getItem("pub"));
-	this.otherParticipantArray = $H(goParticipants).keys().without(gsMyID);
+	this.otherParticipantArray = $H(goParticipants).keys().without(goVoteVector.id);
 	this.calcNextDHKey();
 }
 
@@ -327,7 +324,7 @@ Vote.prototype.save = function (){
 	}
 
 	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: {service: 'setVote', pollID: gsPollID, gpgID: gsMyID, vote: Object.toJSON(_voteobj), signature: 'TODO'},
+		parameters: {service: 'setVote', pollID: gsPollID, gpgID: goVoteVector.id, vote: Object.toJSON(_voteobj), signature: 'TODO'},
 		onSuccess: function(transport){
 			location.assign(location.href);
 	}});
@@ -338,7 +335,7 @@ Vote.prototype.save = function (){
  * calculate one DC-Net key with one other participant *
  *******************************************************/
 Vote.prototype.calcSharedKey = function (otherID,timeslot,tableindex,inverted){
-	var cmp = new BigInteger(gsMyID).compareTo(new BigInteger(otherID));
+	var cmp = new BigInteger(goVoteVector.id).compareTo(new BigInteger(otherID));
 	if (cmp == 0){
 			return BigInteger.ZERO;
 	}
@@ -390,7 +387,7 @@ function usedMyKey(id,col){
 	}
 	var ret = false;
 	goParticipants[id]['voted'].each(function(_vote){
-		if (_vote[1].indexOf(gsMyID) != -1){
+		if (_vote[1].indexOf(goVoteVector.id) != -1){
 			ret = true;
 		}
 	});
@@ -422,10 +419,13 @@ Vote.prototype.calcNextDHKey = (function(){
 				this.participants[id]["pub"].modPow(this.sec,this.dhmod,
 						function (result) {
 							goVoteVector.participants[id]["dh"] = result;
+							/* TODO store result if user wants to stay logged in
 							localStorage.setItem(id,result);
+							*/
 							goVoteVector.calcNextDHKey();
 						});
 			} else {
+				/* TODO verify correctness of key */
 				this.participants[id]["dh"] = new BigInteger(localStorage.getItem(id));
 				this.calcNextDHKey();
 			}
@@ -453,7 +453,12 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 				showParticipants();
 				getPollState(function(_pollState){
 					if (_pollState == "open"){
-						insertParticipationCheckboxes();
+						/*TODO 
+						if (eingeloggt im localStorage){
+							goVoteVector.setSecKey(schluessel);
+							insertParticipationCheckboxes();
+						}
+						*/
 					} else {
 						calcResult();
 					}
@@ -464,17 +469,17 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 function insertParticipationCheckboxes(){
 	var participationVisible = true;
 	gaColumns.each(function(col){
-		switch(getState(gsMyID,col)){
+		switch(getState(goVoteVector.id,col)){
 		case "notVoted":
 		case "flying":
 			/* insert participation checkboxes */
 			var td = "<td title='"+col+"' class='undecided' onclick=\"togglecheckbutton('"+htmlid(col)+"');\">";
 			td += "<input id='"+htmlid(col)+"' type='checkbox' onclick=\"togglecheckbutton('"+htmlid(col)+"');\"/></td>";
-			$(htmlid(col + "." + gsMyID)).replace(td);
+			$(htmlid(col + "." + goVoteVector.id)).replace(td);
 
 			if (participationVisible){
 				participationVisible = false;
-				$("lastedit_"+gsMyID).update("<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>");
+				$("lastedit_"+goVoteVector.id).update("<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>");
 				if ($("add_participant")){
 					$("add_participant").remove();
 					$("separator_top").remove();

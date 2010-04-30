@@ -98,7 +98,7 @@ function secondRegisterStep(){
 
 function register(){
 	var name = $F('name');
-	goVoteVector.storeKey();
+
 	var _pubkey = "NAME " + $F('name') + "\n";
 	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
 	new Ajax.Request(gsExtensiondir + "keyserver.cgi",{

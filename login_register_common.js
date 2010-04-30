@@ -47,16 +47,8 @@ var Vote = function (){
 			})
 		}, 1);
 	}
-	this.storeKey = function(){
-		localStorage.setItem("sec",goVoteVector.sec);
-		localStorage.setItem("pub",goVoteVector.pub);
-		localStorage.setItem("id",goVoteVector.id);
-		gsMyID = goVoteVector.id;
-	}
 }
 
 var giDHLENGTH = 786;
 var giNumTables = 3;
 var goVoteVector = new Vote();
-var gsMyID;
-//gsMyID = localStorage.getItem("id");
