@@ -487,6 +487,9 @@ function insertParticipationCheckboxes(){
 				_td += cancelButton();
 				_td += "</td>";
 				$("lastedit_"+goVoteVector.id).update(_td);
+
+				$(goVoteVector.id + "_td").firstElementChild.replace($(goVoteVector.id));
+
 				if ($("add_participant")){
 					$("add_participant").remove();
 					$("separator_top").remove();
