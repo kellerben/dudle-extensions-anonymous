@@ -54,18 +54,20 @@ function showLogin(_participant){
 }
 
 function login(){
-	var key = new BigInteger($F('key'),16);
-	$("td.key").update(gt.gettext("Calculating the public key ..."));
-	$("loginbutton").value = gt.gettext("Please wait ...");
-	$("loginbutton").disabled = true;
-	goVoteVector.setSecKey(key,function(){
-		if ("participant_" + goVoteVector.id == gActiveParticipant.id ){
-			$("td.key").parentNode.replace(gParticipantTds);
-			insertParticipationCheckboxes();
-		} else {
-			$("td.key").update(gt.gettext("You entered a wrong key!"));
-		}
-	});
+	if ($F('key')) {
+		var key = new BigInteger($F('key'),16);
+		$("td.key").update(gt.gettext("Calculating the public key ..."));
+		$("loginbutton").value = gt.gettext("Please wait ...");
+		$("loginbutton").disabled = true;
+		goVoteVector.setSecKey(key,function(){
+			if ("participant_" + goVoteVector.id == gActiveParticipant.id ){
+				$("td.key").parentNode.replace(gParticipantTds);
+				insertParticipationCheckboxes();
+			} else {
+				$("td.key").update(gt.gettext("You entered a wrong key!"));
+			}
+		});
+	}
 }
 
 function fingerprint(pub){
