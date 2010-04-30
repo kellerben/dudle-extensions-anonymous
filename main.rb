@@ -71,10 +71,10 @@ unless $d.is_poll?
 	$d.html.add_head_script("extensions/dc-net/lib/jsbn.js")
 	$d.html.add_head_script("extensions/dc-net/lib/jsbn2.js")
 	$d.html.add_head_script("extensions/dc-net/lib/jssha256.js")
-	$d.html.add_head_script("../extensions/dc-net/lib/prng4.js")
-	$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
+	$d.html.add_head_script("extensions/dc-net/lib/prng4.js")
+	$d.html.add_head_script("extensions/dc-net/lib/rng.js")
 
 	$d.html.add_script_file("extensions/dc-net/common.js")
-	$d.html.add_script_file("../extensions/dc-net/login_register_common.js")
+	$d.html.add_script_file("extensions/dc-net/login_register_common.js")
 	$d.html.add_script_file("extensions/dc-net/register.js")
 end
