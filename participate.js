@@ -20,6 +20,9 @@
 var gParticipantTds;
 var gActiveParticipant;
 
+function cancelButton(){
+	return "<br /><input type='button' value='" + gt.gettext("Cancel")+"' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
+}
 function showLogin(_participant){
 	if ($("add_participant")){
 		$("add_participant").remove();
@@ -37,7 +40,7 @@ function showLogin(_participant){
 
 	_l += "<td id='td.key' colspan='"+ gaColumns.length +"'><textarea id='key' cols='100' rows='2'></textarea></td>";
 	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next")+"' onClick='login()'/>";
-	_l += "<br /><input type='button' value='" + gt.gettext("Cancel")+"' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
+	_l += cancelButton();
 	_l += "</td>";
 
 
@@ -479,7 +482,11 @@ function insertParticipationCheckboxes(){
 
 			if (participationVisible){
 				participationVisible = false;
-				$("lastedit_"+goVoteVector.id).update("<td id='submit' class='date'><input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'></td>");
+				var _td = "<td id='submit'>";
+				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...")+"' disabled='disabled'>";
+				_td += cancelButton();
+				_td += "</td>";
+				$("lastedit_"+goVoteVector.id).update(_td);
 				if ($("add_participant")){
 					$("add_participant").remove();
 					$("separator_top").remove();
