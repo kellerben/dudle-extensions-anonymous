@@ -91,6 +91,7 @@ function checkcheckbox(){
 			},
 			onFailure: function(transport){
 				$("savebutton").value = gt.gettext("Invite");
+				$("add_participant_input").focus();
 				$("registerederror").update("<td colspan='3' class='warning'>" + gt.gettext("Only registered users can participate privacy-enhanced.") + "</td>");
 			}
 		});
