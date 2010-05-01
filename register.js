@@ -19,7 +19,7 @@
 
 
 function showRegisterTab(){
-	$('registerTab').update("<a href='javascript:showRegister();'>&nbsp;"+gt.gettext("Register") + "&nbsp;</a></li>");
+	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;"+gt.gettext("Register") + "&nbsp;</a></li>");
 }
 
 $("tablist").insert({ bottom: "<li id='registerTab' class='nonactive_tab'/>" });
@@ -38,12 +38,12 @@ function showContent(){
 	$('active_tab').update(gActiveTabInnerHTML);
 }
 
-function showRegister(){
+function showRegister(name){
 	var _r = "<h1>dudle</h1>";
 	_r += "<h2>" + gt.gettext("Register new Account") + "</h2>";
 	_r += "<table id='register' class='settingstable'><tr>";
 	_r += "<td class='label'><label for='name'>" + gt.gettext("Name:") + "</label></td>";
-	_r += "<td><input id='name' type='text' value='"+ "" +"' /></td>";
+	_r += "<td><input id='name' type='text' value='"+ name +"' /></td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
 	_r += "<td><input type='button' value='" + gt.gettext("Cancel")+"' onClick='showContent()'/> ";
