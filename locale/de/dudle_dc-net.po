@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-01 22:05+0200\n"
+"POT-Creation-Date: 2010-05-02 00:50+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
@@ -15,7 +15,7 @@ msgid "Failed to fetch name for %1."
 msgstr "Konnte Namen von %1 nicht holen."
 
 #: invite_participants.js:23
-#: participate.js:455
+#: participate.js:457
 msgid "Failed to fetch participant list."
 msgstr "Konnte die Liste der Teilnehmer nicht laden."
 
@@ -67,55 +67,59 @@ msgstr "Bitte warten …"
 msgid "You entered a wrong key!"
 msgstr "Der eingegebene Schlüssel ist falsch!"
 
-#: participate.js:119
+#: participate.js:68
+msgid "Try again?"
+msgstr "Nochmal versuchen?"
+
+#: participate.js:121
 msgid "Edit User"
 msgstr "Bearbeite Teilnehmer"
 
-#: participate.js:122
+#: participate.js:124
 msgid "Fetching Name for %1 ..."
 msgstr "Hole status für %1 ..."
 
-#: participate.js:135
+#: participate.js:137
 msgid "Has voted anonymously."
 msgstr "Hat anonym abgestimmt."
 
-#: participate.js:140
+#: participate.js:142
 msgid "Has not voted yet."
 msgstr "Hat noch nicht abgestimmt."
 
-#: participate.js:145
+#: participate.js:147
 msgid "Is to be removed."
 msgstr "Soll entfernt werden."
 
-#: participate.js:150
+#: participate.js:152
 msgid "Is removed."
 msgstr "Wurde entfernt."
 
-#: participate.js:206
+#: participate.js:208
 msgid "decrease"
 msgstr "erniedrigen"
 
-#: participate.js:206
+#: participate.js:208
 msgid "increase"
 msgstr "erhöhen"
 
-#: participate.js:207
+#: participate.js:209
 msgid "Somebody tried to %1 column %2 by %3!!!"
 msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
 
-#: participate.js:218
+#: participate.js:220
 msgid "Somebody sent inconsistent values at column %1!!!"
 msgstr "Jemand hat inkonsistente Werte für Spalte %1 gesendet!!!"
 
-#: participate.js:265
+#: participate.js:267
 msgid "Save"
 msgstr "Speichern"
 
-#: participate.js:289
+#: participate.js:291
 msgid "Something went wrong! The server said:"
 msgstr "Serverfehler:"
 
-#: participate.js:488
+#: participate.js:490
 msgid "Calculating keys ..."
 msgstr "Berechne Schlüssel ..."
 

@@ -64,7 +64,9 @@ function login(){
 				gActiveParticipant.update(gParticipantTds);
 				insertParticipationCheckboxes();
 			} else {
-				$("td.key").update(gt.gettext("You entered a wrong key!"));
+				var _errormsg = gt.gettext("You entered a wrong key!")
+				_errormsg += " <a href='javascript:showLogin(\""+ gActiveParticipant.id.gsub("participant_","") +"\")>" + gt.gettext("Try again?");
+				$("td.key").update(_errormsg);
 			}
 		});
 	}
