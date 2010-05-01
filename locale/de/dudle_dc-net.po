@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-03-09 12:06+0100\n"
+"POT-Creation-Date: 2010-05-01 22:05+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
@@ -10,11 +10,12 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: common.js:27
+#: common.js:28
 msgid "Failed to fetch name for %1."
 msgstr "Konnte Namen von %1 nicht holen."
 
-#: invite_participants.js:23 participate.js:387
+#: invite_participants.js:23
+#: participate.js:455
 msgid "Failed to fetch participant list."
 msgstr "Konnte die Liste der Teilnehmer nicht laden."
 
@@ -30,134 +31,147 @@ msgstr "hole Benutzername für %1 ..."
 msgid "Checking Username"
 msgstr "Überprüfe Benutzername"
 
-#: invite_participants.js:90 invite_participants.js:93
+#: invite_participants.js:90
+#: invite_participants.js:93
 msgid "Invite"
 msgstr "Einladen"
 
-#: invite_participants.js:94
+#: invite_participants.js:95
 msgid "Only registered users can participate privacy-enhanced."
 msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
 
-#: login_register.js:69 login_register.js:100 login_register.js:111
-msgid "Login"
-msgstr "Login"
-
-#: login_register.js:72
-msgid "Logout"
-msgstr "Logout"
-
-#: login_register.js:95 login_register.js:142
-msgid "Secret Key:"
-msgstr "Geheimer Schlüssel:"
-
-#: login_register.js:99 login_register.js:122
+#: participate.js:24
+#: register.js:49
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: login_register.js:103
-msgid "Register new Account"
-msgstr "Neuen Account anlegen"
+#: participate.js:38
+msgid "Secret Key for %1:"
+msgstr "Geheimer Schlüssel für %1:"
 
-#: login_register.js:118
-msgid "Name:"
-msgstr "Name:"
-
-#: login_register.js:123
-msgid "Please wait while calculating a secret key ..."
-msgstr "Bitte warten Sie, ein geheimer Schlüssel wird berechnet ..."
-
-#: login_register.js:130 login_register.js:134
+#: participate.js:42
+#: register.js:66
+#: register.js:70
 msgid "Next"
 msgstr "Weiter"
 
-#: login_register.js:140
-msgid ""
-"Please store the secret key somewhere at your computer (e.&thinsp;g., by "
-"copying it to a textfile)."
-msgstr ""
-"Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;b. "
-"indem Sie ihn in eine Textdatei kopieren)."
+#: participate.js:59
+msgid "Calculating the public key ..."
+msgstr "Berechne den öffentlichen Schlüssel ..."
 
-#: login_register.js:147
-msgid ""
-"Alternatively, you may bookmark this link, which inserts the key into the "
-"login field:"
-msgstr ""
-"Alternativ können Sie ein Lesezeichen dieses Links erstellen, welcher den "
-"Schlüssel in das Loginfeld kopiert:"
+#: participate.js:60
+msgid "Please wait ..."
+msgstr "Bitte warten …"
 
-#: login_register.js:151
-msgid "insert dudle key (%1)"
-msgstr "dudle Schlüssel einfügen (%1)"
+#: participate.js:67
+msgid "You entered a wrong key!"
+msgstr "Der eingegebene Schlüssel ist falsch!"
 
-#: login_register.js:155
-msgid "Previous"
-msgstr "Zurück"
+#: participate.js:119
+msgid "Edit User"
+msgstr "Bearbeite Teilnehmer"
 
-#: login_register.js:156
-msgid "Finish"
-msgstr "Fertig"
-
-#: login_register.js:170
-msgid "Failed to store key, the server said:"
-msgstr "Konnte Schlüssel nicht am server registrieren:"
-
-#: login_register.js:183
-msgid "Please wait while calculating the public key ..."
-msgstr "Bitte warten Sie, der öffentliche Schlüssel wird berechnet ..."
-
-#: participate.js:62
+#: participate.js:122
 msgid "Fetching Name for %1 ..."
 msgstr "Hole status für %1 ..."
 
-#: participate.js:63
-msgid "Fetching status ..."
-msgstr "Hole status ..."
-
-#: participate.js:74
-msgid "Failed to fetch status."
-msgstr "Konnte Status nicht holen."
-
-#: participate.js:78
+#: participate.js:135
 msgid "Has voted anonymously."
 msgstr "Hat anonym abgestimmt."
 
-#: participate.js:82
+#: participate.js:140
 msgid "Has not voted yet."
 msgstr "Hat noch nicht abgestimmt."
 
-#: participate.js:86
+#: participate.js:145
 msgid "Is to be removed."
 msgstr "Soll entfernt werden."
 
-#: participate.js:90
+#: participate.js:150
 msgid "Is removed."
 msgstr "Wurde entfernt."
 
-#: participate.js:110
-msgid "Calculating keys ..."
-msgstr "Berechne Schlüssel ..."
-
-#: participate.js:156
+#: participate.js:206
 msgid "decrease"
 msgstr "erniedrigen"
 
-#: participate.js:156
+#: participate.js:206
 msgid "increase"
 msgstr "erhöhen"
 
-#: participate.js:157
+#: participate.js:207
 msgid "Somebody tried to %1 column %2 by %3!!!"
 msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
 
-#: participate.js:168
+#: participate.js:218
 msgid "Somebody sent inconsistent values at column %1!!!"
 msgstr "Jemand hat inkonsistente Werte für Spalte %1 gesendet!!!"
 
-#: participate.js:218
+#: participate.js:265
 msgid "Save"
 msgstr "Speichern"
 
-#: participate.js:242
+#: participate.js:289
 msgid "Something went wrong! The server said:"
 msgstr "Serverfehler:"
+
+#: participate.js:488
+msgid "Calculating keys ..."
+msgstr "Berechne Schlüssel ..."
+
+#: register.js:22
+#: register.js:59
+msgid "Register"
+msgstr "Anmelden"
+
+#: register.js:43
+msgid "Register new Account"
+msgstr "Neuen Account anlegen"
+
+#: register.js:45
+msgid "Name:"
+msgstr "Name:"
+
+#: register.js:50
+msgid "Please wait while calculating a secret key ..."
+msgstr "Bitte warten Sie, ein geheimer Schlüssel wird berechnet ..."
+
+#: register.js:77
+msgid "Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile)."
+msgstr "Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;b. indem Sie ihn in eine Textdatei kopieren)."
+
+#: register.js:79
+msgid "Secret Key:"
+msgstr "Geheimer Schlüssel:"
+
+#: register.js:84
+msgid "Alternatively, you may bookmark this link, which inserts the key into the login field:"
+msgstr "Alternativ können Sie ein Lesezeichen dieses Links erstellen, welcher den Schlüssel in das Loginfeld kopiert:"
+
+#: register.js:89
+msgid "insert dudle key (%1)"
+msgstr "dudle Schlüssel einfügen (%1)"
+
+#: register.js:93
+msgid "Previous"
+msgstr "Zurück"
+
+#: register.js:95
+msgid "Finish"
+msgstr "Fertig"
+
+#: register.js:108
+msgid "Failed to store key, the server said:"
+msgstr "Konnte Schlüssel nicht am server registrieren:"
+
+#~ msgid "Login"
+#~ msgstr "Login"
+#~ msgid "Logout"
+#~ msgstr "Logout"
+#~ msgid "Please wait while calculating the public key ..."
+#~ msgstr "Bitte warten Sie, der öffentliche Schlüssel wird berechnet ..."
+#~ msgid "Fetching status ..."
+#~ msgstr "Hole status ..."
+#~ msgid "Failed to fetch status."
+#~ msgstr "Konnte Status nicht holen."
+
