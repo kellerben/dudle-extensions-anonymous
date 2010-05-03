@@ -38,3 +38,31 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 	if [ "`postats -f locale/$*/$(DOMAIN).po|tail -n1 |cut -d"(" -f3|cut -d")" -f1`" = "100%\n" ];\
 		then poedit locale/$*/$(DOMAIN).po;\
 	fi
+
+compress: $(foreach p,$(wildcard *.js), compressed/$p)
+compressed/%.js: %.js
+	echo -n "/*jslint strict: true, browser: true, nomen: false, plusplus: false */" > /tmp/$*.js
+	echo -n "/*global alert, window, localStorage, Ajax, $$, $$" >> /tmp/$*.js
+	echo -n "H, $$" >> /tmp/$*.js
+	echo -n "A, $$" >> /tmp/$*.js
+	echo -n "F, Gettext, Autocompleter, BigInteger, SHA256_hash, SecureRandom, AES_Init, AES_Done, AES_ExpandKey, AES_Encrypt */" >> /tmp/$*.js
+	cat $*.js >> /tmp/$*.js
+	rhino lib/jslint.js /tmp/$*.js
+	cat $*.js |ruby lib/jsmin.rb > $@
+
+watch:
+	while true; do\
+		FILE=`inotifywait -e close_write --format="%w%f" --exclude '(/[^\\.]*\$$|\\.swp\$$|qt_temp\\..*)' . 2>/dev/null`;\
+		EXT=`echo $$FILE|sed -e 's/^.*\.\([^.]*\)$$/\1/g'`;\
+		FILEBASENAME=`basename $$FILE .$$EXT`;\
+		case $$EXT in\
+		js)\
+			make compressed/$$FILEBASENAME.$$EXT;\
+			;;\
+		*)\
+			echo "$$FILE was modified and I don't know what to do!";\
+			continue;\
+			;;\
+		esac;\
+	done
+

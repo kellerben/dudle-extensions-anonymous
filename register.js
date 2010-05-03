@@ -17,18 +17,20 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
+"use strict";
+/*global gt, goVoteVector, giDHLENGTH, gsExtensiondir */
 
-function showRegisterTab(){
-	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;"+gt.gettext("Register") + "&nbsp;</a></li>");
+function showRegisterTab() {
+	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;" + gt.gettext("Register") + "&nbsp;</a></li>");
 }
 
 $("tablist").insert({ bottom: "<li id='registerTab' class='nonactive_tab'/>" });
 showRegisterTab();
 
-var gActiveTabInnerHTML = $('active_tab').innerHTML
+var gActiveTabInnerHTML = $('active_tab').innerHTML;
 var gContent = $('content').innerHTML;
 
-function showContent(){
+function showContent() {
 	$('content').update(gContent);
 	$('active_tab').removeClassName("nonactive_tab");
 	$('active_tab').addClassName("active_tab");
@@ -38,16 +40,16 @@ function showContent(){
 	$('active_tab').update(gActiveTabInnerHTML);
 }
 
-function showRegister(name){
+function showRegister(name) {
 	var _r = "<h1>dudle</h1>";
 	_r += "<h2>" + gt.gettext("Register new Account") + "</h2>";
 	_r += "<table id='register' class='settingstable'><tr>";
 	_r += "<td class='label'><label for='name'>" + gt.gettext("Name:") + "</label></td>";
-	_r += "<td><input id='name' type='text' value='"+ name +"' /></td>";
+	_r += "<td><input id='name' type='text' value='" + name + "' /></td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
-	_r += "<td><input type='button' value='" + gt.gettext("Cancel")+"' onClick='showContent()'/> ";
-	_r += "<input disabled='disabled' type='button' id='next' value='"+ gt.gettext("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
+	_r += "<td><input type='button' value='" + gt.gettext("Cancel") + "' onClick='showContent()'/> ";
+	_r += "<input disabled='disabled' type='button' id='next' value='" + gt.gettext("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
 	_r += "</tr></table>";
 	$('content').update(_r);
 
@@ -57,21 +59,20 @@ function showRegister(name){
 	$('registerTab').removeClassName("nonactive_tab");
 
 	$('registerTab').update('&nbsp;' + gt.gettext("Register") + '&nbsp;');
-	$('active_tab').update('<a href="javascript:showContent()">'+ gActiveTabInnerHTML + '</a>');
+	$('active_tab').update('<a href="javascript:showContent()">' + gActiveTabInnerHTML + '</a>');
 
-	if (!goVoteVector.sec){
-		var seed = new SecureRandom();
-		goVoteVector.setSecKey(new BigInteger(giDHLENGTH-1,seed),function(){
+	if (!goVoteVector.sec) {
+		goVoteVector.setSecKey(new BigInteger(giDHLENGTH - 1, new SecureRandom()), function () {
 			$('next').enable();
 			$('next').value = gt.gettext('Next');
 		});
 	} else {
-			$('next').enable();
-			$('next').value = gt.gettext('Next');
+		$('next').enable();
+		$('next').value = gt.gettext('Next');
 	}
 }
 
-function secondRegisterStep(){
+function secondRegisterStep() {
 	var _r = "<tr>";
 	_r += "</td><td>";
 	_r += "<td>" + gt.gettext("Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).") + "</td>";
@@ -86,29 +87,31 @@ function secondRegisterStep(){
 	_r += goVoteVector.id + "');document.getElementById('key').value='";
 	_r += goVoteVector.sec.toString(16);
 	_r += "';})();\">";
-	_r += Gettext.strargs(gt.gettext('insert dudle key (%1)'),[$F('name')]) + '</a>.';
+	_r += Gettext.strargs(gt.gettext('insert dudle key (%1)'), [$F('name')]) + '</a>.';
 	_r += "</td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
-	_r += "<td><input type='button' value='" + gt.gettext("Previous")+"' onclick='showRegister(\"" + $F('name') + "\");' /> ";
+	_r += "<td><input type='button' value='" + gt.gettext("Previous") + "' onclick='showRegister(\"" + $F('name') + "\");' /> ";
 	_r += "<input type='hidden' id='name' value='" + $F('name') + "' />";
-	_r += "<input type='button' value='" + gt.gettext("Finish")+"' onclick='register()'/></td>";
+	_r += "<input type='button' value='" + gt.gettext("Finish") + "' onclick='register()'/></td>";
 	_r += "</tr>";
 	$('register').update(_r);
 }
 
-function register(){
-	var name = $F('name');
+function register() {
+	var _name, _pubkey;
 
-	var _pubkey = "NAME " + $F('name') + "\n";
+	_name = $F('name');
+	_pubkey = "NAME " + _name + "\n";
 	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
-	new Ajax.Request(gsExtensiondir + "keyserver.cgi",{
+	new Ajax.Request(gsExtensiondir + "keyserver.cgi", {
 		parameters: {service: 'setKey', gpgKey: _pubkey},
-		onFailure: function(transport){
+		onFailure: function (transport) {
 			alert(gt.gettext("Failed to store key, the server said:") + " " + transport.responseText);
 		},
-		onSuccess: function(transport){
+		onSuccess: function (transport) {
 			showContent();
-	}});
+		}
+	});
 }
 
