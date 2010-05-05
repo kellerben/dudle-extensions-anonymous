@@ -19,8 +19,9 @@
 
 DOMAIN=dudle_dc-net
 
-default: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
+default: locale compress
 
+locale: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
 locale/$(DOMAIN).pot: *.js
 	rm -f locale/dudle_dc-net.pot
 	xgettext -L Python *.js -o $@
@@ -49,7 +50,7 @@ check: $(foreach p,$(wildcard *.js), $p.check)
 	cat $*.js >> /tmp/$*.js
 	rhino lib/jslint.js /tmp/$*.js
 
-compress: $(foreach p,$(wildcard *.js), compressed/$p)
+compressed: $(foreach p,$(wildcard *.js), compressed/$p)
 compressed/%.js: %.js.check %.js
 	cat $*.js |ruby lib/jsmin.rb > $@
 
