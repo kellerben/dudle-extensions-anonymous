@@ -34,17 +34,23 @@ var goParticipants;
  **********************************************************/
 var htmlid = (function () {
 	var cache = {},
+	    ncache = {},
 	    reg = /[^A-Za-z0-9_:.\-]/;
 	return function (s) {
-		var id = s.replace(reg, ".");
-		if (id in cache) {
-			id += cache[id]++;
+		var id;
+		if (s in cache) {
+			id = cache[s];
+		} else {
+			id = s.replace(reg,".");
+			if (id in ncache) {
+		 		id += ncache[id]++;
+			}
+			ncache[id] = 0;
+			cache[s] = id;
 		}
-		cache[id] = 0;
 		return id;
 	};
 }());
-
 
 function cancelButton() {
 	return "<br /><input type='button' value='" + gt.gettext("Cancel") + "' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
