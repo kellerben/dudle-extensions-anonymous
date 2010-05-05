@@ -33,7 +33,11 @@ class Extension
 		$d.html.add_head_script("#{@basedir}/extensions/dc-net/lib/#{jslib}.js")
 	end
 	def add_script(script)
-		$d.html.add_script_file("#{@basedir}/extensions/dc-net/#{script}.js")
+		if File.exists?("#{@basedir}/extensions/dc-net/compressed/#{script}.js")
+			$d.html.add_script_file("#{@basedir}/extensions/dc-net/compressed/#{script}.js")
+		else
+			$d.html.add_script_file("#{@basedir}/extensions/dc-net/#{script}.js")
+		end
 	end
 	def add_css(file)
 		$d.html.add_css("#{@basedir}/extensions/dc-net/#{file}.css")
