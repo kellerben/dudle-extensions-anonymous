@@ -140,7 +140,7 @@ function fingerprint(pub) {
  * _successFunction with it             *
  ****************************************/
 function getPollState(_successFunction) {
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		parameters: {service: 'getPollState', pollID: gsPollID},
 		method: 'get',
 		onSuccess: function (_t) {
@@ -218,8 +218,7 @@ function minabs(_number, _modulo) {
  * calculate the result from anonymous votes and add it to the sum *
  *******************************************************************/
 function calcResult() {
-
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		method: "get",
 		parameters: { service: "getVote", pollID: gsPollID },
 		onSuccess: function (_transport) {
@@ -243,23 +242,24 @@ function calcResult() {
 				_colResults[_inverted] = {};
 
 				gaColumns.each(function (_col) {
-					var sumelement = $("sum_" + htmlid(_col));
+					var sumelement, _table, result, _attack, totalsum;
+					sumelement = $("sum_" + htmlid(_col));
 					_resultMatrix[_inverted][_col] = [];
 					_colResults[_inverted][_col] = BigInteger.ZERO;
 					if (_inverted === 0) {
 						sumelement.setStyle("color: white; background-color: black");
 					}
 
-					for (var _table = 0; _table < giNumTables; _table++) {
+					for (_table = 0; _table < giNumTables; _table++) {
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
 						$H(goParticipants).keys().each(function (_gpgID) {
 							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 16)).mod(goVoteVector.dcmod);
 						});
 
-						var result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
+						result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
 						if (result.compareTo(BigInteger.ZERO) < 0) {
-							var _attack = _inverted === 0 ? gt.gettext("decrease") : gt.gettext("increase");
+							_attack = _inverted === 0 ? gt.gettext("decrease") : gt.gettext("increase");
 							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody tried to %1 column %2 by %3!!!"), [_attack, _col, result.abs()]) + "</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
@@ -267,7 +267,7 @@ function calcResult() {
 						_colResults[_inverted][_col] = _colResults[_inverted][_col].add(result);
 					}
 					if (_inverted === 0) {
-						var totalsum = (new BigInteger(sumelement.innerHTML)).add(_colResults[_inverted][_col]);
+						totalsum = (new BigInteger(sumelement.innerHTML)).add(_colResults[_inverted][_col]);
 						sumelement.update(totalsum);
 					} else {
 						if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) !== 0) {
@@ -349,7 +349,7 @@ Vote.prototype.startKeyCalc = function () {
  * called from the "Save"-Button *
  *********************************/
 Vote.prototype.save = function () {
-	var _inverted, _colidx, _col, randomTable, voteval, _voteobj, _table;
+	var _inverted, _colidx, _col, randomTable, voteval, _voteobj, _table, ar;
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
@@ -375,7 +375,7 @@ Vote.prototype.save = function () {
 		}
 	}
 
-	new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+	ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		parameters: {service: 'setVote', pollID: gsPollID, gpgID: goVoteVector.id, vote: Object.toJSON(_voteobj), signature: 'TODO'},
 		onSuccess: function (transport) {
 			location.assign(location.href);
@@ -485,20 +485,20 @@ Vote.prototype.calcNextDHKey = (function () {
 				this.calcNextDHKey();
 			}
 		};
-	}
-)();
+	}()
+);
 
 /*********************************************************
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *
  *********************************************************/
-new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	parameters: {service: 'getColumns', pollID: gsPollID},
 	method: 'get',
 	onSuccess: function (transport) {
 		gaColumns = transport.responseText.split("\n");
 
-		new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: {service: 'getTotalParticipants', pollID: gsPollID},
 			method: "get",
 			onFailure: function () { 

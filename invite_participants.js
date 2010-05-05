@@ -21,14 +21,14 @@
 /*global gt, gsExtensiondir, gsPollID, gfUpdateName */
 var gsKeyId;
 
-new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
 	parameters: { service: 'getParticipants', pollID: gsPollID},
 	onFailure: function () {
 		alert(gt.gettext('Failed to fetch participant list.'));
 	},
 	onSuccess: function (transport) {
-		var participants, privparticipantrows;
+		var participants, privparticipantrows, ar;
 		// Add existing participants
 
 		$("participanttable").select("th").each(function (th) {
@@ -53,11 +53,11 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		// Modify participation form
 		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
 		$("add_participant_input").insert({after: "<div id='autocomplete' class='autocomplete' style='display: none; position:absolute;'></div>"});
-		new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			parameters: {service: 'listAllNames'},
 			method: 'get',
 			onSuccess: function (transport) {
-				new Autocompleter.Local('add_participant_input', 'autocomplete', transport.responseText.split("\n"));
+				var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', transport.responseText.split("\n"));
 			}
 		});
 
@@ -75,7 +75,7 @@ new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 
 function addParticipant() {
 	if ($F("add_participant_check_privacy_enhanced")) {
-		new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
 			onSuccess: function () {
 				location.assign(location.href);
@@ -92,7 +92,7 @@ function checkcheckbox() {
 	if ($F("add_participant_check_privacy_enhanced")) {
 		$("savebutton").disable();
 		$("savebutton").value = gt.gettext("Checking Username");
-		new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+		var ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			method: "get",
 			parameters: { service: 'searchId', name: $F("add_participant_input")},
 			onSuccess: function (transport) {

@@ -99,12 +99,12 @@ function secondRegisterStep() {
 }
 
 function register() {
-	var _name, _pubkey;
+	var _name, _pubkey, _ar;
 
 	_name = $F('name');
 	_pubkey = "NAME " + _name + "\n";
 	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
-	new Ajax.Request(gsExtensiondir + "keyserver.cgi", {
+	_ar = new Ajax.Request(gsExtensiondir + "keyserver.cgi", {
 		parameters: {service: 'setKey', gpgKey: _pubkey},
 		onFailure: function (transport) {
 			alert(gt.gettext("Failed to store key, the server said:") + " " + transport.responseText);

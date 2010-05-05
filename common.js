@@ -25,7 +25,7 @@ var gsPollID = (window.location.href).split("/");
 gsPollID = gsPollID[gsPollID.length - 2];
 
 function gfUpdateName(gpgID) {
-	new Ajax.Updater(gpgID, gsExtensiondir + 'keyserver.cgi', {
+	var ar = new Ajax.Updater(gpgID, gsExtensiondir + 'keyserver.cgi', {
 		parameters: { service: "getName", gpgID: gpgID },
 		method: 'get',
 		onFailure: function () {

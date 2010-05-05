@@ -41,11 +41,11 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 
 compress: $(foreach p,$(wildcard *.js), compressed/$p)
 compressed/%.js: %.js
-	echo -n "/*jslint strict: true, browser: true, nomen: false, plusplus: false */" > /tmp/$*.js
+	echo -n "/*jslint cap: true, newcap: false, regexp: false, strict: true, browser: true, nomen: false, plusplus: false */" > /tmp/$*.js
 	echo -n "/*global alert, window, localStorage, Ajax, $$, $$" >> /tmp/$*.js
 	echo -n "H, $$" >> /tmp/$*.js
 	echo -n "A, $$" >> /tmp/$*.js
-	echo -n "F, Gettext, Autocompleter, BigInteger, SHA256_hash, SecureRandom, AES_Init, AES_Done, AES_ExpandKey, AES_Encrypt */" >> /tmp/$*.js
+	echo -n "F, Gettext, Autocompleter, BigInteger, SecureRandom, SHA256_hash, AES_Init, AES_Done, AES_ExpandKey, AES_Encrypt */" >> /tmp/$*.js
 	cat $*.js >> /tmp/$*.js
 	rhino lib/jslint.js /tmp/$*.js
 	cat $*.js |ruby lib/jsmin.rb > $@
