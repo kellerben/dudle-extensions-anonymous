@@ -17,30 +17,44 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-def locale_prototype_extensiondir(basedir)
-	$d.html.add_script("var gsExtensiondir='#{basedir}/extensions/dc-net/';")
+class Extension
+	def initialize(basedir)
+		@basedir = basedir
+		$d.html.add_script("var gsExtensiondir='#{basedir}/extensions/dc-net/';")
 
-	if File.exists?("#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po")
-		$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po' />")
+		if File.exists?("#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po")
+			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po' />")
+		end
+		$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/Gettext.js")
+		$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/prototype.js")
+		
 	end
-	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/Gettext.js")
-	$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/prototype.js")
+	def add_lib(jslib)
+		$d.html.add_head_script("#{@basedir}/extensions/dc-net/lib/#{jslib}.js")
+	end
+	def add_script(script)
+		$d.html.add_script_file("#{@basedir}/extensions/dc-net/#{script}.js")
+	end
+	def add_css(file)
+		$d.html.add_css("#{@basedir}/extensions/dc-net/#{file}.css")
+	end
 end
 
-case $d.tab
-when "invite_participants.cgi"
-	locale_prototype_extensiondir("..")
 
-	$d.html.add_head_script("../extensions/dc-net/lib/scriptaculous-effects.js")
-	$d.html.add_head_script("../extensions/dc-net/lib/scriptaculous-controls.js")
+if $d.is_poll?
+	e = Extension.new("..")
 
-	$d.html.add_script_file("../extensions/dc-net/common.js")
-	$d.html.add_script_file("../extensions/dc-net/invite_participants.js")
-	$d.html.add_css("../extensions/dc-net/invite_participants.css")
+	case $d.tab
+	when "invite_participants.cgi"
 
-when "." 
-	if $d.is_poll?
-		locale_prototype_extensiondir("..")
+		e.add_lib("scriptaculous-effects")
+		e.add_lib("scriptaculous-controls")
+
+		e.add_script("common")
+		e.add_script("invite_participants")
+		e.add_css("invite_participants")
+
+	when "." 
 
 		$d.html.add_script(<<SCRIPT
 var gsEdit = '#{EDIT}';
@@ -52,29 +66,29 @@ var gsKickedOut = '𝄐';
 SCRIPT
 # ⚠⬚⸪𝄽𝄐✉◌#
 )
-		$d.html.add_head_script("../extensions/dc-net/lib/jsbn.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jsbn2.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jssha256.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/jsaes.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/prng4.js")
-		$d.html.add_head_script("../extensions/dc-net/lib/rng.js")
+		e.add_lib("jsbn")
+		e.add_lib("jsbn2")
+		e.add_lib("jssha256")
+		e.add_lib("jsaes")
+		e.add_lib("prng4")
+		e.add_lib("rng")
 
-		$d.html.add_script_file("../extensions/dc-net/common.js")
-		$d.html.add_script_file("../extensions/dc-net/login_register_common.js")
-		$d.html.add_script_file("../extensions/dc-net/participate.js")
-		$d.html.add_css("../extensions/dc-net/participate.css")
+		e.add_script("common")
+		e.add_script("login_register_common")
+		e.add_script("participate")
+		e.add_css("participate")
 	end
-end
-unless $d.is_poll?
-	locale_prototype_extensiondir(".")
+else
 
-	$d.html.add_head_script("extensions/dc-net/lib/jsbn.js")
-	$d.html.add_head_script("extensions/dc-net/lib/jsbn2.js")
-	$d.html.add_head_script("extensions/dc-net/lib/jssha256.js")
-	$d.html.add_head_script("extensions/dc-net/lib/prng4.js")
-	$d.html.add_head_script("extensions/dc-net/lib/rng.js")
+	e = Extension.new(".")
 
-	$d.html.add_script_file("extensions/dc-net/common.js")
-	$d.html.add_script_file("extensions/dc-net/login_register_common.js")
-	$d.html.add_script_file("extensions/dc-net/register.js")
+	e.add_lib("jsbn")
+	e.add_lib("jsbn2")
+	e.add_lib("jssha256")
+	e.add_lib("prng4")
+	e.add_lib("rng")
+
+	e.add_script("common")
+	e.add_script("login_register_common")
+	e.add_script("register")
 end
