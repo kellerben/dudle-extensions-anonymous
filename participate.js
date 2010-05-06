@@ -18,11 +18,12 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, giNumTables, goNumParticipants, Vote */
+/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, giNumTables, Vote */
 
 var gParticipantTds;
 var gActiveParticipant;
 var gaColumns;
+var gaColumnsLen;
 var goParticipants;
 
 /**********************************************************
@@ -41,9 +42,9 @@ var htmlid = (function () {
 		if (s in cache) {
 			id = cache[s];
 		} else {
-			id = s.replace(reg,".");
+			id = s.replace(reg, ".");
 			if (id in ncache) {
-		 		id += ncache[id]++;
+				id += ncache[id]++;
 			}
 			ncache[id] = 0;
 			cache[s] = id;
@@ -71,7 +72,7 @@ function showLogin(_participant) {
 	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [_username]);
 	_l += "</label></td>";
 
-	_l += "<td id='td.key' colspan='" + gaColumns.length + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
+	_l += "<td id='td.key' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
 	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
 	_l += cancelButton();
 	_l += "</td>";
@@ -80,8 +81,8 @@ function showLogin(_participant) {
 	gActiveParticipant = $("participant_" + _participant);
 	gParticipantTds = gActiveParticipant.innerHTML;
 	gActiveParticipant.insert({
-		before: "<tr id='separator_top'><td colspan='" + (gaColumns.length + 2) + "' class='invisible'></td></tr>",
-		after: "<tr id='separator_bottom'><td colspan='" + (gaColumns.length + 2) + "' class='invisible'></td></tr>"
+		before: "<tr id='separator_top'><td colspan='" + (gaColumnsLen + 2) + "' class='invisible'></td></tr>",
+		after: "<tr id='separator_bottom'><td colspan='" + (gaColumnsLen + 2) + "' class='invisible'></td></tr>"
 	});
 	gActiveParticipant.update(_l);
 }
@@ -242,7 +243,8 @@ function calcResult() {
 		method: "get",
 		parameters: { service: "getVote", pollID: gsPollID },
 		onSuccess: function (_transport) {
-			var _totalVoteSeveralCols, _totalVote, _resultMatrix, _colResults, _inverted;
+			var _totalVoteSeveralCols, _totalVote, _resultMatrix, _colResults, _inverted,
+				sumelement, _table, result, _attack, totalsum, colidx,  _col, numParticipants, partidx, _gpgID;
 			_totalVoteSeveralCols = _transport.responseText.evalJSON();
 			_totalVote = {};
 
@@ -261,8 +263,8 @@ function calcResult() {
 				_resultMatrix[_inverted] = {};
 				_colResults[_inverted] = {};
 
-				gaColumns.each(function (_col) {
-					var sumelement, _table, result, _attack, totalsum;
+				for (colidx = 0; colidx < gaColumnsLen; ++colidx) {
+					_col = gaColumns[colidx];
 					sumelement = $("sum_" + htmlid(_col));
 					_resultMatrix[_inverted][_col] = [];
 					_colResults[_inverted][_col] = BigInteger.ZERO;
@@ -273,9 +275,10 @@ function calcResult() {
 					for (_table = 0; _table < giNumTables; _table++) {
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
-						$H(goParticipants).keys().each(function (_gpgID) {
+						for (partidx = 0, numParticipants = $H(goParticipants).keys().length; partidx < numParticipants; ++partidx) {
+							_gpgID = $H(goParticipants).keys()[partidx];
 							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 16)).mod(goVoteVector.dcmod);
-						});
+						}
 
 						result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
 						if (result.compareTo(BigInteger.ZERO) < 0) {
@@ -290,13 +293,14 @@ function calcResult() {
 						totalsum = (new BigInteger(sumelement.innerHTML)).add(_colResults[_inverted][_col]);
 						sumelement.update(totalsum);
 					} else {
-						if (goNumParticipants.compareTo(_colResults[0][_col].add(_colResults[1][_col])) !== 0) {
+/*FIXME auf spalten anpassen*/
+						if (new BigInteger($H(goParticipants).size().toString()).compareTo(_colResults[0][_col].add(_colResults[1][_col])) !== 0) {
 							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody sent inconsistent values at column %1!!!"), [_col]) + "</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
 						}
 					}
-				});
+				}
 			}
 		}
 	});
@@ -373,7 +377,7 @@ Vote.prototype.save = function () {
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
-		for (_colidx = 0; _colidx < gaColumns.length; _colidx++) {
+		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 			_col = gaColumns[_colidx];
 			randomTable = Math.round(Math.random() * (giNumTables - 1));
 			voteval = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
@@ -384,7 +388,7 @@ Vote.prototype.save = function () {
 
 	// write vote string
 	_voteobj = {};
-	for (_colidx = 0; _colidx < gaColumns.length; _colidx++) {
+	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 		_col = gaColumns[_colidx];
 		_voteobj[_col] = [];
 		for (_table = 0; _table < giNumTables;_table++) {
@@ -444,7 +448,7 @@ Vote.prototype.calculateVoteKeys = function () {
 	this.keyMatrix = [];
 	for (_inverted = 0; _inverted < 2; _inverted++) {
 		this.keyMatrix[_inverted] = {};
-		for (_colidx = 0; _colidx < gaColumns.length; _colidx++) {
+		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 			_col = gaColumns[_colidx];
 			this.keyMatrix[_inverted][_col] = [];
 			for (_table = 0; _table < giNumTables;_table++) {
@@ -453,7 +457,7 @@ Vote.prototype.calculateVoteKeys = function () {
 		}
 	}
 	AES_Init();
-	for (_colidx = 0; _colidx < gaColumns.length; _colidx++) {
+	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 		_col = gaColumns[_colidx];
 		for (_id in this.participants) {
 			if (usedMyKey(_id, _col)) {
@@ -517,6 +521,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: 'get',
 	onSuccess: function (transport) {
 		gaColumns = transport.responseText.split("\n");
+		gaColumnsLen = gaColumns.length;
 
 		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: {service: 'getTotalParticipants', pollID: gsPollID},
