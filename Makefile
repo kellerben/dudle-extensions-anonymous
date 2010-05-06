@@ -19,8 +19,6 @@
 
 DOMAIN=dudle_dc-net
 
-default: locale compress
-
 locale: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
 locale/$(DOMAIN).pot: *.js
 	rm -f locale/dudle_dc-net.pot

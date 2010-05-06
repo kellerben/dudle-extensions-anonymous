@@ -17,30 +17,32 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+
 class Extension
 	def initialize(basedir)
-		@basedir = basedir
-		$d.html.add_script("var gsExtensiondir='#{basedir}/extensions/dc-net/';")
+		@basedir = basedir + "/extensions/dc-net"
+		load "#{@basedir}/config.rb"
+		$d.html.add_script("var gsExtensiondir='#{@basedir}/';")
 
-		if File.exists?("#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po")
-			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{basedir}/extensions/dc-net/locale/#{GetText.locale}/dudle_dc-net.po' />")
+		if File.exists?("#{@basedir}/locale/#{GetText.locale}/dudle_dc-net.po")
+			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{@basedir}/locale/#{GetText.locale}/dudle_dc-net.po' />")
 		end
-		$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/Gettext.js")
-		$d.html.add_head_script("#{basedir}/extensions/dc-net/lib/prototype.js")
+		$d.html.add_head_script("#{@basedir}/lib/Gettext.js")
+		$d.html.add_head_script("#{@basedir}/lib/prototype.js")
 		
 	end
 	def add_lib(jslib)
-		$d.html.add_head_script("#{@basedir}/extensions/dc-net/lib/#{jslib}.js")
+		$d.html.add_head_script("#{@basedir}/lib/#{jslib}.js")
 	end
 	def add_script(script)
-		if File.exists?("#{@basedir}/extensions/dc-net/compressed/#{script}.js")
-			$d.html.add_script_file("#{@basedir}/extensions/dc-net/compressed/#{script}.js")
+		if COMPRESSED
+			$d.html.add_script_file("#{@basedir}/compressed/#{script}.js")
 		else
-			$d.html.add_script_file("#{@basedir}/extensions/dc-net/#{script}.js")
+			$d.html.add_script_file("#{@basedir}/#{script}.js")
 		end
 	end
 	def add_css(file)
-		$d.html.add_css("#{@basedir}/extensions/dc-net/#{file}.css")
+		$d.html.add_css("#{@basedir}/#{file}.css")
 	end
 end
 
