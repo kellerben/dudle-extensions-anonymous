@@ -21,6 +21,7 @@
 /*global gt, gsExtensiondir, gsPollID, gfUpdateName */
 var gsKeyId;
 
+var gsSaveButtonLabel = $("savebutton").value;
 var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
 	parameters: { service: 'getParticipants', pollID: gsPollID},
@@ -78,7 +79,14 @@ function addParticipant() {
 		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
 			onSuccess: function () {
-				location.assign(location.href);
+				if (location.href.include("?edituser=")){
+					$("savebutton").insert({
+						after: "<input type='hidden' name='delete_participant' value='true' />"
+					});
+					$("invite_participants_form").submit();
+				} else {
+					location.assign(location.href);
+				}
 			}
 		});
 	} else {
@@ -98,10 +106,10 @@ function checkcheckbox() {
 			onSuccess: function (transport) {
 				gsKeyId = transport.responseText;
 				$("savebutton").enable();
-				$("savebutton").value = gt.gettext("Invite");
+				$("savebutton").value = gsSaveButtonLabel;
 			},
 			onFailure: function (transport) {
-				$("savebutton").value = gt.gettext("Invite");
+				$("savebutton").value = gsSaveButtonLabel;
 				$("add_participant_input").focus();
 				$("registerederror").update("<td colspan='3' class='warning'>" + gt.gettext("Only registered users can participate privacy-enhanced.") + "</td>");
 			}
