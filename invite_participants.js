@@ -101,27 +101,25 @@ function editUser(_user) {
 	$(_user + "_tr").update(_inputTr);
 	_savebutton = '<input type="button" value="';
 	_savebutton += gsSaveButtonLabel;
-	_savebutton += '" id="savebutton" onclick="addParticipant();" />';
+	_savebutton += '" id="savebutton" onclick="removeParticipant(\'' + _user + '\', addParticipant);" />';
 	_savebutton += '<br />';
 	_savebutton += '<input type="button" value="';
 	_savebutton += gt.gettext("Delete User");
-	_savebutton += '" onClick="removeParticipant(\'' + _user + '\')" style="margin-top: 1ex;" />';
+	_savebutton += '" onClick="removeParticipant(\'' + _user + '\', reload)" style="margin-top: 1ex;" />';
 	$("savebutton").replace(_savebutton);
 
 	$("add_participant_input").value = _username;
 	$("add_participant_check_privacy_enhanced").checked = true;
 }
 
-function removeParticipant(_user) {
+function removeParticipant(_user, _successfunc) {
 	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		method: "get",
 		parameters: { service: 'removeParticipant', pollID: gsPollID, gpgID: _user },
 		onFailure: function (error) {
 			alert(error.responseText);
 		},
-		onSuccess: function (transport) {
-			location.assign(location.href);
-		}
+		onSuccess: _successfunc
 	});
 }
 
@@ -136,7 +134,7 @@ function addParticipant() {
 					});
 					$("invite_participants_form").submit();
 				} else {
-					location.assign(location.href);
+					reload();
 				}
 			}
 		});
@@ -170,6 +168,6 @@ function checkcheckbox() {
 	}
 }
 
-function showContent() {
+function reload() {
 	location.assign(location.href);
 }
