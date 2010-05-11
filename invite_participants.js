@@ -18,38 +18,38 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, gsExtensiondir, gsPollID, gfUpdateName */
+/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gsEdit */
 var gsKeyId;
 
+var _oParticipants;
 var gsSaveButtonLabel = $("savebutton").value;
 var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
-	parameters: { service: 'getParticipants', pollID: gsPollID},
+	parameters: { service: 'getTotalParticipants', pollID: gsPollID},
 	onFailure: function () {
 		alert(gt.gettext('Failed to fetch participant list.'));
 	},
 	onSuccess: function (transport) {
-		var participants, privparticipantrows, ar;
+		var ar;
+		_oParticipants = transport.responseText.evalJSON();
 		// Add existing participants
 
 		$("participanttable").select("th").each(function (th) {
 			th.insert({after: "<th>" + gt.gettext("Privacy Enhanced") + "</th>"});
 		});
 
-		participants = transport.responseText.split("\n");
-		if (participants.length > 0 && participants[0] !== "") {
-			privparticipantrows = "";
-			participants.each(function (participant) {
-				privparticipantrows += "<tr class='participantrow'><td title='" + participant + "' id='" + participant + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."), [participant]) + "</td>";
-				privparticipantrows += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>";
-				privparticipantrows += "</tr>";
-			});
-
-			$("participanttable").select("tr")[0].insert({after: privparticipantrows});
-		}
-		participants.each(function (user) {
-			gfUpdateName(user);
+		$H(_oParticipants).keys().each(function (_p) {
+			var _tr = "<tr class='participantrow'><td title='" + _p + "'>";
+//			_tr += "<a href='javascript:TODO()'>"; 
+			_tr += "<span id='" + _p + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."), [_p]) + "</span>";
+//			_tr += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
+			_tr += "</td>";
+			_tr += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>";
+			_tr += "</tr>";
+			$("participanttable").select("tr")[0].insert({after: _tr});
+			gfUpdateName(_p);
 		});
+
 		
 		// Modify participation form
 		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
@@ -79,7 +79,7 @@ function addParticipant() {
 		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
 			onSuccess: function () {
-				if (location.href.include("?edituser=")){
+				if (location.href.include("?edituser=")) {
 					$("savebutton").insert({
 						after: "<input type='hidden' name='delete_participant' value='true' />"
 					});
