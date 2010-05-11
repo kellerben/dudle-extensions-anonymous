@@ -120,6 +120,37 @@ class Poll
 		store_dc($dc,"Participant "+ $c["gpgID"] + " invited for anonymous voting")
 	end
 
+	def Poll.webservicedescription_0Initialization_removeParticipant
+		{ "return" => "202 wenn user entfernt wurde, 403 wenn der user nicht entfernt werden darf (er oder jemand anders hat schon seinen Schlüssel in einer Stimme benutzt), 404 wenn user nicht in Datenbank",
+			"input" => "gpgID"
+		}
+	end
+	def webservice_removeParticipant
+		user = $c["gpgID"]
+		unless $dc["participants"].include?(user)
+			$header["status"] = "404 Not Found"
+			return "The participant was not configured anyway!"
+		end
+		if $dc.keys.include?(user) 
+			$header["status"] = "403 Forbidden"
+			return "This participant already voted. Removing is forbidden"
+		end
+		if $dc["participants"].collect{|u|
+			if $dc[u]
+				$dc[u].collect{|v| v["usedKeys"].include?(user)}
+			else 
+				false
+			end
+		}.flatten.include?(true)
+			return "The key of this user is already used in the poll. Please use kickOut to remove him."
+		else
+			$dc["participants"].delete(user)
+			store_dc($dc,"Participant "+ $c["gpgID"] + " removed from anonymous voting")
+			$header["status"] = "202 Accepted"
+			return "Participant removed."
+		end
+	end
+
 	def Poll.webservicedescription_0Initialization_getDuration
 		{ "return" => "Dauer des Events in Minuten (integer)" }
 	end
