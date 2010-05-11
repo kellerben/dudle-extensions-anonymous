@@ -89,16 +89,25 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	}
 });
 
+var gsOldUserTr, gsOldUser;
 function editUser(_user) {
 	var _inputTr, _savebutton,
 		_username = $(_user).innerHTML;
 
-	_inputTr = $("add_participant_row").innerHTML;
+	gsSaveButtonLabel = gt.gettext("Save Changes");
 
-	gsSaveButtonLabel = gt.gettext("Save Changes");;
+	if (gsOldUser) {
+		_inputTr = $(gsOldUser + "_tr").innerHTML;
+		$(gsOldUser + "_tr").update(gsOldUserTr);
+	} else {
+		_inputTr = $("add_participant_row").innerHTML;
+		$("add_participant_row").remove();
+	}
+	gsOldUser = _user;
+	gsOldUserTr = $(_user + "_tr").innerHTML;
 
-	$("add_participant_row").remove();
 	$(_user + "_tr").update(_inputTr);
+
 	_savebutton = '<input type="button" value="';
 	_savebutton += gsSaveButtonLabel;
 	_savebutton += '" id="savebutton" onclick="removeParticipant(\'' + _user + '\', addParticipant);" />';
@@ -106,7 +115,7 @@ function editUser(_user) {
 	_savebutton += '<input type="button" value="';
 	_savebutton += gt.gettext("Delete User");
 	_savebutton += '" onClick="removeParticipant(\'' + _user + '\', reload)" style="margin-top: 1ex;" />';
-	$("savebutton").replace(_savebutton);
+	$("savebutton").parentNode.update(_savebutton);
 
 	$("add_participant_input").value = _username;
 	$("add_participant_check_privacy_enhanced").checked = true;
@@ -121,6 +130,10 @@ function removeParticipant(_user, _successfunc) {
 		},
 		onSuccess: _successfunc
 	});
+}
+
+function reload() {
+	location.assign(location.href);
 }
 
 function addParticipant() {
@@ -168,6 +181,3 @@ function checkcheckbox() {
 	}
 }
 
-function reload() {
-	location.assign(location.href);
-}
