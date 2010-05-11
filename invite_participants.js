@@ -30,7 +30,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		alert(gt.gettext('Failed to fetch participant list.'));
 	},
 	onSuccess: function (transport) {
-		var ar;
+		var ar, usedKeys;
 		_oParticipants = transport.responseText.evalJSON();
 		// Add existing participants
 
@@ -38,11 +38,26 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			th.insert({after: "<th>" + gt.gettext("Privacy Enhanced") + "</th>"});
 		});
 
+		usedKeys = $H(_oParticipants).collect(function (_elem) {
+			if (_elem[1].voted) {
+				// participant has voted so he and every of his usedKeys cannot be removed easily
+				return [_elem[0], _elem[1].voted.collect(function (singlevote) {
+					return singlevote[1];
+				})];
+			} else {
+				return null; 
+			}
+		}).compact().flatten();
+
 		$H(_oParticipants).keys().each(function (_p) {
-			var _tr = "<tr class='participantrow'><td title='" + _p + "'>";
-//			_tr += "<a href='javascript:TODO()'>"; 
+			var _tr = "<tr class='participantrow' id='" + _p + "_tr'><td title='" + _p + "'>";
+			if (!usedKeys.include(_p)) {
+				_tr += "<a href='javascript:editUser(\"" + _p + "\")'>";
+			}
 			_tr += "<span id='" + _p + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."), [_p]) + "</span>";
-//			_tr += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
+			if (!usedKeys.include(_p)) {
+				_tr += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
+			}
 			_tr += "</td>";
 			_tr += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>";
 			_tr += "</tr>";
@@ -73,6 +88,42 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		$("savebutton").writeAttribute("type", "button");
 	}
 });
+
+function editUser(_user) {
+	var _inputTr, _savebutton,
+		_username = $(_user).innerHTML;
+
+	_inputTr = $("add_participant_row").innerHTML;
+
+	gsSaveButtonLabel = gt.gettext("Save Changes");;
+
+	$("add_participant_row").remove();
+	$(_user + "_tr").update(_inputTr);
+	_savebutton = '<input type="button" value="';
+	_savebutton += gsSaveButtonLabel;
+	_savebutton += '" id="savebutton" onclick="addParticipant();" />';
+	_savebutton += '<br />';
+	_savebutton += '<input type="button" value="';
+	_savebutton += gt.gettext("Delete User");
+	_savebutton += '" onClick="removeParticipant(\'' + _user + '\')" style="margin-top: 1ex;" />';
+	$("savebutton").replace(_savebutton);
+
+	$("add_participant_input").value = _username;
+	$("add_participant_check_privacy_enhanced").checked = true;
+}
+
+function removeParticipant(_user) {
+	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		method: "get",
+		parameters: { service: 'removeParticipant', pollID: gsPollID, gpgID: _user },
+		onFailure: function (error) {
+			alert(error.responseText);
+		},
+		onSuccess: function (transport) {
+			location.assign(location.href);
+		}
+	});
+}
 
 function addParticipant() {
 	if ($F("add_participant_check_privacy_enhanced")) {
