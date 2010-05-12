@@ -100,6 +100,13 @@ function editUser(_user) {
 		_inputTr = $(gsOldUser + "_tr").innerHTML;
 		$(gsOldUser + "_tr").update(gsOldUserTr);
 	} else {
+		if (location.href.include("?edituser=")) {
+			location.assign(location.href.gsub(/\?edituser=.*/,""));
+			// FIXME 
+			// editUser(_user); 
+			// should be run after reload
+			return;
+		}
 		_inputTr = $("add_participant_row").innerHTML;
 		$("add_participant_row").remove();
 	}
