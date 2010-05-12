@@ -54,8 +54,9 @@ var htmlid = (function () {
 }());
 
 function cancelButton() {
-	return "<br /><input type='button' value='" + gt.gettext("Cancel") + "' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
+	return "<input type='button' value='" + gt.gettext("Cancel") + "' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
 }
+
 function showLogin(_participant) {
 	var _username, _l;
 	if ($("add_participant")) {
@@ -74,7 +75,7 @@ function showLogin(_participant) {
 
 	_l += "<td id='td.key' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
 	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
-	_l += cancelButton();
+ 	_l += "<br /><input id='deletebutton' type='button' value='" + gt.gettext("Delete User") + "' onclick='kickOutUser()' style='margin-top:1ex'/>";
 	_l += "</td>";
 
 
@@ -115,7 +116,7 @@ function insertParticipationCheckboxes() {
 				participationVisible = false;
 				_td = "<td id='submit'>";
 				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...") + "' disabled='disabled'>";
-				_td += cancelButton();
+				_td += "<br />" + cancelButton();
 				_td += "</td>";
 				$("lastedit_" + goVoteVector.id).update(_td);
 
@@ -139,6 +140,7 @@ function login() {
 		$("td.key").update(gt.gettext("Calculating the public key ..."));
 		$("loginbutton").value = gt.gettext("Please wait ...");
 		$("loginbutton").disabled = true;
+		$("deletebutton").replace(cancelButton());
 		goVoteVector.setSecKey(key, function () {
 			if ("participant_" + goVoteVector.id === gActiveParticipant.id) {
 				gActiveParticipant.update(gParticipantTds);
