@@ -145,7 +145,10 @@ function login() {
 				insertParticipationCheckboxes();
 			} else {
 				var _errormsg = gt.gettext("You entered a wrong key!");
-				_errormsg += " <a href='javascript:showLogin(\"" + gActiveParticipant.id.gsub("participant_", "") + "\")>" + gt.gettext("Try again?");
+				_errormsg += " <a href='javascript:showLogin(\"";
+				_errormsg += gActiveParticipant.id.gsub("participant_", "") + "\")'>";
+				_errormsg += gt.gettext("Try again?");
+				_errormsg += "</a>";
 				$("td.key").update(_errormsg);
 			}
 		});
