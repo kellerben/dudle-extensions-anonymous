@@ -491,7 +491,7 @@ Vote.prototype.calcNextDHKey = (function () {
 			i++;
 
 			this.participants[id] = {};
-			if (localStorage.getItem(id) === null) {
+//			if (localStorage.getItem(id) === null) {
 				this.participants[id] = fetchKey(id);
 
 				// calculate the dh secret
@@ -503,11 +503,12 @@ Vote.prototype.calcNextDHKey = (function () {
 							*/
 							goVoteVector.calcNextDHKey();
 						});
-			} else {
-				/* TODO verify correctness of key */
+/*			} else {
+				// TODO verify correctness of key 
 				this.participants[id].dh = new BigInteger(localStorage.getItem(id));
 				this.calcNextDHKey();
 			}
+*/
 		};
 	}()
 );
