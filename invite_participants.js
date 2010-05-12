@@ -23,6 +23,7 @@ var gsKeyId;
 
 var _oParticipants;
 var gsSaveButtonLabel = $("savebutton").value;
+var gaAllUsers;
 var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
 	parameters: { service: 'getTotalParticipants', pollID: gsPollID},
@@ -73,7 +74,8 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: {service: 'listAllNames'},
 			method: 'get',
 			onSuccess: function (transport) {
-				var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', transport.responseText.split("\n"));
+				gaAllUsers = transport.responseText.split("\n");
+				var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
 			}
 		});
 
@@ -126,6 +128,7 @@ function editUser(_user) {
 
 	$("add_participant_input").value = _username;
 	$("add_participant_check_privacy_enhanced").checked = true;
+	var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
 }
 
 function removeParticipant(_user, _successfunc) {
