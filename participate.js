@@ -36,7 +36,7 @@ var goParticipants;
 var htmlid = (function () {
 	var cache = {},
 	    ncache = {},
-	    reg = /[^A-Za-z0-9_:.\-]/;
+	    reg = /[^A-Za-z0-9_:.\-]/g;
 	return function (s) {
 		var id;
 		if (s in cache) {
