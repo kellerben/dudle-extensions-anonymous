@@ -23,11 +23,15 @@
 var gt = new Gettext({ 'domain' : 'dudle_dc-net' });
 var gsPollID = (window.location.href).split("/");
 gsPollID = gsPollID[gsPollID.length - 2];
+var goRealUserNames = {};
 
 function gfUpdateName(gpgID) {
 	var ar = new Ajax.Updater(gpgID, gsExtensiondir + 'keyserver.cgi', {
 		parameters: { service: "getName", gpgID: gpgID },
 		method: 'get',
+		onSuccess: function(transport) {
+			goRealUserNames[gpgID] = transport.responseText
+		},
 		onFailure: function () {
 			$(gpgID).update(Gettext.strargs(gt.gettext("Failed to fetch name for %1."), [gpgID]));
 		}

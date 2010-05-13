@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, giNumTables, Vote */
+/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, giNumTables, goRealUserNames, Vote */
 
 var gParticipantTds;
 var gActiveParticipant;
@@ -53,12 +53,55 @@ var htmlid = (function () {
 	};
 }());
 
+function requestKickOutButton(_victim, _label) {
+	return "<input id='deletebutton' type='button' value='" + _label + "' onclick='requestKickOut(\"" + _victim + "\")' style='margin-top:1ex'/>";
+}
+
+function showKicker(_victim, _kicker) {
+	$(_victim + "_td").update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
+	$("key").disabled = false;
+	$("kickoutbutton").disabled = false;
+	$("cancelbutton").replace(requestKickOutButton(_victim, gt.gettext("Cancel")));
+}
+
 function cancelButton() {
-	return "<input type='button' value='" + gt.gettext("Cancel") + "' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
+	return "<input id='cancelbutton' type='button' value='" + gt.gettext("Cancel") + "' onclick='location.assign(location.href)' style='margin-top:1ex'/>";
+}
+
+		var usersNeeded = [];
+function requestKickOut(_participant) {
+	var queryUser;
+	$H(goParticipants).each(function (_pair) {
+		if (_pair.value.voted) {
+			for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
+				if (_pair.value.voted[_i][1].include(_participant)) {
+					usersNeeded.push(_pair.key);
+				}
+			}
+		}
+	});
+	//$(_participant + "_td").update(Gettext.strargs(gt.gettext("Remove %1:"),[goRealUserNames[_participant]]));
+	queryUser = gt.gettext("Which secrect key do you own:");
+	queryUser += "<ul>";
+	queryUser += usersNeeded.uniq().collect(function (e) {
+		return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _participant + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
+	}).join("");
+	queryUser += "</ul>";
+	$(_participant + "_td").update(queryUser);
+	$("key").disabled = true;
+	$("deletebutton").replace(cancelButton());
+
+	$("loginbutton").replace("<input id='kickoutbutton' type='button' value='" + gt.gettext("Delete User") + "' onClick='kickOutUser(\"" + _participant + "\")' disabled='' />");
+}
+function kickOutUser(_victim) {
+	if (confirm(gt.gettext("Do you really want to remove the participant from the poll?"))){
+		alert("TODO");
+	}
+	location.assign(location.href);
 }
 
 function showLogin(_participant) {
-	var _username, _l;
+	var _l;
 	if ($("add_participant")) {
 		$("add_participant").remove();
 	} else {
@@ -68,14 +111,13 @@ function showLogin(_participant) {
 	$("separator_top").remove();
 	$("separator_bottom").remove();
 
-	_username = $(_participant).innerHTML;
-	_l = "<td class='label'><label for='key'>";
-	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [_username]);
+	_l = "<td id='" + _participant + "_td' class='label'><label for='key'>";
+	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_participant]]);
 	_l += "</label></td>";
 
 	_l += "<td id='td.key' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
 	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
- 	_l += "<br /><input id='deletebutton' type='button' value='" + gt.gettext("Delete User") + "' onclick='kickOutUser()' style='margin-top:1ex'/>";
+ 	_l += "<br />" + requestKickOutButton(_participant, gt.gettext("Delete User"));
 	_l += "</td>";
 
 
