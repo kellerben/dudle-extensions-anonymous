@@ -68,31 +68,34 @@ function cancelButton() {
 	return "<input id='cancelbutton' type='button' value='" + gt.gettext("Cancel") + "' onclick='gfReload()' style='margin-top:1ex'/>";
 }
 
-function requestKickOut(_participant) {
-	var usersNeeded = [], queryUser;
+function requestKickOut(_victim) {
+	var usersNeeded = [], queryUser, kickoutbutton;
 	$H(goParticipants).each(function (_pair) {
 		if (_pair.value.voted) {
 			for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
-				if (_pair.value.voted[_i][1].include(_participant)) {
+				if (_pair.value.voted[_i][1].include(_victim)) {
 					usersNeeded.push(_pair.key);
 				}
 			}
 		}
 	});
 	if (usersNeeded.size() === 0) {
-		gfRemoveParticipant(_participant, gfReload);
+		gfRemoveParticipant(_victim, gfReload);
 	} else {
 		queryUser = gt.gettext("Which secrect key do you own:");
-		queryUser += "<ul>";
+		queryUser += "<ul style='text-align: left'>";
 		queryUser += usersNeeded.uniq().collect(function (e) {
-			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _participant + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
+			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
 		}).join("");
 		queryUser += "</ul>";
-		$(_participant + "_td").update(queryUser);
+		$(_victim + "_td").update(queryUser);
 		$("key").disabled = true;
 		$("deletebutton").replace(cancelButton());
 
-		$("loginbutton").replace("<input id='kickoutbutton' type='button' value='" + gt.gettext("Delete User") + "' onClick='kickOutUser(\"" + _participant + "\")' disabled='' />");
+		kickoutbutton = "<input id='kickoutbutton' type='button' value='";
+		kickoutbutton += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
+		kickoutbutton += "' onClick='kickOutUser(\"" + _victim + "\")' disabled='' />";
+		$("loginbutton").replace(kickoutbutton);
 	}
 }
 
