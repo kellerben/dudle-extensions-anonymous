@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gsEdit */
+/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfRemoveParticipant, gsEdit */
 var gsKeyId;
 
 var _oParticipants;
@@ -93,7 +93,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 
 var gsOldUserTr, gsOldUser;
 function editUser(_user) {
-	var _inputTr, _savebutton,
+	var _inputTr, _savebutton, ac,
 		_username = $(_user).innerHTML;
 
 	gsSaveButtonLabel = gt.gettext("Save Changes");
@@ -103,7 +103,7 @@ function editUser(_user) {
 		$(gsOldUser + "_tr").update(gsOldUserTr);
 	} else {
 		if (location.href.include("?edituser=")) {
-			location.assign(location.href.gsub(/\?edituser=.*/,""));
+			location.assign(location.href.gsub(/\?edituser=.*/, ""));
 			// FIXME 
 			// editUser(_user); 
 			// should be run after reload
@@ -119,31 +119,16 @@ function editUser(_user) {
 
 	_savebutton = '<input type="button" value="';
 	_savebutton += gsSaveButtonLabel;
-	_savebutton += '" id="savebutton" onclick="removeParticipant(\'' + _user + '\', addParticipant);" />';
+	_savebutton += '" id="savebutton" onclick="gfRemoveParticipant(\'' + _user + '\', addParticipant);" />';
 	_savebutton += '<br />';
 	_savebutton += '<input type="button" value="';
 	_savebutton += gt.gettext("Delete User");
-	_savebutton += '" onClick="removeParticipant(\'' + _user + '\', reload)" style="margin-top: 1ex;" />';
+	_savebutton += '" onClick="gfRemoveParticipant(\'' + _user + '\', gfReload)" style="margin-top: 1ex;" />';
 	$("savebutton").parentNode.update(_savebutton);
 
 	$("add_participant_input").value = _username;
 	$("add_participant_check_privacy_enhanced").checked = true;
-	var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
-}
-
-function removeParticipant(_user, _successfunc) {
-	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		method: "get",
-		parameters: { service: 'removeParticipant', pollID: gsPollID, gpgID: _user },
-		onFailure: function (error) {
-			alert(error.responseText);
-		},
-		onSuccess: _successfunc
-	});
-}
-
-function reload() {
-	location.assign(location.href);
+	ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
 }
 
 function addParticipant() {
@@ -157,7 +142,7 @@ function addParticipant() {
 					});
 					$("invite_participants_form").submit();
 				} else {
-					reload();
+					gfReload();
 				}
 			}
 		});

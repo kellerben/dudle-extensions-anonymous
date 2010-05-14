@@ -29,8 +29,8 @@ function gfUpdateName(gpgID) {
 	var ar = new Ajax.Updater(gpgID, gsExtensiondir + 'keyserver.cgi', {
 		parameters: { service: "getName", gpgID: gpgID },
 		method: 'get',
-		onSuccess: function(transport) {
-			goRealUserNames[gpgID] = transport.responseText
+		onSuccess: function (transport) {
+			goRealUserNames[gpgID] = transport.responseText;
 		},
 		onFailure: function () {
 			$(gpgID).update(Gettext.strargs(gt.gettext("Failed to fetch name for %1."), [gpgID]));
@@ -38,4 +38,18 @@ function gfUpdateName(gpgID) {
 	});
 }
 
+function gfRemoveParticipant(_user, _successfunc) {
+	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		method: "get",
+		parameters: { service: 'removeParticipant', pollID: gsPollID, gpgID: _user },
+		onFailure: function (error) {
+			alert(error.responseText);
+		},
+		onSuccess: _successfunc
+	});
+}
+
+function gfReload() {
+	location.assign(location.href);
+}
 
