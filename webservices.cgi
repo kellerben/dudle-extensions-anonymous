@@ -283,21 +283,38 @@ FOO
 		getUsedKeys($c["gpgID"]).join("\n")
 	end
 
-	def Poll.webservicedescription_1VoteCasting_setKickOutKey
+	def Poll.webservicedescription_1VoteCasting_setKickOutKeys
 		{ "return" => 'HTTP202" OR "HTTP403"',
-			"input" => ["gpgIDSender","gpgIDLeaver","timestamp", "tableindex", "inverted", "key"],
-			"key" => "symmetrischer Schlüssel mit dem gewählt wurde" }
+			"input" => ["gpgIDKicker","gpgIDLeaver","keys","signature"],
+			"keys" => "symmetrische Schlüssel mit denen gewählt wurde<br />Format:<br />keys[column][tableindex][inverted ? 1 : 0].toJSON()" }
 	end
-#	def webservicedescription_setKickOutKey
-#	end
+	def webservice_setKickOutKeys
+		victim = $c["gpgIDLeaver"]
+		kicker = $c["gpgIDKicker"]
+		unless $dc["participants"].include?(victim)
+			$header["status"] = "403 Forbidden"
+			return "#{victim} is not participant of this poll!"
+		end
+
+		unless $dc[kicker].collect{|v|
+			v["usedKeys"].include?(victim)
+		}.include?(true)
+			$header["status"] = "403 Forbidden"
+			return "#{kicker} did not used the key of #{victim}!"
+		end
+
+		$header["status"] = "202 Accepted"
+		$dc["flying"] ||= {}
+		$dc["flying"][victim] ||= []
+		kickOut = {}
+		kickOut["keys"] = JSON.parse($c["keys"])
+		kickOut["kicker"] = kicker
+		kickOut["signature"] = $c["signature"]
+		$dc["flying"][victim] << kickOut
+		store_dc($dc,"Participant #{kicker} wants to kick out #{victim}")
+		return "Removal request stored"
+	end
 	
-	def Poll.webservicedescription_1VoteCasting_setKickOutSignature
-		{ "return" => 'HTTP202" OR "HTTP403" (same as setVoteSignature)',
-			"input" => ["gpgIDSender","gpgIDLeaver","signature"],
-			"signature" => "genauso gebildet wie bei voteSignature aber key statt vote"}
-	end
-#	def webservicedescription_setKickOutSignature
-#	end
 
 	def Poll.webservicedescription_1VoteCasting_getKicker
 		{ "return" => "Liste von GPG-IDs der Teilnehmer, die den Schlüssel schon aufgedeckt haben (1. = Initiator)",
@@ -335,14 +352,14 @@ FOO
 
 	def Poll.webservicedescription_2ResultPublication_getKickOutKey
 		{ "return" => 'symmetrischer Schlüssel (vor Hash)',
-			"input" => ["gpgIDSender", "gpgIDLeaver", "timestamp", "tableindex", "inverted"] }
+			"input" => ["gpgIDKicker", "gpgIDLeaver", "timestamp", "tableindex", "inverted"] }
 	end
 #	def webservicedescription_getKickOutKey
 #	end
 	
 	def Poll.webservicedescription_2ResultPublication_getKickOutSignature
 		{ "return" => 'Liste von Signaturen',
-			"input" => ["gpgIDSender", "gpgIDLeaver"] }
+			"input" => ["gpgIDKicker", "gpgIDLeaver"] }
 	end
 #	def webservicedescription_getKickOutSignature
 #	end

@@ -57,7 +57,9 @@ function requestKickOutButton(_victim, _label) {
 	return "<input id='deletebutton' type='button' value='" + _label + "' onclick='requestKickOut(\"" + _victim + "\")' style='margin-top:1ex'/>";
 }
 
+var gsKickerId;
 function showKicker(_victim, _kicker) {
+	gsKickerId = _kicker;
 	$(_victim + "_td").update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
 	$("key").disabled = false;
 	$("kickoutbutton").disabled = false;
@@ -92,18 +94,71 @@ function requestKickOut(_victim) {
 		$("key").disabled = true;
 		$("deletebutton").replace(cancelButton());
 
-		kickoutbutton = "<input id='kickoutbutton' type='button' value='";
-		kickoutbutton += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
-		kickoutbutton += "' onClick='kickOutUser(\"" + _victim + "\")' disabled='' />";
-		$("loginbutton").replace(kickoutbutton);
+		if ($("loginbutton")) {
+			kickoutbutton = "<input id='kickoutbutton' type='button' value='";
+			kickoutbutton += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
+			kickoutbutton += "' onClick='goVoteVector.kickOutUser(\"" + _victim + "\")' disabled='' />";
+			$("loginbutton").replace(kickoutbutton);
+		}
 	}
 }
 
-function kickOutUser(_victim) {
-	if (confirm(gt.gettext("Do you really want to remove the participant from the poll?"))) {
-		alert("TODO");
+Vote.prototype.kickOutUser = function (_victim) {
+	var _colidx, _col, _inverted, _table, keyMatrix, key;
+	if ($F('key')) {
+		key = new BigInteger($F('key'), 16);
+		$("key_td").update(gt.gettext("Calculating the public key ..."));
+		$("kickoutbutton").value = gt.gettext("Please wait ...");
+		$("kickoutbutton").disabled = true;
+		goVoteVector.setSecKey(key, function () {
+			if (goVoteVector.id === gsKickerId) {
+				if (confirm(gt.gettext("Do you really want to remove the participant from the poll?"))) {
+					$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."),[goRealUserNames[_victim]]));
+					goVoteVector.participants[_victim] = fetchKey(_victim);
+
+					// calculate the dh secret
+					goVoteVector.participants[_victim].pub.modPow(goVoteVector.sec, goVoteVector.dhmod,
+						function (result) {
+							var ar;
+							goVoteVector.participants[_victim].dh = result;
+
+							AES_Init();
+							keyMatrix = {};
+							for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
+								_col = gaColumns[_colidx];
+								keyMatrix[_col] = [];
+								for (_table = 0; _table < giNumTables;_table++) {
+									keyMatrix[_col][_table] = [];
+									for (_inverted = 0; _inverted < 2; _inverted++) {
+										keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(16);
+									}
+								}
+							}
+							AES_Done();
+
+							ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+								parameters: {
+									service: 'setKickOutKeys', 
+									pollID: gsPollID, 
+									gpgIDKicker: goVoteVector.id, 
+									gpgIDLeaver: _victim, 
+									keys: Object.toJSON(keyMatrix),
+									signature: 'TODO'
+								},
+								onSuccess: function (transport) {
+									gfReload();
+								}
+							});
+						}
+					);
+				}
+			} else {
+				var _errormsg = gt.gettext("You entered a wrong key!");
+				_errormsg += " <a href='javascript:(function () {showLogin(\"" + _victim + "\");requestKickOut(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
+				$("key_td").update(_errormsg);
+			}
+		});
 	}
-	gfReload();
 }
 
 function showLogin(_participant) {
@@ -121,7 +176,7 @@ function showLogin(_participant) {
 	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_participant]]);
 	_l += "</label></td>";
 
-	_l += "<td id='td.key' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
+	_l += "<td id='key_td' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
 	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
 	_l += "<br />" + requestKickOutButton(_participant, gt.gettext("Delete User"));
 	_l += "</td>";
@@ -185,7 +240,7 @@ function insertParticipationCheckboxes() {
 function login() {
 	if ($F('key')) {
 		var key = new BigInteger($F('key'), 16);
-		$("td.key").update(gt.gettext("Calculating the public key ..."));
+		$("key_td").update(gt.gettext("Calculating the public key ..."));
 		$("loginbutton").value = gt.gettext("Please wait ...");
 		$("loginbutton").disabled = true;
 		$("deletebutton").replace(cancelButton());
@@ -199,7 +254,7 @@ function login() {
 				_errormsg += gActiveParticipant.id.gsub("participant_", "") + "\")'>";
 				_errormsg += gt.gettext("Try again?");
 				_errormsg += "</a>";
-				$("td.key").update(_errormsg);
+				$("key_td").update(_errormsg);
 			}
 		});
 	}
@@ -510,9 +565,9 @@ Vote.prototype.calculateVoteKeys = function () {
 		}
 	}
 	AES_Init();
-	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-		_col = gaColumns[_colidx];
-		for (_id in this.participants) {
+	for (_id in this.participants) {
+		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
+			_col = gaColumns[_colidx];
 			if (usedMyKey(_id, _col)) {
 				for (_inverted = 0; _inverted < 2; _inverted++) {
 					for (_table = 0; _table < giNumTables;_table++) {
@@ -543,25 +598,14 @@ Vote.prototype.calcNextDHKey = (function () {
 
 			i++;
 
-			this.participants[id] = {};
-//			if (localStorage.getItem(id) === null) {
-				this.participants[id] = fetchKey(id);
+			this.participants[id] = fetchKey(id);
 
-				// calculate the dh secret
-				this.participants[id].pub.modPow(this.sec, this.dhmod,
-						function (result) {
-							goVoteVector.participants[id].dh = result;
-							/* TODO store result if user wants to stay logged in
-							localStorage.setItem(id, result);
-							*/
-							goVoteVector.calcNextDHKey();
-						});
-/*			} else {
-				// TODO verify correctness of key 
-				this.participants[id].dh = new BigInteger(localStorage.getItem(id));
-				this.calcNextDHKey();
-			}
-*/
+			// calculate the dh secret
+			this.participants[id].pub.modPow(this.sec, this.dhmod,
+				function (result) {
+					goVoteVector.participants[id].dh = result;
+					goVoteVector.calcNextDHKey();
+			});
 		};
 	}()
 );
