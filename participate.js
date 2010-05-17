@@ -194,15 +194,21 @@ function showLogin(_participant) {
 function getState(participant, column) {
 	var state = "notVoted";
 
-	["flying","voted"].each(function (action) {
-		if ($H(goParticipants[participant]).keys().indexOf(action) !== -1) {
-			goParticipants[participant][action].each(function (vote) {
-				if (vote[0].indexOf(column) !== -1) {
-					state = action;
-				}
-			});
-		}
-	});
+	if ($H(goParticipants[participant]).keys().indexOf("flying") !== -1) {
+		$H(goParticipants[participant].flying).each(function (kicker) {
+			if (kicker.value.indexOf(column) !== -1) {
+				state = "flying";
+			}
+		});
+	}
+
+	if ($H(goParticipants[participant]).keys().indexOf("voted") !== -1) {
+		goParticipants[participant].voted.each(function (vote) {
+			if (vote[0].indexOf(column) !== -1) {
+				state = "voted";
+			}
+		});
+	}
 
 	return state;
 }

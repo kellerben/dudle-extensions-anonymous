@@ -114,10 +114,10 @@ class Poll
 				end
 			}
 			if $dc["flying"]
-				$dc["flying"].each{|p,kickkeys|
-					ret[p]['flying'] = []
-					kickkeys.each{|kickerkeys|
-						ret[p]['flying'] << [kickerkeys["keys"].keys,kickerkeys["kicker"]]
+				$dc["flying"].each{|p,kickerkeys|
+					ret[p]['flying'] = {}
+					kickerkeys.each{|kicker,keymessages|
+						ret[p]['flying'][kicker] = keymessages.collect{|m| m["keys"].keys}.uniq.flatten
 					}
 				}
 			end
@@ -326,12 +326,17 @@ FOO
 
 		$header["status"] = "202 Accepted"
 		$dc["flying"] ||= {}
-		$dc["flying"][victim] ||= []
+		$dc["flying"][victim] ||= {}
+		$dc["flying"][victim][kicker] ||= []
 		kickOut = {}
-		kickOut["keys"] = JSON.parse($c["keys"])
-		kickOut["kicker"] = kicker
+		begin
+			kickOut["keys"] = JSON.parse($c["keys"])
+		rescue => e
+			$header["status"] = "400 Bad Request"
+			return "invalid json format: #{e}"
+		end
 		kickOut["signature"] = $c["signature"]
-		$dc["flying"][victim] << kickOut
+		$dc["flying"][victim][kicker] << kickOut
 		store_dc($dc,"Participant #{kicker} wants to kick out #{victim}")
 		return "Removal request stored"
 	end
@@ -404,22 +409,29 @@ class Webservice_test < Test::Unit::TestCase
 		$dc = {
 			"participants"=>["0x2289ADC1", "0xD189C27D", "0x7EF2BF4E"],
 			"flying"=>{
-				"0x7EF2BF4E"=> [{
-					"keys"=>{
-						"a"=> [[0, 0], [0, 0], [0, 0]],
-						"b"=> [[0, 0], [0, 0], [0, 0]],
-						"c"=> [[0, 0], [0, 0], [0, 0]]
-					},
-					"signature"=>"TODO",
-					"kicker"=>"0xD189C27D"
-				},{
-					"keys"=>{
-						"a"=> [[0, 0], [0, 0], [0, 0]],
-						"b"=> [[0, 0], [0, 0], [0, 0]],
-						"c"=> [[0, 0], [0, 0], [0, 0]]
-					},
-					"signature"=>"TODO",
-					"kicker"=>"0x2289ADC1"}]
+				"0x7EF2BF4E"=> {
+					"0xD189C27D"=>[{
+						"keys"=>{
+							"a"=> [[0, 0], [0, 0], [0, 0]],
+							"b"=> [[0, 0], [0, 0], [0, 0]]
+						},
+						"signature"=>"TODO"
+					},{
+						"keys"=>{
+							"c"=> [[0, 0], [0, 0], [0, 0]]
+						},
+						"signature"=>"TODO"
+					}
+					],
+					"0x2289ADC1"=>[{
+						"keys"=>{
+							"a"=> [[0, 0], [0, 0], [0, 0]],
+							"b"=> [[0, 0], [0, 0], [0, 0]],
+							"c"=> [[0, 0], [0, 0], [0, 0]]
+						},
+						"signature"=>"TODO"
+					}]
+				}
 			},
 			"0xD189C27D"=> [{
 				"vote"=>{
@@ -444,6 +456,7 @@ class Webservice_test < Test::Unit::TestCase
 	end
 	def test_getTotalParticipants()
 		assert_equal(["a","b","c"],$d.getTotalParticipants()["0x2289ADC1"]['voted'][0][0])
+		assert_equal(["a","b","c"],$d.getTotalParticipants()["0x7EF2BF4E"]["flying"]["0xD189C27D"])
 	end
 	def test_getPollState
 		assert_equal("open",$d.webservice_getPollState)
