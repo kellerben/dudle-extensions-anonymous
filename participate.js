@@ -130,7 +130,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 								for (_table = 0; _table < giNumTables;_table++) {
 									keyMatrix[_col][_table] = [];
 									for (_inverted = 0; _inverted < 2; _inverted++) {
-										keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(16);
+										keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
 									}
 								}
 							}
@@ -363,12 +363,13 @@ function calcResult() {
 		onSuccess: function (_transport) {
 			var _totalVoteSeveralCols, _totalVote, _resultMatrix, _colResults, _inverted,
 				sumelement, _table, result, _attack, totalsum, colidx,  _col, numParticipants, partidx, _gpgID;
-			_totalVoteSeveralCols = _transport.responseText.evalJSON();
+			_totalVoteSeveralCols = $H(_transport.responseText.evalJSON());
 			_totalVote = {};
 
 			_resultMatrix = [];
 			_colResults = [];
-			$H(_totalVoteSeveralCols).each(function (_participant) {
+			var fly = _totalVoteSeveralCols.unset("kicked");
+			_totalVoteSeveralCols.each(function (_participant) {
 				_totalVote[_participant.key] = {};
 				$A(_participant.value).each(function (_vote) {
 					$H(_vote.vote).each(function (_colvote) {
@@ -393,9 +394,9 @@ function calcResult() {
 					for (_table = 0; _table < giNumTables; _table++) {
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
-						for (partidx = 0, numParticipants = $H(goParticipants).keys().length; partidx < numParticipants; ++partidx) {
-							_gpgID = $H(goParticipants).keys()[partidx];
-							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 16)).mod(goVoteVector.dcmod);
+						for (partidx = 0, numParticipants = _totalVoteSeveralCols.keys().length; partidx < numParticipants; ++partidx) {
+							_gpgID = _totalVoteSeveralCols.keys()[partidx];
+							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 36)).mod(goVoteVector.dcmod);
 						}
 
 						result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
@@ -512,7 +513,7 @@ Vote.prototype.save = function () {
 		for (_table = 0; _table < giNumTables;_table++) {
 			_voteobj[_col][_table] = [];
 			for (_inverted = 0; _inverted < 2; _inverted++) {
-				_voteobj[_col][_table][_inverted] = this.keyMatrix[_inverted][_col][_table].toString(16);
+				_voteobj[_col][_table][_inverted] = this.keyMatrix[_inverted][_col][_table].toString(36);
 			}
 		}
 	}

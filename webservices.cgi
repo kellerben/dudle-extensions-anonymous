@@ -281,7 +281,7 @@ FOO
 				votearray.each_with_index{|norm_inv,tableindex|
 					$dc[gpgID].last["vote"][col][tableindex] ||= []
 					norm_inv.each_with_index{|vote,inverted|
-						$dc[gpgID].last["vote"][col][tableindex][inverted] = vote.to_i(16)
+						$dc[gpgID].last["vote"][col][tableindex][inverted] = vote.to_i(36)
 					}
 				}
 			}
@@ -367,6 +367,17 @@ FOO
 			return "invalid json format: #{e}"
 		end
 		kickOut["signature"] = $c["signature"]
+		begin
+			kickOut["keys"].each_value{|keyarray|
+				keyarray.collect!{|key,inverted|
+					[key.to_i(36),inverted.to_i(36)]
+				}
+			}
+		rescue => e
+			$header["status"] = "400 Bad Request"
+			return "Keys have invalid structure: #{e}"
+		end
+
 		$dc["flying"][victim][kicker] << kickOut
 		store_dc($dc,"Participant #{kicker} wants to kick out #{victim}")
 		return "Removal request stored"
@@ -388,23 +399,38 @@ FOO
 			}
 	end
 	def webservice_getVote
-		if webservice_getPollState == "open"
+		if webservice_getPollState != "closed"
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
 		ret = $dc
 		ret.delete("participants")
+		fly = ret.delete("flying")
 		ret.each_value{|votes|
 			votes.each{|v|
 				v.delete("usedKeys")
 				v['vote'].each_value{|tab|
 					tab.each{|norm_inv|
-						norm_inv.collect!{|i| i.to_s(16)}
+						norm_inv.collect!{|i| i.to_s(36)}
 					}
 				}
 			}
 		}
-		return ret.to_json
+		if fly
+			fly.each_value{|keys|
+				keys.each{|p,key|
+					key.each{|k|
+						k["keys"].each_value{|keyarray|
+							keyarray.collect!{|key,inverted|
+								[key.to_s(36),inverted.to_s(36)]
+							}
+						}
+					}
+				}
+			}
+			ret["kicked"] = fly
+		end
+		ret.to_json
 	end
 
 	def Poll.webservicedescription_2ResultPublication_getKickOutKey
