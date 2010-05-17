@@ -36,13 +36,21 @@ class Poll
 	end
 	def webservice_getPollState
 		return "open" if $dc.empty?
-		ret = true
-		$dc["participants"].each{|p|
-			@head.columns.each{|c|
-				ret = false unless $dc[p]
-			}
+		
+		return getTotalParticipants.pretty_inspect
+		return getTotalParticipants.collect{|p,state|
+			if state["voted"]
+				@head.columns.each{|c|
+					return "open" unless $dc[p]
+				}
+			elsif state["flying"]
+
+			else
+				return "open"
+			end
 		}
-		ret ? "closed" : "open"
+		return totalpart.pretty_inspect
+		return "closed"
 	end
 	def Poll.webservicedescription_3Polldetails_getDebug
 		{ "return" => "debug" }
@@ -92,7 +100,7 @@ class Poll
 	def Poll.webservicedescription_0Initialization_getTotalParticipants
 		{ "return" => "Liste der GPG-IDs aller Teilnehmer"}
 	end
-	def webservice_getTotalParticipants
+	def getTotalParticipants
 		ret = {}
 		if $dc["participants"]
 			$dc["participants"].each{|p|
@@ -114,7 +122,10 @@ class Poll
 				}
 			end
 		end
-		return ret.to_json
+		ret
+	end
+	def webservice_getTotalParticipants
+		getTotalParticipants.to_json
 	end
 
 	def Poll.webservicedescription_0Initialization_addParticipant
@@ -385,7 +396,61 @@ def store_dc(data,comment)
 end
 
 
-if __FILE__ == $0
+
+if ARGV[0] == "test"
+require 'test/unit'
+class Webservice_test < Test::Unit::TestCase
+	def setup
+		$dc = {
+			"participants"=>["0x2289ADC1", "0xD189C27D", "0x7EF2BF4E"],
+			"flying"=>{
+				"0x7EF2BF4E"=> [{
+					"keys"=>{
+						"a"=> [[0, 0], [0, 0], [0, 0]],
+						"b"=> [[0, 0], [0, 0], [0, 0]],
+						"c"=> [[0, 0], [0, 0], [0, 0]]
+					},
+					"signature"=>"TODO",
+					"kicker"=>"0xD189C27D"
+				},{
+					"keys"=>{
+						"a"=> [[0, 0], [0, 0], [0, 0]],
+						"b"=> [[0, 0], [0, 0], [0, 0]],
+						"c"=> [[0, 0], [0, 0], [0, 0]]
+					},
+					"signature"=>"TODO",
+					"kicker"=>"0x2289ADC1"}]
+			},
+			"0xD189C27D"=> [{
+				"vote"=>{
+					"a"=> [[1,0], [0,0], [0,0]],
+					"b"=> [[0,0], [0,1], [0,0]],
+					"c"=> [[0,0], [0,1], [0,0]]
+				},
+				"signature"=>"TODO",
+				"usedKeys"=>["0x2289ADC1", "0x7EF2BF4E"]
+			}],
+		 "0x2289ADC1"=> [{
+		 		"vote"=> {
+					"a"=> [[0,0], [1,0], [0,0]],
+					"b"=> [[0,1], [0,0], [0,0]],
+					"c"=> [[0,0], [1,0], [0,0]]
+				},
+				"signature"=>"TODO",
+				"usedKeys"=>["0x7EF2BF4E", "0xD189C27D"]
+			}]
+		}
+     $d = Poll.new
+	end
+	def test_getTotalParticipants()
+		assert_equal(["a","b","c"],$d.getTotalParticipants()["0x2289ADC1"]['voted'][0][0])
+	end
+	def test_getPollState
+		assert_equal("open",$d.webservice_getPollState)
+	end
+end
+
+elsif __FILE__ == $0
 
 require "pp"
 require "cgi"
@@ -428,6 +493,7 @@ if all.include?($c["service"])
 	end
 
 else
+
 
 $out = <<NOTICE
 <h1>Available Polls</h1>
