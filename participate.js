@@ -74,9 +74,13 @@ function requestKickOut(_victim) {
 	var usersNeeded = [], queryUser, kickoutbutton;
 	$H(goParticipants).each(function (_pair) {
 		if (_pair.value.voted) {
-			for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
-				if (_pair.value.voted[_i][1].include(_victim)) {
-					usersNeeded.push(_pair.key);
+			if (goParticipants[_victim].flying) {
+				if (!goParticipants[_victim].flying[_pair.key]) {
+					for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
+						if (_pair.value.voted[_i][1].include(_victim)) {
+							usersNeeded.push(_pair.key);
+						}
+					}
 				}
 			}
 		}
@@ -113,7 +117,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 		goVoteVector.setSecKey(key, function () {
 			if (goVoteVector.id === gsKickerId) {
 				if (confirm(gt.gettext("Do you really want to remove the participant from the poll?"))) {
-					$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."),[goRealUserNames[_victim]]));
+					$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
 					goVoteVector.participants[_victim] = fetchKey(_victim);
 
 					// calculate the dh secret
@@ -159,7 +163,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 			}
 		});
 	}
-}
+};
 
 function showLogin(_participant) {
 	var _l;
@@ -630,7 +634,8 @@ Vote.prototype.calcNextDHKey = (function () {
 				function (result) {
 					goVoteVector.participants[id].dh = result;
 					goVoteVector.calcNextDHKey();
-			});
+				}
+			);
 		};
 	}()
 );
