@@ -193,13 +193,17 @@ function showLogin(_participant) {
 
 function getState(participant, column) {
 	var state = "notVoted";
-	if ($H(goParticipants[participant]).keys().indexOf("voted") !== -1) {
-		goParticipants[participant].voted.each(function (vote) {
-			if (vote[0].indexOf(column) !== -1) {
-				state = "voted";
-			}
-		});
-	}
+
+	["flying","voted"].each(function (action) {
+		if ($H(goParticipants[participant]).keys().indexOf(action) !== -1) {
+			goParticipants[participant][action].each(function (vote) {
+				if (vote[0].indexOf(column) !== -1) {
+					state = action;
+				}
+			});
+		}
+	});
+
 	return state;
 }
 
@@ -540,7 +544,7 @@ function usedMyKey(id, col) {
 	}
 	var ret = false;
 	goParticipants[id].voted.each(function (_vote) {
-		if (_vote[1].indexOf(goVoteVector.id) !== -1) {
+		if (_vote[0].indexOf(col) !== -1 && _vote[1].indexOf(goVoteVector.id) !== -1) {
 			ret = true;
 		}
 	});
@@ -631,14 +635,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 				goParticipants = transport.responseText.evalJSON();
 				showParticipants();
 				getPollState(function (_pollState) {
-					if (_pollState === "open") {
-						/*TODO 
-						if (eingeloggt im localStorage) {
-							goVoteVector.setSecKey(schluessel);
-							insertParticipationCheckboxes();
-						}
-						*/
-					} else {
+					if (_pollState === "closed") {
 						calcResult();
 					}
 				});

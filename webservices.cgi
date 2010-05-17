@@ -54,7 +54,8 @@ class Poll
 	# Poll Initialization
 	###################################################################
 	def Poll.webservicedescription_0Initialization_getTimeStamps
-		{ "return" => "Liste potentieller Startzeiten des Events (rfc3339)" }
+		{ "return" => "Liste potentieller Startzeiten des Events (rfc3339)", 
+		  "description" => "<span style='color:red'>deprecated</span> (getColumns -> kein rfc!)"}
 	end
 	def webservice_getTimeStamps
 		# FIXME, when it should work for seconds or pollhead
@@ -77,7 +78,8 @@ class Poll
 
 
 	def Poll.webservicedescription_0Initialization_getParticipants
-		{ "return" => "Liste der GPG-IDs aller Teilnehmer"}
+		{ "return" => "Liste der GPG-IDs aller Teilnehmer",
+		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)"}
 	end
 	def webservice_getParticipants
 		if $dc["participants"]
@@ -103,7 +105,14 @@ class Poll
 
 				end
 			}
-			#TODO flying!!
+			if $dc["flying"]
+				$dc["flying"].each{|p,kickkeys|
+					ret[p]['flying'] = []
+					kickkeys.each{|kickerkeys|
+						ret[p]['flying'] << [kickerkeys["keys"].keys,kickerkeys["kicker"]]
+					}
+				}
+			end
 		end
 		return ret.to_json
 	end
@@ -256,6 +265,7 @@ FOO
 
 	def Poll.webservicedescription_1VoteCasting_getState
 		{ "return" => '"notVoted" OR "voted" OR "flying" OR "kickedOut", Warning: only "notVoted" and "voted" is supported currently',
+		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)",
 			"input" => ["gpgID"]}
 	end
 	def getState(gpgId)
@@ -457,6 +467,7 @@ webservices.sort.each{|category,ws|
 		d = Poll.send("webservicedescription_#{category}_#{w}")
 		$out << <<TITLE
 <h2>#{w}(#{d["input"].to_a.join(", ")})</h2>
+#{d['description']}
 <form method='get' action=''>
 <div>
 <input type='hidden' name='service' value='#{w}' />
