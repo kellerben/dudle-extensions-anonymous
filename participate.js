@@ -362,13 +362,16 @@ function calcResult() {
 		parameters: { service: "getVote", pollID: gsPollID },
 		onSuccess: function (_transport) {
 			var _totalVoteSeveralCols, _totalVote, _resultMatrix, _colResults, _inverted,
-				sumelement, _table, result, _attack, totalsum, colidx,  _col, numParticipants, partidx, _gpgID;
+				sumelement, _table, result, _attack, totalsum, colidx, _col, numParticipants, partidx, _gpgID,
+				_kicked, kickeridx, kicksidx;
+
 			_totalVoteSeveralCols = $H(_transport.responseText.evalJSON());
 			_totalVote = {};
-
 			_resultMatrix = [];
 			_colResults = [];
-			var fly = _totalVoteSeveralCols.unset("kicked");
+			_kicked = $H(_totalVoteSeveralCols.unset("kicked"));
+			numParticipants = _totalVoteSeveralCols.keys().length;
+
 			_totalVoteSeveralCols.each(function (_participant) {
 				_totalVote[_participant.key] = {};
 				$A(_participant.value).each(function (_vote) {
@@ -394,10 +397,21 @@ function calcResult() {
 					for (_table = 0; _table < giNumTables; _table++) {
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
-						for (partidx = 0, numParticipants = _totalVoteSeveralCols.keys().length; partidx < numParticipants; ++partidx) {
+						for (partidx = 0; partidx < numParticipants; ++partidx) {
 							_gpgID = _totalVoteSeveralCols.keys()[partidx];
 							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 36)).mod(goVoteVector.dcmod);
 						}
+
+						_kicked.each(function (kickers) {
+							$H(kickers.value).each(function (kicker) {
+								for (kickeridx = 0; kickeridx < kicker.value.length; ++kickeridx) {
+									for (kicksidx = 0; kicksidx < kickers.value[kicker[kickeridx]].length; ++kicksidx) {
+										_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].subtract(new BigInteger(kickers.value[kicker[kickeridx]][kicksidx].keys[_col][_table][_inverted], 36)).mod(goVoteVector.dcmod);
+									}
+								}
+							});
+						});
+
 
 						result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
 						if (result.compareTo(BigInteger.ZERO) < 0) {
@@ -413,7 +427,7 @@ function calcResult() {
 						sumelement.update(totalsum);
 					} else {
 /*FIXME auf spalten anpassen*/
-						if (new BigInteger($H(goParticipants).size().toString()).compareTo(_colResults[0][_col].add(_colResults[1][_col])) !== 0) {
+						if (new BigInteger(numParticipants.toString()).compareTo(_colResults[0][_col].add(_colResults[1][_col])) !== 0) {
 							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody sent inconsistent values at column %1!!!"), [_col]) + "</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
