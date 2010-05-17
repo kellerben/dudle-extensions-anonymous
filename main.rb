@@ -70,7 +70,7 @@ var gsUnknown = '#{UNKNOWN}';
 var gsKickOut = '#{DELETE}';
 var gsVoted = '#{PASSWORDSTAR}';
 var gsFlying = '⚠';
-var gsKickedOut = '𝄐';
+var gsKickedOut = '𝄽';
 SCRIPT
 # ⚠⬚⸪𝄽𝄐✉◌#
 )
