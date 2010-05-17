@@ -37,19 +37,50 @@ class Poll
 	def webservice_getPollState
 		return "open" if $dc.empty?
 		
-		return getTotalParticipants.pretty_inspect
-		return getTotalParticipants.collect{|p,state|
+		missing = {}
+		total = getTotalParticipants
+		total.each{|p,state|
 			if state["voted"]
-				@head.columns.each{|c|
-					return "open" unless $dc[p]
+				state["voted"].each{|cols,used|
+					used.each{|missing_participant|
+						missing[missing_participant] ||= {}
+						cols.each{|c|
+							missing[missing_participant][c] ||= []
+							missing[missing_participant][c] << p
+							missing[missing_participant][c].uniq!
+						}
+					}
 				}
-			elsif state["flying"]
-
 			else
-				return "open"
+				return "open" unless state["flying"]
 			end
 		}
-		return totalpart.pretty_inspect
+
+		missing.each{|p,cols|
+			if total[p]["voted"]
+				total[p]["voted"].each{|donecols,usedkeys|
+					donecols.each{|done|
+						usedkeys.each{|usedkey|
+							missing[p][done].delete(usedkey)
+						}
+					}
+				}
+			end
+			if total[p]["flying"]
+				total[p]["flying"].each{|kicker,kickcols|
+					kickcols.each{|kickcol|
+						missing[p][kickcol].delete(kicker)
+					}
+				}
+			end
+		}
+
+		missing.each{|p,cols|
+			cols.each{|c,miss|
+				return "open" unless miss.empty?
+			}
+		}
+
 		return "closed"
 	end
 	def Poll.webservicedescription_3Polldetails_getDebug
@@ -426,7 +457,6 @@ class Webservice_test < Test::Unit::TestCase
 					"0x2289ADC1"=>[{
 						"keys"=>{
 							"a"=> [[0, 0], [0, 0], [0, 0]],
-							"b"=> [[0, 0], [0, 0], [0, 0]],
 							"c"=> [[0, 0], [0, 0], [0, 0]]
 						},
 						"signature"=>"TODO"
@@ -460,6 +490,8 @@ class Webservice_test < Test::Unit::TestCase
 	end
 	def test_getPollState
 		assert_equal("open",$d.webservice_getPollState)
+		$dc["flying"]["0x7EF2BF4E"]["0x2289ADC1"] << {"keys" =>{"b"=> [[0, 0], [0, 0], [0, 0]]},"signature"=>"TODO"}
+		assert_equal("closed",$d.webservice_getPollState)
 	end
 end
 
