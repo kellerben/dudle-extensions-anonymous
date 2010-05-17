@@ -378,6 +378,11 @@ FOO
 			return "Keys have invalid structure: #{e}"
 		end
 
+		if $dc["flying"][victim][kicker].include?(kickOut)
+			$header["status"] = "304 Not Modified"
+			return "The same information were already sent before"
+		end
+
 		$dc["flying"][victim][kicker] << kickOut
 		store_dc($dc,"Participant #{kicker} wants to kick out #{victim}")
 		return "Removal request stored"
