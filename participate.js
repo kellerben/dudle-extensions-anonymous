@@ -25,6 +25,7 @@ var gActiveParticipant;
 var gaColumns;
 var gaColumnsLen;
 var goParticipants;
+var gsPollState;
 
 /**********************************************************
  * remove non-standard characters to give a valid html id *
@@ -74,12 +75,10 @@ function requestKickOut(_victim) {
 	var usersNeeded = [], queryUser, kickoutbutton;
 	$H(goParticipants).each(function (_pair) {
 		if (_pair.value.voted) {
-			if (goParticipants[_victim].flying) {
-				if (!goParticipants[_victim].flying[_pair.key]) {
-					for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
-						if (_pair.value.voted[_i][1].include(_victim)) {
-							usersNeeded.push(_pair.key);
-						}
+			if (!goParticipants[_victim].flying || (goParticipants[_victim].flying && !goParticipants[_victim].flying[_pair.key])) {
+				for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
+					if (_pair.value.voted[_i][1].include(_victim)) {
+						usersNeeded.push(_pair.key);
 					}
 				}
 			}
@@ -106,6 +105,30 @@ function requestKickOut(_victim) {
 		}
 	}
 }
+
+// TODO: transform into asynchronus call
+function fetchKey(id) {
+
+	var req, participant, line, resp;
+	req = new XMLHttpRequest();
+	req.open("POST", gsExtensiondir + "keyserver.cgi", false);
+	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+	req.send("service=getKey&gpgID=" + id.toString());
+
+	if (req.status === 200) {
+		participant = {"id" : id};
+		resp = req.responseText.split("\n");
+		for (line = 0; line < resp.length;line++) {
+			if (resp[line].startsWith("DHPUB ")) {
+				participant.pub = new BigInteger(resp[line].gsub("DHPUB ", ""), 16);
+			}
+		}
+		return participant;
+	} else {
+		return gt.gettext('Something went wrong! The server said:') + " " + req.responseText;
+	}
+}
+
 
 Vote.prototype.kickOutUser = function (_victim) {
 	var _colidx, _col, _inverted, _table, keyMatrix, key;
@@ -201,7 +224,11 @@ function getState(participant, column) {
 	if ($H(goParticipants[participant]).keys().indexOf("flying") !== -1) {
 		$H(goParticipants[participant].flying).each(function (kicker) {
 			if (kicker.value.indexOf(column) !== -1) {
-				state = "flying";
+				if (gsPollState === "closed") {
+					state = "kickedOut";
+				} else {
+					state = "flying";
+				}
 			}
 		});
 	}
@@ -474,29 +501,6 @@ function showSaveButton() {
 }
 
 
-// TODO: transform into asynchronus call
-function fetchKey(id) {
-
-	var req, participant, line, resp;
-	req = new XMLHttpRequest();
-	req.open("POST", gsExtensiondir + "keyserver.cgi", false);
-	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-	req.send("service=getKey&gpgID=" + id.toString());
-
-	if (req.status === 200) {
-		participant = {"id" : id};
-		resp = req.responseText.split("\n");
-		for (line = 0; line < resp.length;line++) {
-			if (resp[line].startsWith("DHPUB ")) {
-				participant.pub = new BigInteger(resp[line].gsub("DHPUB ", ""), 16);
-			}
-		}
-		return participant;
-	} else {
-		return gt.gettext('Something went wrong! The server said:') + " " + req.responseText;
-	}
-}
-
 
 /*****************************************************************
  * Start all calculations, which can be done before vote casting *
@@ -659,8 +663,9 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			},
 			onSuccess: function (transport) {
 				goParticipants = transport.responseText.evalJSON();
-				showParticipants();
 				getPollState(function (_pollState) {
+					gsPollState = _pollState;
+					showParticipants();
 					if (_pollState === "closed") {
 						calcResult();
 					}
