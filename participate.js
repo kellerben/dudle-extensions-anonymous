@@ -329,15 +329,7 @@ function togglecheckbutton(id) {
  **************************************************/
 function showParticipants() {
 	$H(goParticipants).each(function (participant) {
-		var row = "<tr class='participantrow' id='participant_" + participant.key + "'>";
-		row += "<td class='name' title='" + participant.key + "' id='" + participant.key + "_td'>";
-		row += "<a href='javascript:showLogin(\"" + participant.key + "\")' title='" + gt.gettext("Edit User") + "'>";
-
-		row += "<span id='" + participant.key + "'>";
-		row += Gettext.strargs(gt.gettext("Fetching Name for %1 ..."), [participant.key]) + "</span>";
-
-		row += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
-		row += "</td>";
+		var rowstart, row = "" , editable = false;
 
 		gaColumns.each(function (column) {
 			var classname, statustitle, statustext;
@@ -349,11 +341,13 @@ function showParticipants() {
 				statustext = gsVoted;
 				break;
 			case 'notVoted':
+				editable = true;
 				classname = 'undecided';
 				statustitle = gt.gettext('Has not voted yet.');
 				statustext = gsUnknown;
 				break;
 			case 'flying':
+				editable = true;
 				classname = 'bmaybe';
 				statustitle = gt.gettext('Is to be removed.');
 				statustext = gsFlying;
@@ -366,8 +360,23 @@ function showParticipants() {
 			}
 			row += "<td class='" + classname + "' id='" + htmlid(column  + "."  + participant.key) + "' title='" + statustitle + "'>" +  statustext + "</td>";
 		});
+
+		rowstart = "<tr class='participantrowstart' id='participant_" + participant.key + "'>";
+		rowstart += "<td class='name' title='" + participant.key + "' id='" + participant.key + "_td'>";
+		if (editable) {
+			rowstart += "<a href='javascript:showLogin(\"" + participant.key + "\")' title='" + gt.gettext("Edit User") + "'>";
+		}
+
+		rowstart += "<span id='" + participant.key + "'>";
+		rowstart += Gettext.strargs(gt.gettext("Fetching Name for %1 ..."), [participant.key]) + "</span>";
+
+		if (editable) {
+			rowstart += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
+		}
+		rowstart += "</td>";
+
 		row += "<td class='invisible' id='" + htmlid("lastedit_" + participant.key) + "'></td></tr>";
-		$("separator_top").insert({ before: row });
+		$("separator_top").insert({ before: rowstart + row });
 		gfUpdateName(participant.key);
 	});
 }
