@@ -83,10 +83,10 @@ function secondRegisterStep() {
 	_r += "</tr><tr>";
 	_r += "<td></td>";
 	_r += "<td>" + gt.gettext("Alternatively, you may bookmark this link, which inserts the key into the login field:");
-	_r += " <a href=\"javascript:(function(){showLogin('";
-	_r += goVoteVector.id + "');document.getElementById('key').value='";
+	_r += " <a href=\"javascript:void(";
+	_r += "document.getElementById('key').value='";
 	_r += goVoteVector.sec.toString(16);
-	_r += "';})();\">";
+	_r += "')\">";
 	_r += Gettext.strargs(gt.gettext('insert dudle key (%1)'), [$F('name')]) + '</a>.';
 	_r += "</td>";
 	_r += "</tr><tr>";
