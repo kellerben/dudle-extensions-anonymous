@@ -20,10 +20,32 @@
 ############################################################################
 
 $:.push("../../")
+require "yaml"
 require "git.rb"
 require "digest/sha2"
 
 class Keyserver
+	def initialize(dir)
+		@dir = dir
+		if File.exist?("#{dir}/data.yaml")
+			@u = YAML::load_file("#{dir}/data.yaml")
+		else
+			Dir.mkdir(dir)
+			Dir.chdir(dir)
+			VCS.init
+			@u = {}
+			File.open("data.yaml","w"){|f|
+				f << @u.to_yaml
+			}
+			VCS.add("data.yaml")
+			VCS.commit("init keyserver")
+			Dir.chdir("..")
+		end
+	end
+	def humanreadable(gpgid)
+		name = getName(gpgid)
+		name ? name : gpgid
+	end
 	def gpgid(key)
 		dhpubkey = key.scan(/DHPUB ([\da-fA-F]*)/).flatten[0]
 		raise "Bad key format" unless dhpubkey
@@ -44,16 +66,16 @@ class Keyserver
 				raise e
 			end
 		end
-		$u[id] = $cgi["gpgKey"]
-		store("Public Key #{id} added.")
+		@u[id] = $cgi["gpgKey"]
+		store("Public Key for #{humanreadable(id)} added.")
 		$header["status"] = "202 Accepted"
-		"Key with #{id} sucessfully stored"
+		"Key with id #{id} sucessfully stored"
 	end
 	
 	def getKey(gpgid)
 		hex = gpgid.to_s.scan(/^0x(.*)$/).flatten[0]
 		if hex
-			return $u["0x" + hex.upcase]
+			return @u["0x" + hex.upcase]
 		else
 			return false
 		end
@@ -76,22 +98,32 @@ class Keyserver
 		{ "return" => "list of gpgIDs" }
 	end
 	def webservice_listAllKeys
-		$u.keys.sort.join("\n")
+		@u.keys.sort.join("\n")
 	end
 	def Keyserver.webservicedescription_Keyserver_listAllNames
 		{ "return" => "list of Names of registered keys" }
 	end
 	def webservice_listAllNames
-		$u.values.collect{|key| key.scan(/^NAME (.*)$/).flatten[0]}.join("\n")
+		@u.values.collect{|key| key.scan(/^NAME (.*)$/).flatten[0]}.join("\n")
 	end
 	def Keyserver.webservicedescription_Keyserver_getName
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
 			"input" => ["gpgID"]}
 	end
-	def webservice_getName
-		user = getKey($cgi["gpgID"])
+	def getName(gpgID)
+		user = getKey(gpgID)
 		if user
-			return user.scan(/^NAME (.*)$/).flatten[0].to_s
+			name = user.scan(/^NAME (.*)$/).flatten[0].to_s
+			if name != ""
+				return name
+			end
+		end
+		return nil
+	end
+	def webservice_getName
+		name = getName($cgi["gpgID"])
+		if name
+			return name
 		else
 			$header["status"] = "404 Not Found"
 			return "User not found!"
@@ -102,7 +134,7 @@ class Keyserver
 			"input" => ["name"]}
 	end
 	def webservice_searchId
-		$u.each{|user,key|
+		@u.each{|user,key|
 			return gpgid(key) if key.scan(/^NAME (.*)$/).flatten[0].to_s == $cgi["name"].chomp
 		}
 		$header["status"] = "404 Not Found"
@@ -113,7 +145,7 @@ class Keyserver
 			"input" => ["name"]}
 	end
 	def webservice_searchKey
-		$u.each{|user,key|
+		@u.each{|user,key|
 			return key if key.scan(/^NAME (.*)$/).flatten[0].to_s == $cgi["name"].chomp
 		}
 		$header["status"] = "404 Not Found"
@@ -125,16 +157,16 @@ class Keyserver
 	end
 	def webservice_searchName
 		ret = []
-		$u.each{|user,key|
+		@u.each{|user,key|
 			name = key.scan(/^NAME (.*)$/).flatten[0].to_s
 			ret << name unless name.downcase.scan($cgi["search"].downcase).empty?
 		}
 		return "<ul><li>#{ret.join('</li><li>')}</li></ul>".gsub("<li></li>","")
 	end
 	def store(comment)
-		Dir.chdir("keyserverdata")
+		Dir.chdir(@dir)
 		File.open("data.yaml","w"){|f|
-			f << $u.to_yaml
+			f << @u.to_yaml
 		}
 		VCS.commit(comment)
 		Dir.chdir("..")
@@ -145,7 +177,6 @@ end
 if __FILE__ == $0
 
 require "pp"
-require "yaml"
 require "cgi"
 $cgi = CGI.new
 $header = {}
@@ -163,21 +194,7 @@ Keyserver.methods.collect{|m|
 }
 
 if all.include?($cgi["service"])
-	k = Keyserver.new
-	if File.exist?("keyserverdata/data.yaml")
-		$u = YAML::load_file("keyserverdata/data.yaml")
-	else
-		Dir.mkdir("keyserverdata")
-		Dir.chdir("keyserverdata")
-		VCS.init
-		$u = {}
-		File.open("data.yaml","w"){|f|
-			f << $u.to_yaml
-		}
-		VCS.add("data.yaml")
-		VCS.commit("init keyserver")
-		Dir.chdir("..")
-	end
+	k = Keyserver.new("keyserverdata")
 	$header["type"] = "text/plain"
 	$out = k.send("webservice_#{$cgi["service"]}")
 else

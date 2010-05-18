@@ -34,7 +34,7 @@ class Poll
 		$dc["participants"] ||= []
 		$dc["participants"] << $c["gpgID"]
 		$dc["participants"].uniq!
-		store_dc($dc,"Participant "+ $c["gpgID"] + " invited for anonymous voting")
+		store_dc($dc,"Participant "+ $k.humanreadable($c["gpgID"]) + " invited for anonymous voting")
 	end
 
 	def Poll.webservicedescription_0Initialization_removeParticipant
@@ -62,7 +62,7 @@ class Poll
 			return "The key of this user is already used in the poll. Please use kickOut to remove him."
 		else
 			$dc["participants"].delete(user)
-			store_dc($dc,"Participant "+ $c["gpgID"] + " removed from anonymous voting")
+			store_dc($dc,"Participant "+ $k.humanreadable($c["gpgID"]) + " removed from anonymous voting")
 			$header["status"] = "202 Accepted"
 			return "Participant removed."
 		end
@@ -261,7 +261,7 @@ FOO
 		$dc[gpgID].last["usedKeys"] = usedKeys
 
 		$header["status"] = "202 Accepted"
-		store_dc($dc, "Participant " + gpgID + " voted anonymously")
+		store_dc($dc, "Participant " + $k.humanreadable(gpgID) + " voted anonymously")
 	end
 
 	def Poll.webservicedescription_5Deprecated_getState
@@ -344,7 +344,7 @@ FOO
 		end
 
 		$dc["flying"][victim][kicker] << kickOut
-		store_dc($dc,"Participant #{kicker} wants to kick out #{victim}")
+		store_dc($dc,"Participant #{$k.humanreadable(kicker)} wants to kick out #{$k.humanreadable(victim)} from anonymous voting")
 		return "Removal request stored"
 	end
 	
@@ -411,7 +411,6 @@ def store_dc(data,comment)
 	VCS.commit(comment)
 	"Sucessfully Stored"
 end
-
 
 
 if ARGV[0] == "test"
@@ -497,6 +496,9 @@ if all.include?($c["service"])
 	$header = {"type" => "text/plain"}
 
 	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/")
+		load "keyserver.cgi"
+		$k = Keyserver.new("keyserverdata")
+
 		Dir.chdir("../../#{$c["pollID"]}/")
 		load "../dudle.rb"
 		$d = Dudle.new
