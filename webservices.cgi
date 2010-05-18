@@ -129,7 +129,8 @@ class Poll
 	end
 
 	def Poll.webservicedescription_0Initialization_getTotalParticipants
-		{ "return" => "Liste der GPG-IDs aller Teilnehmer"}
+		{ "description" => "Alles was man zum Abstimmen braucht",
+		  "return" => "{id: {voted: [[[cols,…],[usedKeys,…]][cols,…],[usedKeys]]}, id2: {flying: {kickerid: [cols,…],kicker2:[cols,…]}}}"}
 	end
 	def getTotalParticipants
 		ret = {}
