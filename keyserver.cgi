@@ -51,6 +51,36 @@ class Keyserver
 		raise "Bad key format" unless dhpubkey
 		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase[56..64]
 	end
+
+	def getKey(gpgid)
+		hex = gpgid.to_s.scan(/^0x(.*)$/).flatten[0]
+		if hex
+			return @u["0x" + hex.upcase]
+		else
+			return nil
+		end
+	end
+
+	def getName(gpgID)
+		user = getKey(gpgID)
+		if user
+			name = user.scan(/^NAME (.*)$/).flatten[0].to_s
+			if name != ""
+				return name
+			end
+		end
+		return nil
+	end
+
+	def store(comment)
+		Dir.chdir(@dir)
+		File.open("data.yaml","w"){|f|
+			f << @u.to_yaml
+		}
+		VCS.commit(comment)
+		Dir.chdir("..")
+	end
+
 	def Keyserver.webservicedescription_Keyserver_setKey
 		{ "return" => "202 or 400 if key bad formated",
 			"input" => ["gpgKey"]}
@@ -72,15 +102,6 @@ class Keyserver
 		"Key with id #{id} sucessfully stored"
 	end
 	
-	def getKey(gpgid)
-		hex = gpgid.to_s.scan(/^0x(.*)$/).flatten[0]
-		if hex
-			return @u["0x" + hex.upcase]
-		else
-			return false
-		end
-	end
-
 	def Keyserver.webservicedescription_Keyserver_getKey
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
 			"input" => ["gpgID"]}
@@ -110,16 +131,7 @@ class Keyserver
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
 			"input" => ["gpgID"]}
 	end
-	def getName(gpgID)
-		user = getKey(gpgID)
-		if user
-			name = user.scan(/^NAME (.*)$/).flatten[0].to_s
-			if name != ""
-				return name
-			end
-		end
-		return nil
-	end
+
 	def webservice_getName
 		name = getName($cgi["gpgID"])
 		if name
@@ -162,14 +174,6 @@ class Keyserver
 			ret << name unless name.downcase.scan($cgi["search"].downcase).empty?
 		}
 		return "<ul><li>#{ret.join('</li><li>')}</li></ul>".gsub("<li></li>","")
-	end
-	def store(comment)
-		Dir.chdir(@dir)
-		File.open("data.yaml","w"){|f|
-			f << @u.to_yaml
-		}
-		VCS.commit(comment)
-		Dir.chdir("..")
 	end
 end
 
