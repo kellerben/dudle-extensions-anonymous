@@ -43,10 +43,18 @@ class Keyserver
 		end
 	end
 	def humanreadable(gpgid)
-		name = getName(gpgid)
-		name ? name : gpgid
+		begin
+		name = Keyserver.getName(getKey(gpgid))
+		rescue => e
+			if e.message == "Bad key format"
+				return gpgid
+			else 
+				raise e
+			end
+		end
+		name
 	end
-	def gpgid(key)
+	def Keyserver.gpgid(key)
 		dhpubkey = key.scan(/DHPUB ([\da-fA-F]*)/).flatten[0]
 		raise "Bad key format" unless dhpubkey
 		"0x" + Digest::SHA2.new.hexdigest(dhpubkey).upcase[56..64]
@@ -61,15 +69,10 @@ class Keyserver
 		end
 	end
 
-	def getName(gpgID)
-		user = getKey(gpgID)
-		if user
-			name = user.scan(/^NAME (.*)$/).flatten[0].to_s
-			if name != ""
-				return name
-			end
-		end
-		return nil
+	def Keyserver.getName(key)
+		name = key.scan(/^NAME (.*)$/).flatten[0].to_s
+		raise "Bad key format" if name == ""
+		name
 	end
 
 	def store(comment)
@@ -81,13 +84,21 @@ class Keyserver
 		Dir.chdir("..")
 	end
 
+	def searchId(name)
+		@u.each{|user,key|
+			return Keyserver.gpgid(key) if key.scan(/^NAME (.*)$/).flatten[0].to_s == name
+		}
+		nil
+	end
+
 	def Keyserver.webservicedescription_Keyserver_setKey
-		{ "return" => "202 or 400 if key bad formated",
+		{ "return" => "202 or 400 if key bad formated or 403 if name already exists",
 			"input" => ["gpgKey"]}
 	end
 	def webservice_setKey
 		begin
-			id = gpgid($cgi["gpgKey"])
+			id = Keyserver.gpgid($cgi["gpgKey"])
+			name = Keyserver.getName($cgi["gpgKey"])
 		rescue => e
 			if e.message == "Bad key format"
 				$header["status"] = "400 Bad Request"
@@ -96,6 +107,11 @@ class Keyserver
 				raise e
 			end
 		end
+		if searchId(name)
+			$header["status"] = "403 Forbidden"
+			return "The User already exists"
+		end
+
 		@u[id] = $cgi["gpgKey"]
 		store("Public Key for #{humanreadable(id)} added.")
 		$header["status"] = "202 Accepted"
@@ -133,7 +149,7 @@ class Keyserver
 	end
 
 	def webservice_getName
-		name = getName($cgi["gpgID"])
+		name = Keyserver.getName(getKey($cgi["gpgID"]))
 		if name
 			return name
 		else
@@ -146,11 +162,13 @@ class Keyserver
 			"input" => ["name"]}
 	end
 	def webservice_searchId
-		@u.each{|user,key|
-			return gpgid(key) if key.scan(/^NAME (.*)$/).flatten[0].to_s == $cgi["name"].chomp
-		}
-		$header["status"] = "404 Not Found"
-		return "User not found!"
+		id = searchId($cgi["name"].chomp)
+		if id
+			return id
+		else
+			$header["status"] = "404 Not Found"
+			return "User not found!"
+		end
 	end
 	def Keyserver.webservicedescription_Keyserver_searchKey
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
@@ -178,9 +196,49 @@ class Keyserver
 end
 
 
-if __FILE__ == $0
-
 require "pp"
+if ARGV[0] == "test"
+require 'test/unit'
+class Keyserver
+	def initialize(dir)
+		@dir = "/dev/null"
+		@u = {}
+	end
+	def store(comment)
+	end
+end
+class Keyserver_test < Test::Unit::TestCase
+	def setup
+		$header = {}
+		$cgi = {}
+		@k = Keyserver.new("foo")
+		@somekey = <<KEY
+NAME Alice
+DHPUB e890c9072acbcb3dd93a586b882f1a478998dd1ef979475550307ebfb2f843f302dc865fc88bac9be612e26410cc51ff2d5192cdbd61a840a27427ece97fa8c4250a820f95aad76ad2b2a1c0000396693d05b2ba882745b68bbf72ccec317ecf
+KEY
+	end
+	def test_gpgid
+		assert_equal("0xD189C27D",Keyserver.gpgid(@somekey))
+	end
+	def test_searchId
+		assert_equal(nil,@k.searchId("foo"))
+	end
+	def test_setKey
+		$cgi["gpgKey"] = @somekey
+		@k.webservice_setKey
+		assert_equal("202 Accepted",$header["status"])
+
+		@k.webservice_setKey
+		assert_equal("403 Forbidden",$header["status"])
+
+		$cgi["gpgKey"] = "NAME Foo\n DH"
+		@k.webservice_setKey
+		assert_equal("400 Bad Request",$header["status"])
+	end
+end
+
+elsif __FILE__ == $0
+
 require "cgi"
 $cgi = CGI.new
 $header = {}
