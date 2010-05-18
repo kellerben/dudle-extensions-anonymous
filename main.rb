@@ -64,15 +64,22 @@ if $d.is_poll?
 
 	when "." 
 
+if $USEUTF
+# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
+	FLY = "✄"
+	KICKED = "☠"
+else
+	FLY = "-"
+	KICKED = "-"
+end
 		$d.html.add_script(<<SCRIPT
 var gsEdit = '#{EDIT}';
 var gsUnknown = '#{UNKNOWN}';
 var gsKickOut = '#{DELETE}';
 var gsVoted = '#{PASSWORDSTAR}';
-var gsFlying = '✄';
-var gsKickedOut = '☠';
+var gsFlying = '#{FLY}';
+var gsKickedOut = '#{KICKED}';
 SCRIPT
-# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
 )
 		e.add_lib("jsbn")
 		e.add_lib("jsbn2")
