@@ -525,6 +525,7 @@ Vote.prototype.startKeyCalc = function () {
  *********************************/
 Vote.prototype.save = function () {
 	var _inverted, _colidx, _col, randomTable, voteval, _voteobj, _table, ar;
+	$("votebutton").disable();
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
