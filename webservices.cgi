@@ -84,7 +84,7 @@ class Poll
 		return "open" if $dc.empty?
 		
 		missing = {}
-		total = getTotalParticipants
+		total = getParticipants
 		total.each{|p,state|
 			if state["voted"]
 				state["voted"].each{|cols,used|
@@ -138,11 +138,11 @@ class Poll
 	end
 
 
-	def Poll.webservicedescription_5Deprecated_getParticipants
+	def Poll.webservicedescription_5Deprecated_getSimpleParticipants
 		{ "return" => "Liste der GPG-IDs aller Teilnehmer",
-		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)"}
+		  "description" => "<span style='color:red'>deprecated</span> (getParticipants)"}
 	end
-	def webservice_getParticipants
+	def webservice_getSimpleParticipants
 		if $dc["participants"]
 			return $dc["participants"].join("\n")
 		else
@@ -157,11 +157,11 @@ class Poll
 		"60" #FIXME
 	end
 
-	def Poll.webservicedescription_1Polldetails_getTotalParticipants
+	def Poll.webservicedescription_1Polldetails_getParticipants
 		{ "description" => "Alles was man zum Abstimmen braucht",
 		  "return" => "{id:{voted: [[[cols,…],[usedKeys,…]][cols,…],[usedKeys]]}, id2: {flying: {kickerid: [cols,…],kicker2:[cols,…]}}}"}
 	end
-	def getTotalParticipants
+	def getParticipants
 		ret = {}
 		if $dc["participants"]
 			$dc["participants"].each{|p|
@@ -185,8 +185,8 @@ class Poll
 		end
 		ret
 	end
-	def webservice_getTotalParticipants
-		getTotalParticipants.to_json
+	def webservice_getParticipants
+		getParticipants.to_json
 	end
 
 	###################################################################
@@ -266,7 +266,7 @@ FOO
 
 	def Poll.webservicedescription_5Deprecated_getState
 		{ "return" => '"notVoted" OR "voted" OR "flying" OR "kickedOut", Warning: only "notVoted" and "voted" is supported currently',
-		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)",
+		  "description" => "<span style='color:red'>deprecated</span> (getParticipants)",
 			"input" => ["gpgID"]}
 	end
 	def getState(gpgId)
@@ -284,7 +284,7 @@ FOO
 
 	def Poll.webservicedescription_5Deprecated_getUsedKeys
 		{ "return" => 'Liste von gpgIDs der Votekeys, mit der der Benutzer <gpgID> seine Stimme verschlüsselt hat',
-		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)",
+		  "description" => "<span style='color:red'>deprecated</span> (getParticipants)",
 			"input" => ["gpgID"]
 		}
 	end
@@ -465,9 +465,9 @@ class Webservice_test < Test::Unit::TestCase
 		}
      $d = Poll.new
 	end
-	def test_getTotalParticipants()
-		assert_equal(["a","b","c"],$d.getTotalParticipants()["0x2289ADC1"]['voted'][0][0])
-		assert_equal(["a","b","c"],$d.getTotalParticipants()["0x7EF2BF4E"]["flying"]["0xD189C27D"])
+	def test_getParticipants()
+		assert_equal(["a","b","c"],$d.getParticipants()["0x2289ADC1"]['voted'][0][0])
+		assert_equal(["a","b","c"],$d.getParticipants()["0x7EF2BF4E"]["flying"]["0xD189C27D"])
 	end
 	def test_getPollState
 		assert_equal("open",$d.webservice_getPollState)

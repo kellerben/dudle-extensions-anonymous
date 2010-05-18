@@ -26,7 +26,7 @@ var gsSaveButtonLabel = $("savebutton").value;
 var gaAllUsers;
 var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
-	parameters: { service: 'getTotalParticipants', pollID: gsPollID},
+	parameters: { service: 'getParticipants', pollID: gsPollID},
 	onFailure: function () {
 		alert(gt.gettext('Failed to fetch participant list.'));
 	},

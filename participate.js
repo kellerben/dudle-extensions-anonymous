@@ -665,7 +665,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		gaColumnsLen = gaColumns.length;
 
 		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-			parameters: {service: 'getTotalParticipants', pollID: gsPollID},
+			parameters: {service: 'getParticipants', pollID: gsPollID},
 			method: "get",
 			onFailure: function () { 
 				alert(gt.gettext('Failed to fetch participant list.'));
