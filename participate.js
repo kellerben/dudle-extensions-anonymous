@@ -405,6 +405,7 @@ function calcResult() {
 				sumelement, _table, result, _attack, totalsum, colidx, _col, numParticipants, partidx, _gpgID,
 				_kicked, kickeridx, kicksidx;
 
+			/* FIXME evalJSON() is evil, as others may inject some code*/
 			_totalVoteSeveralCols = $H(_transport.responseText.evalJSON());
 			_totalVote = {};
 			_resultMatrix = [];
@@ -671,6 +672,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 				alert(gt.gettext('Failed to fetch participant list.'));
 			},
 			onSuccess: function (transport) {
+				/* FIXME evalJSON() is evil, as others may inject some code*/
 				goParticipants = transport.responseText.evalJSON();
 				getPollState(function (_pollState) {
 					gsPollState = _pollState;

@@ -32,6 +32,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	},
 	onSuccess: function (transport) {
 		var ar, usedKeys;
+		/* FIXME evalJSON() is evil, as others may inject some code*/
 		_oParticipants = transport.responseText.evalJSON();
 		// Add existing participants
 
