@@ -139,46 +139,44 @@ Vote.prototype.kickOutUser = function (_victim) {
 		$("kickoutbutton").disabled = true;
 		goVoteVector.setSecKey(key, function () {
 			if (goVoteVector.id === gsKickerId) {
-				if (confirm(gt.gettext("Do you really want to remove the participant from the poll?"))) {
-					$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
-					goVoteVector.participants[_victim] = fetchKey(_victim);
+				$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
+				goVoteVector.participants[_victim] = fetchKey(_victim);
 
-					// calculate the dh secret
-					goVoteVector.participants[_victim].pub.modPow(goVoteVector.sec, goVoteVector.dhmod,
-						function (result) {
-							var ar;
-							goVoteVector.participants[_victim].dh = result;
+				// calculate the dh secret
+				goVoteVector.participants[_victim].pub.modPow(goVoteVector.sec, goVoteVector.dhmod,
+					function (result) {
+						var ar;
+						goVoteVector.participants[_victim].dh = result;
 
-							AES_Init();
-							keyMatrix = {};
-							for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-								_col = gaColumns[_colidx];
-								keyMatrix[_col] = [];
-								for (_table = 0; _table < giNumTables;_table++) {
-									keyMatrix[_col][_table] = [];
-									for (_inverted = 0; _inverted < 2; _inverted++) {
-										keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
-									}
+						AES_Init();
+						keyMatrix = {};
+						for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
+							_col = gaColumns[_colidx];
+							keyMatrix[_col] = [];
+							for (_table = 0; _table < giNumTables;_table++) {
+								keyMatrix[_col][_table] = [];
+								for (_inverted = 0; _inverted < 2; _inverted++) {
+									keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
 								}
 							}
-							AES_Done();
-
-							ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-								parameters: {
-									service: 'setKickOutKeys', 
-									pollID: gsPollID, 
-									gpgIDKicker: goVoteVector.id, 
-									gpgIDLeaver: _victim, 
-									keys: Object.toJSON(keyMatrix),
-									signature: 'TODO'
-								},
-								onSuccess: function (transport) {
-									gfReload();
-								}
-							});
 						}
-					);
-				}
+						AES_Done();
+
+						ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+							parameters: {
+								service: 'setKickOutKeys', 
+								pollID: gsPollID, 
+								gpgIDKicker: goVoteVector.id, 
+								gpgIDLeaver: _victim, 
+								keys: Object.toJSON(keyMatrix),
+								signature: 'TODO'
+							},
+							onSuccess: function (transport) {
+								gfReload();
+							}
+						});
+					}
+				);
 			} else {
 				var _errormsg = gt.gettext("You entered a wrong key!");
 				_errormsg += " <a href='javascript:(function () {showLogin(\"" + _victim + "\");requestKickOut(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
