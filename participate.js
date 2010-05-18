@@ -64,7 +64,7 @@ function showKicker(_victim, _kicker) {
 	$(_victim + "_td").update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
 	$("key").disabled = false;
 	$("kickoutbutton").disabled = false;
-	$("cancelbutton").replace(requestKickOutButton(_victim, gt.gettext("Cancel")));
+	Element.replace("cancelbutton",requestKickOutButton(_victim, gt.gettext("Cancel")));
 }
 
 function cancelButton() {
@@ -95,13 +95,13 @@ function requestKickOut(_victim) {
 		queryUser += "</ul>";
 		$(_victim + "_td").update(queryUser);
 		$("key").disabled = true;
-		$("deletebutton").replace(cancelButton());
+		Element.replace("deletebutton", cancelButton());
 
 		if ($("loginbutton")) {
 			kickoutbutton = "<input id='kickoutbutton' type='button' value='";
 			kickoutbutton += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
 			kickoutbutton += "' onClick='goVoteVector.kickOutUser(\"" + _victim + "\")' disabled='' />";
-			$("loginbutton").replace(kickoutbutton);
+			Element.replace("loginbutton", kickoutbutton);
 		}
 	}
 }
@@ -284,7 +284,7 @@ function login() {
 		$("key_td").update(gt.gettext("Calculating the public key ..."));
 		$("loginbutton").value = gt.gettext("Please wait ...");
 		$("loginbutton").disabled = true;
-		$("deletebutton").replace(cancelButton());
+		Element.replace("deletebutton", cancelButton());
 		goVoteVector.setSecKey(key, function () {
 			if ("participant_" + goVoteVector.id === gActiveParticipant.id) {
 				gActiveParticipant.update(gParticipantTds);
