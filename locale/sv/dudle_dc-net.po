@@ -19,7 +19,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2010-03-09 12:53+0100\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-05-18 09:53+0200\n"
 "PO-Revision-Date: 2010-03-10 14:41+0100\n"
 "Last-Translator: Erica <erica.resare@kau.se>\n"
 "Language-Team: \n"
@@ -28,154 +29,203 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-dudle-Language: Svenska\n"
 
-#: common.js:27
+#: common.js:36
 msgid "Failed to fetch name for %1."
 msgstr "Misslyckades med hämtning av namnet för %1."
 
-#: invite_participants.js:23
-#: participate.js:387
+#: invite_participants.js:31 participate.js:672
 msgid "Failed to fetch participant list."
 msgstr "Misslyckades med hämtning av deltagarlista."
 
-#: invite_participants.js:28
+#: invite_participants.js:40
 msgid "Privacy Enhanced"
 msgstr "Förhöjd Integritetsversion"
 
-#: invite_participants.js:35
+#: invite_participants.js:59
 msgid "fetching user name for %1 ..."
 msgstr "hämtar användarnamn för %1 ..."
 
-#: invite_participants.js:83
+#: invite_participants.js:100
+msgid "Save Changes"
+msgstr ""
+
+#: invite_participants.js:126 participate.js:208
+msgid "Delete User"
+msgstr ""
+
+#: invite_participants.js:160
 msgid "Checking Username"
 msgstr "Kontrollerar användarnamn"
 
-#: invite_participants.js:90
-#: invite_participants.js:93
-msgid "Invite"
-msgstr "Bjud in"
-
-#: invite_participants.js:94
+#: invite_participants.js:172
 msgid "Only registered users can participate privacy-enhanced."
 msgstr "Endast registrerade användare kan delta med förhöjd integritet."
 
-#: login_register.js:69
-#: login_register.js:100
-#: login_register.js:111
-msgid "Login"
-msgstr "Logga in"
-
-#: login_register.js:72
-msgid "Logout"
-msgstr "Logga ut"
-
-#: login_register.js:95
-#: login_register.js:142
-msgid "Secret Key:"
+#: participate.js:64 participate.js:203
+#, fuzzy
+msgid "Secret Key for %1:"
 msgstr "Hemlig nyckel:"
 
-#: login_register.js:99
-#: login_register.js:122
+#: participate.js:67 participate.js:71 register.js:51
 msgid "Cancel"
 msgstr "Avboka"
 
-#: login_register.js:103
-msgid "Register new Account"
-msgstr "Registrera nytt konto"
-
-#: login_register.js:118
-msgid "Name:"
-msgstr "Namn:"
-
-#: login_register.js:123
-msgid "Please wait while calculating a secret key ..."
-msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
-
-#: login_register.js:130
-#: login_register.js:134
-msgid "Next"
-msgstr "Nästa"
-
-#: login_register.js:140
-msgid "Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile)."
-msgstr "Vänligen lagra hemlig nyckel någonstans på din dator (t ex genom att kopiera det till en textfil)."
-
-#: login_register.js:147
-msgid "Alternatively, you may bookmark this link, which inserts the key into the login field:"
-msgstr "Alternativt kan du bokmärka denna länk för att infoga nyckeln i fältet för inloggning:"
-
-#: login_register.js:151
-msgid "insert dudle key (%1)"
-msgstr "Infoga dudle nyckel (%1)"
-
-#: login_register.js:155
-msgid "Previous"
-msgstr "Föregående"
-
-#: login_register.js:156
-msgid "Finish"
-msgstr "Klar"
-
-#: login_register.js:170
-msgid "Failed to store key, the server said:"
-msgstr "Misslyckades med lagring av nyckel. Servern säger:"
-
-#: login_register.js:183
-msgid "Please wait while calculating the public key ..."
-msgstr "Vänligen vänta medan publik nyckel beräknas ..."
-
-#: participate.js:62
-msgid "Fetching Name for %1 ..."
-msgstr "Hämtar namn för %1 ..."
-
-#: participate.js:63
-msgid "Fetching status ..."
-msgstr "Hämtar status ..."
-
-#: participate.js:74
-msgid "Failed to fetch status."
-msgstr "Misslyckades med hämtning av status."
-
-#: participate.js:78
-msgid "Has voted anonymously."
-msgstr "Har röstat anonymt."
-
-#: participate.js:82
-msgid "Has not voted yet."
-msgstr "Har inte röstat ännu."
-
-#: participate.js:86
-msgid "Is to be removed."
-msgstr "Ska raderas."
-
 #: participate.js:90
-msgid "Is removed."
-msgstr "Raderad."
+msgid "Please select your username:"
+msgstr ""
 
-#: participate.js:110
-msgid "Calculating keys ..."
-msgstr "Beräknar nycklar ..."
+#: participate.js:102
+msgid "Delete %1"
+msgstr ""
 
-#: participate.js:156
-msgid "decrease"
-msgstr "minska"
-
-#: participate.js:156
-msgid "increase"
-msgstr "öka"
-
-#: participate.js:157
-msgid "Somebody tried to %1 column %2 by %3!!!"
-msgstr "Någon försökte att %1 kolumn %2 genom %3!!!"
-
-#: participate.js:168
-msgid "Somebody sent inconsistent values at column %1!!!"
-msgstr "Någon har skickat inkonsekventa värden till kolumn %1!!!"
-
-#: participate.js:218
-msgid "Save"
-msgstr "Spara"
-
-#: participate.js:242
+#: participate.js:128
 msgid "Something went wrong! The server said:"
 msgstr "Någonting gick fel! Servern säger:"
 
+#: participate.js:137 participate.js:284
+#, fuzzy
+msgid "Calculating the public key ..."
+msgstr "Beräknar nycklar ..."
+
+#: participate.js:138 participate.js:285
+msgid "Please wait ..."
+msgstr ""
+
+#: participate.js:142
+msgid "Do you really want to remove the participant from the poll?"
+msgstr ""
+
+#: participate.js:143
+#, fuzzy
+msgid "Please wait while removing %1 ..."
+msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
+
+#: participate.js:183 participate.js:293
+msgid "You entered a wrong key!"
+msgstr ""
+
+#: participate.js:184 participate.js:296
+msgid "Try again?"
+msgstr ""
+
+#: participate.js:207 register.js:67 register.js:71
+msgid "Next"
+msgstr "Nästa"
+
+#: participate.js:262
+msgid "Calculating keys ..."
+msgstr "Beräknar nycklar ..."
+
+#: participate.js:340
+msgid "Has voted anonymously."
+msgstr "Har röstat anonymt."
+
+#: participate.js:346
+msgid "Has not voted yet."
+msgstr "Har inte röstat ännu."
+
+#: participate.js:352
+msgid "Is to be removed."
+msgstr "Ska raderas."
+
+#: participate.js:357
+msgid "Is removed."
+msgstr "Raderad."
+
+#: participate.js:367
+msgid "Edit User"
+msgstr ""
+
+#: participate.js:371
+msgid "Fetching Name for %1 ..."
+msgstr "Hämtar namn för %1 ..."
+
+#: participate.js:459
+msgid "decrease"
+msgstr "minska"
+
+#: participate.js:459
+msgid "increase"
+msgstr "öka"
+
+#: participate.js:460
+msgid "Somebody tried to %1 column %2 by %3!!!"
+msgstr "Någon försökte att %1 kolumn %2 genom %3!!!"
+
+#: participate.js:472
+msgid "Somebody sent inconsistent values at column %1!!!"
+msgstr "Någon har skickat inkonsekventa värden till kolumn %1!!!"
+
+#: participate.js:509
+msgid "Save"
+msgstr "Spara"
+
+#: register.js:24 register.js:61
+msgid "Register"
+msgstr ""
+
+#: register.js:45
+msgid "Register new Account"
+msgstr "Registrera nytt konto"
+
+#: register.js:47
+msgid "Name:"
+msgstr "Namn:"
+
+#: register.js:52
+msgid "Please wait while calculating a secret key ..."
+msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
+
+#: register.js:78
+msgid ""
+"Please store the secret key somewhere at your computer (e.&thinsp;g., by "
+"copying it to a textfile)."
+msgstr ""
+"Vänligen lagra hemlig nyckel någonstans på din dator (t ex genom att kopiera "
+"det till en textfil)."
+
+#: register.js:80
+msgid "Secret Key:"
+msgstr "Hemlig nyckel:"
+
+#: register.js:85
+msgid ""
+"Alternatively, you may bookmark this link, which inserts the key into the "
+"login field:"
+msgstr ""
+"Alternativt kan du bokmärka denna länk för att infoga nyckeln i fältet för "
+"inloggning:"
+
+#: register.js:90
+msgid "insert dudle key (%1)"
+msgstr "Infoga dudle nyckel (%1)"
+
+#: register.js:94
+msgid "Previous"
+msgstr "Föregående"
+
+#: register.js:96
+msgid "Finish"
+msgstr "Klar"
+
+#: register.js:110
+msgid "Failed to store key, the server said:"
+msgstr "Misslyckades med lagring av nyckel. Servern säger:"
+
+#~ msgid "Invite"
+#~ msgstr "Bjud in"
+
+#~ msgid "Login"
+#~ msgstr "Logga in"
+
+#~ msgid "Logout"
+#~ msgstr "Logga ut"
+
+#~ msgid "Please wait while calculating the public key ..."
+#~ msgstr "Vänligen vänta medan publik nyckel beräknas ..."
+
+#~ msgid "Fetching status ..."
+#~ msgstr "Hämtar status ..."
+
+#~ msgid "Failed to fetch status."
+#~ msgstr "Misslyckades med hämtning av status."

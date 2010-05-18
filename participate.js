@@ -87,7 +87,7 @@ function requestKickOut(_victim) {
 	if (usersNeeded.size() === 0) {
 		gfRemoveParticipant(_victim, gfReload);
 	} else {
-		queryUser = gt.gettext("Which secrect key do you own:");
+		queryUser = gt.gettext("Please select your username:");
 		queryUser += "<ul style='text-align: left'>";
 		queryUser += usersNeeded.uniq().collect(function (e) {
 			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
