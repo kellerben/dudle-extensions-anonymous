@@ -87,8 +87,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		
 		$("add_participant_input_td").insert({after: "<td style='text-align:center'><input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox()' /></td>"});
 
-		$("savebutton").writeAttribute("onclick", "addParticipant();");
-		$("savebutton").writeAttribute("type", "button");
+		Element.replace("savebutton", "<input id='savebutton' value='" + gsSaveButtonLabel + "' type='button' onclick='addParticipant()' />");
 	}
 });
 

@@ -260,9 +260,9 @@ function insertParticipationCheckboxes() {
 				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...") + "' disabled='disabled'>";
 				_td += "<br />" + cancelButton();
 				_td += "</td>";
-				$("lastedit_" + goVoteVector.id).update(_td);
+				$("lastedit_" + goVoteVector.id).replace(_td);
 
-				$(goVoteVector.id + "_td").firstElementChild.replace($(goVoteVector.id));
+				$(goVoteVector.id + "_td").childElements()[0].replace($(goVoteVector.id));
 
 				if ($("add_participant")) {
 					$("add_participant").remove();
