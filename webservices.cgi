@@ -23,15 +23,61 @@ require "pp"
 require "json"
 class Poll
 	###################################################################
+	# Poll Initialization
+	###################################################################
+	def Poll.webservicedescription_0Initialization_addParticipant
+		{ "return" => "",
+			"input" => "gpgID"
+		}
+	end
+	def webservice_addParticipant
+		$dc["participants"] ||= []
+		$dc["participants"] << $c["gpgID"]
+		$dc["participants"].uniq!
+		store_dc($dc,"Participant "+ $c["gpgID"] + " invited for anonymous voting")
+	end
+
+	def Poll.webservicedescription_0Initialization_removeParticipant
+		{ "return" => "202 wenn user entfernt wurde, 403 wenn der user nicht entfernt werden darf (er oder jemand anders hat schon seinen Schlüssel in einer Stimme benutzt), 404 wenn user nicht in Datenbank",
+			"input" => "gpgID"
+		}
+	end
+	def webservice_removeParticipant
+		user = $c["gpgID"]
+		unless $dc["participants"].include?(user)
+			$header["status"] = "404 Not Found"
+			return "The participant was not configured anyway!"
+		end
+		if $dc.keys.include?(user) 
+			$header["status"] = "403 Forbidden"
+			return "This participant already voted. Removing is forbidden"
+		end
+		if $dc["participants"].collect{|u|
+			if $dc[u]
+				$dc[u].collect{|v| v["usedKeys"].include?(user)}
+			else 
+				false
+			end
+		}.flatten.include?(true)
+			return "The key of this user is already used in the poll. Please use kickOut to remove him."
+		else
+			$dc["participants"].delete(user)
+			store_dc($dc,"Participant "+ $c["gpgID"] + " removed from anonymous voting")
+			$header["status"] = "202 Accepted"
+			return "Participant removed."
+		end
+	end
+
+	###################################################################
 	# Poll Details
 	###################################################################
-	def Poll.webservicedescription_3Polldetails_getTitle
+	def Poll.webservicedescription_1Polldetails_getTitle
 		{ "return" => "title" }
 	end
 	def webservice_getTitle
 		@name
 	end
-	def Poll.webservicedescription_3Polldetails_getPollState
+	def Poll.webservicedescription_1Polldetails_getPollState
 		{ "return" => "open, wenn noch nicht alle gewählt haben, sonst closed" }
 	end
 	def webservice_getPollState
@@ -83,32 +129,8 @@ class Poll
 
 		return "closed"
 	end
-	def Poll.webservicedescription_3Polldetails_getDebug
-		{ "return" => "debug" }
-	end
-	def webservice_getDebug
-		$dc.pretty_inspect + "\n" + self.pretty_inspect
-	end
-	###################################################################
-	# Poll Initialization
-	###################################################################
-	def Poll.webservicedescription_0Initialization_getTimeStamps
-		{ "return" => "Liste potentieller Startzeiten des Events (rfc3339)", 
-		  "description" => "<span style='color:red'>deprecated</span> (getColumns -> kein rfc!)"}
-	end
-	def webservice_getTimeStamps
-		# FIXME, when it should work for seconds or pollhead
-		# FIXME time-strings are stripped out
-		@head.columns.collect{|t|
-			if t =~ /^\d\d\d\d-\d\d-\d\d \d\d:\d\d$/
-				"#{t}:00+01:00" 
-			else
-				nil
-			end
-		}.compact.join("\n")
-	end
-	
-	def Poll.webservicedescription_0Initialization_getColumns
+
+	def Poll.webservicedescription_1Polldetails_getColumns
 		{ "return" => "Liste der Spalten" }
 	end
 	def webservice_getColumns
@@ -116,7 +138,7 @@ class Poll
 	end
 
 
-	def Poll.webservicedescription_0Initialization_getParticipants
+	def Poll.webservicedescription_5Deprecated_getParticipants
 		{ "return" => "Liste der GPG-IDs aller Teilnehmer",
 		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)"}
 	end
@@ -128,9 +150,16 @@ class Poll
 		end
 	end
 
-	def Poll.webservicedescription_0Initialization_getTotalParticipants
+	def Poll.webservicedescription_1Polldetails_getDuration
+		{ "return" => "Dauer des Events in Minuten (integer)" }
+	end
+	def webservice_getDuration
+		"60" #FIXME
+	end
+
+	def Poll.webservicedescription_1Polldetails_getTotalParticipants
 		{ "description" => "Alles was man zum Abstimmen braucht",
-		  "return" => "{id: {voted: [[[cols,…],[usedKeys,…]][cols,…],[usedKeys]]}, id2: {flying: {kickerid: [cols,…],kicker2:[cols,…]}}}"}
+		  "return" => "{id:{voted: [[[cols,…],[usedKeys,…]][cols,…],[usedKeys]]}, id2: {flying: {kickerid: [cols,…],kicker2:[cols,…]}}}"}
 	end
 	def getTotalParticipants
 		ret = {}
@@ -160,56 +189,6 @@ class Poll
 		getTotalParticipants.to_json
 	end
 
-	def Poll.webservicedescription_0Initialization_addParticipant
-		{ "return" => "",
-			"input" => "gpgID"
-		}
-	end
-	def webservice_addParticipant
-		$dc["participants"] ||= []
-		$dc["participants"] << $c["gpgID"]
-		$dc["participants"].uniq!
-		store_dc($dc,"Participant "+ $c["gpgID"] + " invited for anonymous voting")
-	end
-
-	def Poll.webservicedescription_0Initialization_removeParticipant
-		{ "return" => "202 wenn user entfernt wurde, 403 wenn der user nicht entfernt werden darf (er oder jemand anders hat schon seinen Schlüssel in einer Stimme benutzt), 404 wenn user nicht in Datenbank",
-			"input" => "gpgID"
-		}
-	end
-	def webservice_removeParticipant
-		user = $c["gpgID"]
-		unless $dc["participants"].include?(user)
-			$header["status"] = "404 Not Found"
-			return "The participant was not configured anyway!"
-		end
-		if $dc.keys.include?(user) 
-			$header["status"] = "403 Forbidden"
-			return "This participant already voted. Removing is forbidden"
-		end
-		if $dc["participants"].collect{|u|
-			if $dc[u]
-				$dc[u].collect{|v| v["usedKeys"].include?(user)}
-			else 
-				false
-			end
-		}.flatten.include?(true)
-			return "The key of this user is already used in the poll. Please use kickOut to remove him."
-		else
-			$dc["participants"].delete(user)
-			store_dc($dc,"Participant "+ $c["gpgID"] + " removed from anonymous voting")
-			$header["status"] = "202 Accepted"
-			return "Participant removed."
-		end
-	end
-
-	def Poll.webservicedescription_0Initialization_getDuration
-		{ "return" => "Dauer des Events in Minuten (integer)" }
-	end
-	def webservice_getDuration
-		"60" #FIXME
-	end
-
 	###################################################################
 	# Vote Casting
 	###################################################################
@@ -223,28 +202,7 @@ eigene Teilsumme:
 Format:<br />
 vote[column][tableindex][inverted ? 1 : 0].toJSON()
 FOO
-comment = <<FOO
-t_1<br />
-vote_{t_1,j_1,n}<br />
-vote_{t_1,j_1,i}<br />
-...<br />
-...<br />
-vote_{t_1,j_I,n}<br />
-vote_{t_1,j_I,i}<br />
-<br />
-...<br />
-...<br />
-<br />
-t_T<br />
-vote_{t_T,j_1,n}<br />
-vote_{t_T,j_1,i}<br />
-...<br />
-...<br />
-vote_{t_T,j_I,n}<br />
-vote_{t_T,j_I,i}<br />
-
-FOO
-	def Poll.webservicedescription_1VoteCasting_setVote
+	def Poll.webservicedescription_2VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403" OR "HTTP400"',
 			"input" => ["gpgID", "vote", "signature"],
 			"vote" => VOTEDESCR
@@ -306,7 +264,7 @@ FOO
 		store_dc($dc, "Participant " + gpgID + " voted anonymously")
 	end
 
-	def Poll.webservicedescription_1VoteCasting_getState
+	def Poll.webservicedescription_5Deprecated_getState
 		{ "return" => '"notVoted" OR "voted" OR "flying" OR "kickedOut", Warning: only "notVoted" and "voted" is supported currently',
 		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)",
 			"input" => ["gpgID"]}
@@ -324,8 +282,9 @@ FOO
 		getState($c["gpgID"])
 	end
 
-	def Poll.webservicedescription_1VoteCasting_getUsedKeys
+	def Poll.webservicedescription_5Deprecated_getUsedKeys
 		{ "return" => 'Liste von gpgIDs der Votekeys, mit der der Benutzer <gpgID> seine Stimme verschlüsselt hat',
+		  "description" => "<span style='color:red'>deprecated</span> (getTotalParticipants)",
 			"input" => ["gpgID"]
 		}
 	end
@@ -336,7 +295,7 @@ FOO
 		getUsedKeys($c["gpgID"]).join("\n")
 	end
 
-	def Poll.webservicedescription_1VoteCasting_setKickOutKeys
+	def Poll.webservicedescription_2VoteCasting_setKickOutKeys
 		{ "return" => 'HTTP202" OR "HTTP403"',
 			"input" => ["gpgIDKicker","gpgIDLeaver","keys","signature"],
 			"keys" => "symmetrische Schlüssel mit denen gewählt wurde<br />Format:<br />keys[column][tableindex][inverted ? 1 : 0].toJSON()" }
@@ -390,17 +349,10 @@ FOO
 	end
 	
 
-	def Poll.webservicedescription_1VoteCasting_getKicker
-		{ "return" => "Liste von GPG-IDs der Teilnehmer, die den Schlüssel schon aufgedeckt haben (1. = Initiator)",
-			"input" => ["gpgIDLeaver"] }
-	end
-#	def webservicedescription_getKicker
-#	end
-
 	###################################################################
 	# Result Publication
 	###################################################################
-	def Poll.webservicedescription_2ResultPublication_getVote
+	def Poll.webservicedescription_3ResultPublication_getVote
 		{ "return" => 'Alle Summen aller Teilnehmer oder "HTTP403", falls Wahlgang noch nicht beendet',
 			}
 	end
@@ -439,19 +391,16 @@ FOO
 		ret.to_json
 	end
 
-	def Poll.webservicedescription_2ResultPublication_getKickOutKey
-		{ "return" => 'symmetrischer Schlüssel (vor Hash)',
-			"input" => ["gpgIDKicker", "gpgIDLeaver", "timestamp", "tableindex", "inverted"] }
+	###################################################################
+	# Debug
+	###################################################################
+	def Poll.webservicedescription_4Debug_getDebug
+		{ "return" => "debug" }
 	end
-#	def webservicedescription_getKickOutKey
-#	end
-	
-	def Poll.webservicedescription_2ResultPublication_getKickOutSignature
-		{ "return" => 'Liste von Signaturen',
-			"input" => ["gpgIDKicker", "gpgIDLeaver"] }
+	def webservice_getDebug
+		$dc.pretty_inspect + "\n" + self.pretty_inspect
 	end
-#	def webservicedescription_getKickOutSignature
-#	end
+
 
 end
 
