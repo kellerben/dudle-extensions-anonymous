@@ -69,10 +69,10 @@ var gsEdit = '#{EDIT}';
 var gsUnknown = '#{UNKNOWN}';
 var gsKickOut = '#{DELETE}';
 var gsVoted = '#{PASSWORDSTAR}';
-var gsFlying = '⚠';
-var gsKickedOut = '𝄽';
+var gsFlying = '✄';
+var gsKickedOut = '☠';
 SCRIPT
-# ⚠⬚⸪𝄽𝄐✉◌#
+# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
 )
 		e.add_lib("jsbn")
 		e.add_lib("jsbn2")
