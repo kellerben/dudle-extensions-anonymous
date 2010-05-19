@@ -17,6 +17,10 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+$:.push("../../")
+$:.uniq!
+require "pp"
+require "git"
 require "cgistatus"
 require "json"
 class Poll
@@ -195,7 +199,7 @@ eigene Teilsumme:
 <ul>
 <li>{0,1}</li>
 <li>+ Schlüssel aller Teilnehmer, die noch nicht gewählt haben</li>
-<li>+ Schlüssel zu allen Teilnehmern in deren getUsedKeys man selbst steht</li>
+<li>+ Schlüssel zu allen Teilnehmern in deren usedKeys man selbst steht</li>
 </ul>
 Format:<br />
 vote[column][tableindex][inverted ? 1 : 0].toJSON()
@@ -359,6 +363,10 @@ FOO
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
+		getVote.to_json
+	end
+
+	def getVote
 		ret = $dc
 		ret.delete("participants")
 		fly = ret.delete("flying")
@@ -386,7 +394,7 @@ FOO
 			}
 			ret["kicked"] = fly
 		end
-		ret.to_json
+		ret
 	end
 
 	###################################################################
@@ -397,6 +405,18 @@ FOO
 	end
 	def webservice_getDebug
 		$dc.pretty_inspect + "\n" + self.pretty_inspect
+	end
+	def Poll.webservicedescription_4Debug_getParticipantsPP
+		{ "return" => "getParticipants.pretty_inspect" }
+	end
+	def webservice_getParticipantsPP
+		getParticipants.pretty_inspect
+	end
+	def Poll.webservicedescription_4Debug_getVotePP
+		{ "return" => "getVote.pretty_inspect" }
+	end
+	def webservice_getVotePP
+		getVote.pretty_inspect
 	end
 
 
