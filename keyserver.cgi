@@ -21,8 +21,19 @@
 
 $:.push("../../")
 require "yaml"
-require "git.rb"
+require "git"
 require "digest/sha2"
+require "pp"
+require "cgi"
+class CGI
+	HTTP_STATUS.merge!({
+		202 => "202 Accepted",
+		400 => "400 Bad Request",
+		403 => "403 Forbidden",
+		404 => "404 Not Found"
+	})
+end
+
 
 class Keyserver
 	def initialize(dir)
@@ -70,6 +81,7 @@ class Keyserver
 	end
 
 	def Keyserver.getName(key)
+		raise "Bad key format" unless key
 		name = key.scan(/^NAME (.*)$/).flatten[0].to_s
 		raise "Bad key format" if name == ""
 		name
@@ -101,20 +113,20 @@ class Keyserver
 			name = Keyserver.getName($cgi["gpgKey"])
 		rescue => e
 			if e.message == "Bad key format"
-				$header["status"] = "400 Bad Request"
+				$header["status"] = CGI::HTTP_STATUS[400]
 				return e.message
 			else
 				raise e
 			end
 		end
 		if searchId(name)
-			$header["status"] = "403 Forbidden"
+			$header["status"] = CGI::HTTP_STATUS[403]
 			return "The User already exists"
 		end
 
 		@u[id] = $cgi["gpgKey"]
 		store("Public Key for #{humanreadable(id)} added.")
-		$header["status"] = "202 Accepted"
+		$header["status"] = CGI::HTTP_STATUS[202]
 		"Key with id #{id} sucessfully stored"
 	end
 	
@@ -127,7 +139,7 @@ class Keyserver
 		if ret
 			return ret
 		else
-			$header["status"] = "404 Not Found"
+			$header["status"] = CGI::HTTP_STATUS[404]
 			return "User #{$cgi["gpgID"]} is unknown."
 		end
 	end
@@ -149,13 +161,15 @@ class Keyserver
 	end
 
 	def webservice_getName
-		name = Keyserver.getName(getKey($cgi["gpgID"]))
-		if name
-			return name
-		else
-			$header["status"] = "404 Not Found"
-			return "User not found!"
+		key = getKey($cgi["gpgID"])
+		if key
+			name = Keyserver.getName(key)
+			if name
+				return name
+			end
 		end
+		$header["status"] = CGI::HTTP_STATUS[404]
+		return "User not found!"
 	end
 	def Keyserver.webservicedescription_Keyserver_searchId
 		{ "return" => "gpgKey OR HTTP404 if user is unknown",
@@ -166,7 +180,7 @@ class Keyserver
 		if id
 			return id
 		else
-			$header["status"] = "404 Not Found"
+			$header["status"] = CGI::HTTP_STATUS[404]
 			return "User not found!"
 		end
 	end
@@ -178,11 +192,11 @@ class Keyserver
 		@u.each{|user,key|
 			return key if key.scan(/^NAME (.*)$/).flatten[0].to_s == $cgi["name"].chomp
 		}
-		$header["status"] = "404 Not Found"
+		$header["status"] = CGI::HTTP_STATUS[404]
 		return "User not found!"
 	end
 	def Keyserver.webservicedescription_Keyserver_searchName
-		{ "return" => "list of possible names",
+		{ "return" => "list of possible names for a given substring",
 			"input" => ["search"]}
 	end
 	def webservice_searchName
@@ -196,10 +210,10 @@ class Keyserver
 end
 
 
-require "pp"
 if ARGV[0] == "test"
 require 'test/unit'
 class Keyserver
+	attr_accessor :u
 	def initialize(dir)
 		@dir = "/dev/null"
 		@u = {}
@@ -212,34 +226,97 @@ class Keyserver_test < Test::Unit::TestCase
 		$header = {}
 		$cgi = {}
 		@k = Keyserver.new("foo")
-		@somekey = <<KEY
-NAME Alice
-DHPUB e890c9072acbcb3dd93a586b882f1a478998dd1ef979475550307ebfb2f843f302dc865fc88bac9be612e26410cc51ff2d5192cdbd61a840a27427ece97fa8c4250a820f95aad76ad2b2a1c0000396693d05b2ba882745b68bbf72ccec317ecf
-KEY
+		@somekeys = {
+			:Alice => { 
+				:id => "0xD189C27D",
+				:key => "NAME Alice\nDHPUB e890c9072acbcb3dd93a586b882f1a478998dd1ef979475550307ebfb2f843f302dc865fc88bac9be612e26410cc51ff2d5192cdbd61a840a27427ece97fa8c4250a820f95aad76ad2b2a1c0000396693d05b2ba882745b68bbf72ccec317ecf"
+			},
+			:Bob => {
+				:id => "0x2289ADC1",
+				:key => "NAME Bob\nDHPUB 11837e00f1f33bdb86cbf15f6054fb3924c1a6b084970868b91f5fe1bd1f57be8fb51a38bdc2afae0b9ac69e534340ceb4472951c9ce0248fc0c84e3521286175e118582321b1f08ea98077a7164b93edc880f3b494c22d9cd3905daa9c145a2"
+			}
+		}
+	end
+	def setupkeys
+		@somekeys.each_value{|key|
+			@k.u[key[:id]] = key[:key]
+		}
 	end
 	def test_gpgid
-		assert_equal("0xD189C27D",Keyserver.gpgid(@somekey))
+		assert_equal(@somekeys[:Alice][:id],Keyserver.gpgid(@somekeys[:Alice][:key]))
 	end
 	def test_searchId
-		assert_equal(nil,@k.searchId("foo"))
+		$cgi["name"] = "Alice"
+		@k.webservice_searchId
+		assert_equal(CGI::HTTP_STATUS[404],$header["status"])
+		setupkeys
+		assert_equal(@somekeys[:Alice][:id],@k.webservice_searchId)
 	end
+	def test_searchKey
+		$cgi["name"] = "Alice"
+		@k.webservice_searchKey
+		assert_equal(CGI::HTTP_STATUS[404],$header["status"])
+		setupkeys
+		assert_equal(@somekeys[:Alice][:key],@k.webservice_searchKey)
+	end
+	def test_searchName
+		$cgi["search"] = "Al"
+		assert_equal("<ul></ul>",@k.webservice_searchName)
+		setupkeys
+		assert_equal("<ul><li>Alice</li></ul>",@k.webservice_searchName)
+		$cgi["search"] = "fbgiae"
+		assert_equal("<ul></ul>",@k.webservice_searchName)
+	end
+
 	def test_setKey
-		$cgi["gpgKey"] = @somekey
+		$cgi["gpgKey"] = @somekeys[:Alice][:key]
 		@k.webservice_setKey
-		assert_equal("202 Accepted",$header["status"])
+		assert_equal(CGI::HTTP_STATUS[202],$header["status"])
 
 		@k.webservice_setKey
-		assert_equal("403 Forbidden",$header["status"])
+		assert_equal(CGI::HTTP_STATUS[403],$header["status"])
 
 		$cgi["gpgKey"] = "NAME Foo\n DH"
 		@k.webservice_setKey
-		assert_equal("400 Bad Request",$header["status"])
+		assert_equal(CGI::HTTP_STATUS[400],$header["status"])
+	end
+	
+	def test_getKey
+		setupkeys
+		
+		$cgi = {"gpgID" => @somekeys[:Alice][:id]}
+		assert_equal(@somekeys[:Alice][:key], @k.webservice_getKey)
+
+		$cgi = {"gpgID" => @somekeys[:Alice][:id].downcase}
+		assert_equal(@somekeys[:Alice][:key], @k.webservice_getKey)
+
+		$cgi = {"gpgID" => "0xdeadbeef"}
+		@k.webservice_getKey
+		assert_equal(CGI::HTTP_STATUS[404], $header["status"])
+	end
+	def test_getName
+		setupkeys
+		$cgi["gpgID"] = @somekeys[:Alice][:id]
+		assert_equal("Alice", @k.webservice_getName)
+
+		$cgi["gpgID"] = @somekeys[:Alice][:id].downcase
+		assert_equal("Alice", @k.webservice_getName)
+
+		$cgi["gpgID"] = "0xdeadbeef"
+		@k.webservice_getName
+		assert_equal(CGI::HTTP_STATUS[404], $header["status"])
+	end
+	def test_listAll
+		assert_equal("", @k.webservice_listAllKeys)
+		assert_equal("", @k.webservice_listAllNames)
+		setupkeys
+		assert_equal(@somekeys.values.collect{|k| k[:id]}.sort, @k.webservice_listAllKeys.scan(/^.*$/).flatten.sort)
+		assert_equal(@somekeys.keys.collect{|n| n.to_s}.sort, @k.webservice_listAllNames.scan(/^.*$/).sort)
 	end
 end
 
 elsif __FILE__ == $0
 
-require "cgi"
 $cgi = CGI.new
 $header = {}
 $header["charset"] = "utf-8"
