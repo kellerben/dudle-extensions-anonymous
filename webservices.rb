@@ -460,8 +460,8 @@ FOO
 		VCS.commit(comment)
 		"Sucessfully Stored"
 	end
-	def initialize_dc
-		@k = Keyserver.new("keyserverdata/")
+	def initialize_dc(keyserverdir)
+		@k = Keyserver.new(keyserverdir)
 		if File.exist?("dc_data.yaml")
 			@dc = YAML::load_file("dc_data.yaml")
 		else

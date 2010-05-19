@@ -40,13 +40,13 @@ if all.include?($c["service"])
 
 	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/")
 		require "keyserver"
-		$k = Keyserver.new("keyserverdata")
+		keyserverdir = File.expand_path("keyserverdata")
 
 		Dir.chdir("../../#{$c["pollID"]}/")
 		load "../dudle.rb"
 		$d = Dudle.new
 
-		$d.table.initialize_dc
+		$d.table.initialize_dc(keyserverdir)
 
 		$c.out($header){
 			$d.table.send("webservice_#{$c["service"]}")
