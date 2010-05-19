@@ -210,6 +210,20 @@ FOO
 			"vote" => VOTEDESCR
 		}
 	end
+	def getParticipantState(p,c)
+		participant = getParticipants[p]
+		if participant.include?("voted")
+			participant["voted"].each{|v|
+				return "voted" if v[0].include?(c)
+			}
+		end
+		if participant.include?("flying")
+			participant["flying"].each_value{|f|
+				return "flying" if f.include?(c)
+			}
+		end
+		return "notVoted" 
+	end
 	def webservice_setVote
 		gpgID = $c["gpgID"]
 		signature = $c["signature"]
@@ -273,7 +287,6 @@ FOO
 	end
 	def getState(gpgId)
 		if $dc != nil && $dc[gpgId]
-			#TODO sig überprüfen
 			return "voted"
 		else
 			#TODO flying!!
@@ -436,6 +449,51 @@ require "pp"
 require 'test/unit'
 class Webservice_test < Test::Unit::TestCase
 	def setup
+		@votes = {
+			:Alice => { 
+				:id => "0xD189C27D",
+				:vote =>{
+					"a"=> [[1,0], [0,0], [0,0]],
+					"b"=> [[0,0], [0,1], [0,0]],
+					"c"=> [[0,0], [0,1], [0,0]]
+				},
+				:signature =>"TODO",
+				:usedKeys => ["0x2289ADC1", "0x7EF2BF4E"]
+				},
+			:Bob => {
+				:id => "0x2289ADC1",
+		 		:vote => {
+					"a"=> [[0,0], [1,0], [0,0]],
+					"b"=> [[0,1], [0,0], [0,0]],
+					"c"=> [[0,0], [1,0], [0,0]]
+				},
+				:signature =>"TODO",
+				:usedKeys =>["0x7EF2BF4E", "0xD189C27D"]
+			}
+		}
+		@participants = {:Bob => "0x2289ADC1", :Alice => "0xD189C27D", :Mallory => "0x7EF2BF4E"}
+		@flyerchunks = {
+			:Alice1 => {
+				:keys=>{
+					"a"=> [[0, 0], [0, 0], [0, 0]],
+					"b"=> [[0, 0], [0, 0], [0, 0]]
+				},
+				:signature =>"TODO"
+			},
+			:Alice2 => {
+				:keys=>{
+					"c"=> [[0, 0], [0, 0], [0, 0]]
+				},
+				:signature=>"TODO"
+			},
+			:Bob =>{
+				:keys=>{
+					"a"=> [[0, 0], [0, 0], [0, 0]],
+					"c"=> [[0, 0], [0, 0], [0, 0]]
+				},
+				:signature=>"TODO"
+			}
+		}
 		$dc = {
 			"participants"=>["0x2289ADC1", "0xD189C27D", "0x7EF2BF4E"],
 			"flying"=>{
@@ -496,6 +554,22 @@ class Webservice_test < Test::Unit::TestCase
 		assert_equal("open",$d.webservice_getPollState)
 		finishpoll
 		assert_equal("closed",$d.webservice_getPollState)
+	end
+	def test_getParticipantState
+		$dc["participants"] << "0xdeadbeef"
+		assert_equal("notVoted",$d.getParticipantState("0xdeadbeef","b"))
+		$dc["0xdeadbeef"] = [{
+		 		"vote"=> {
+					"a"=> [[0,0], [1,0], [0,0]],
+					"c"=> [[0,0], [1,0], [0,0]]
+				},
+				"signature"=>"TODO",
+				"usedKeys"=>["0x7EF2BF4E", "0xD189C27D"]
+			}]
+		assert_equal("notVoted",$d.getParticipantState("0xdeadbeef","b"))
+
+		assert_equal("voted",$d.getParticipantState("0x2289ADC1","b"))
+		assert_equal("flying",$d.getParticipantState("0x7EF2BF4E","b"))
 	end
 	def test_getVote
 		$d.webservice_getVote
