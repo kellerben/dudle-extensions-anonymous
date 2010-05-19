@@ -23,6 +23,7 @@ require "pp"
 require "git"
 require "cgistatus"
 require "json"
+require "keyserver"
 class Poll
 	###################################################################
 	# Poll Initialization
@@ -33,10 +34,10 @@ class Poll
 		}
 	end
 	def webservice_addParticipant
-		$dc["participants"] ||= []
-		$dc["participants"] << $c["gpgID"]
-		$dc["participants"].uniq!
-		store_dc($dc,"Participant "+ $k.humanreadable($c["gpgID"]) + " invited for anonymous voting")
+		@dc["participants"] ||= []
+		@dc["participants"] << $c["gpgID"]
+		@dc["participants"].uniq!
+		store_dc("Participant "+ @k.humanreadable($c["gpgID"]) + " invited for anonymous voting")
 	end
 
 	def Poll.webservicedescription_0Initialization_removeParticipant
@@ -46,25 +47,25 @@ class Poll
 	end
 	def webservice_removeParticipant
 		user = $c["gpgID"]
-		unless $dc["participants"].include?(user)
+		unless @dc["participants"].include?(user)
 			$header["status"] = "404 Not Found"
 			return "The participant was not configured anyway!"
 		end
-		if $dc.keys.include?(user) 
+		if @dc.keys.include?(user) 
 			$header["status"] = "403 Forbidden"
 			return "This participant already voted. Removing is forbidden"
 		end
-		if $dc["participants"].collect{|u|
-			if $dc[u]
-				$dc[u].collect{|v| v["usedKeys"].include?(user)}
+		if @dc["participants"].collect{|u|
+			if @dc[u]
+				@dc[u].collect{|v| v["usedKeys"].include?(user)}
 			else 
 				false
 			end
 		}.flatten.include?(true)
 			return "The key of this user is already used in the poll. Please use kickOut to remove him."
 		else
-			$dc["participants"].delete(user)
-			store_dc($dc,"Participant "+ $k.humanreadable($c["gpgID"]) + " removed from anonymous voting")
+			@dc["participants"].delete(user)
+			store_dc("Participant "+ @k.humanreadable($c["gpgID"]) + " removed from anonymous voting")
 			$header["status"] = "202 Accepted"
 			return "Participant removed."
 		end
@@ -83,7 +84,7 @@ class Poll
 		{ "return" => "open, wenn noch nicht alle gewählt haben, sonst closed" }
 	end
 	def webservice_getPollState
-		return "open" if $dc.empty?
+		return "open" if @dc.empty?
 		
 		missing = {}
 		total = getParticipants
@@ -145,8 +146,8 @@ class Poll
 		  "description" => "<span style='color:red'>deprecated</span> (getParticipants)"}
 	end
 	def webservice_getSimpleParticipants
-		if $dc["participants"]
-			return $dc["participants"].join("\n")
+		if @dc["participants"]
+			return @dc["participants"].join("\n")
 		else
 			return ""
 		end
@@ -165,19 +166,26 @@ class Poll
 	end
 	def getParticipants
 		ret = {}
-		if $dc["participants"]
-			$dc["participants"].each{|p|
+		if @dc["participants"]
+			@dc["participants"].each{|p|
 				ret[p] = {}
-				if $dc[p]
+				if @dc[p]
+					used = {}
+					@dc[p].each{|col,vote|
+						if @head.columns.include?(col)
+							used[vote[:usedKeys].sort] ||= []
+							used[vote[:usedKeys].sort] << col
+						end
+					}
 					ret[p] = {"voted" =>[]}
-					$dc[p].each{|vote|
-						ret[p]["voted"] << [vote["vote"].keys, vote["usedKeys"]]
+					used.each{|usedkeys,cols|
+						ret[p]["voted"] << [cols,usedkeys]
 					}
 
 				end
 			}
-			if $dc["flying"]
-				$dc["flying"].each{|p,kickerkeys|
+			if @dc["flying"]
+				@dc["flying"].each{|p,kickerkeys|
 					ret[p]['flying'] = {}
 					kickerkeys.each{|kicker,keymessages|
 						ret[p]['flying'][kicker] = keymessages.collect{|m| m["keys"].keys}.uniq.flatten
@@ -212,6 +220,7 @@ FOO
 	end
 	def getParticipantState(p,c)
 		participant = getParticipants[p]
+		raise "Participant #{p} not configured" unless participant
 		if participant.include?("voted")
 			participant["voted"].each{|v|
 				return "voted" if v[0].include?(c)
@@ -224,11 +233,16 @@ FOO
 		end
 		return "notVoted" 
 	end
+	def getUsedKeys(p,c)
+		return [] unless @dc[p] 
+		return [] unless @dc[p][c]
+		return @dc[p][c][:usedKeys]
+	end
 	def webservice_setVote
 		gpgID = $c["gpgID"]
 		signature = $c["signature"]
 
-		unless $dc["participants"].include?(gpgID)
+		unless @dc["participants"] && @dc["participants"].include?(gpgID)
 			$header["status"] = "403 Forbidden"
 			return "You are not allowed to vote."
 		end
@@ -237,9 +251,6 @@ FOO
 		unless true #FIXME: check signature
 			$header["status"] = "403 Forbidden"
 			return "The signature is wrong."
-		else
-			$dc[gpgID] ||= []
-			$dc[gpgID] << {"signature" => signature}
 		end
 		
 		begin
@@ -249,35 +260,42 @@ FOO
 			return "invalid json format: #{e}"
 		end
 
+		ret = {}
 		begin
-			$dc[gpgID].last["vote"] ||= {}
 			h.each{|col,votearray|
-				$dc[gpgID].last["vote"][col] ||= []
+				ret[col] = {}
+
+				participants = {"voted" => [], "notVoted" => []}
+				(@dc["participants"] - [gpgID]).each{|p|
+					participants[getParticipantState(p, col)] << p
+				}
+				usedKeys = participants["notVoted"]
+				participants["voted"].each{|p|
+					usedKeys << p if getUsedKeys(p, col).include?(gpgID)
+				}
+				ret[col][:usedKeys] = usedKeys
+
+				ret[col][:vote] ||= []
 				votearray.each_with_index{|norm_inv,tableindex|
-					$dc[gpgID].last["vote"][col][tableindex] ||= []
+					ret[col][:vote][tableindex] ||= []
 					norm_inv.each_with_index{|vote,inverted|
-						$dc[gpgID].last["vote"][col][tableindex][inverted] = vote.to_i(36)
+						ret[col][:vote][tableindex][inverted] = vote.to_i(36)
 					}
 				}
 			}
 		rescue => e
+			raise e
 			$header["status"] = "400 Bad Request"
 			return "vote has invalid structure: #{e}"
 		end
 
-		participants = {"voted" => [], "notVoted" => []}
-		($dc["participants"] - [gpgID]).each{|p|
-			participants[getState(p)] << p
-		}
-		usedKeys = participants["notVoted"]
-		participants["voted"].each{|p|
-			usedKeys << p if getUsedKeys(p).include?(gpgID)
-		}
-
-		$dc[gpgID].last["usedKeys"] = usedKeys
-
 		$header["status"] = "202 Accepted"
-		store_dc($dc, "Participant " + $k.humanreadable(gpgID) + " voted anonymously")
+		@dc[gpgID] ||= {}
+		@dc[gpgID][:raw] ||= []
+		@dc[gpgID][:raw] << {:vote => $c["vote"], :signature => signature }
+		@dc[gpgID].merge!(ret)
+
+		store_dc("Participant " + @k.humanreadable(gpgID) + " voted anonymously")
 	end
 
 	def Poll.webservicedescription_5Deprecated_getState
@@ -286,7 +304,7 @@ FOO
 			"input" => ["gpgID"]}
 	end
 	def getState(gpgId)
-		if $dc != nil && $dc[gpgId]
+		if @dc != nil && @dc[gpgId]
 			return "voted"
 		else
 			#TODO flying!!
@@ -303,11 +321,11 @@ FOO
 			"input" => ["gpgID"]
 		}
 	end
-	def getUsedKeys(gpgID)
-		$dc[gpgID][0]["usedKeys"].to_a
+	def getOldUsedKeys(gpgID)
+		@dc[gpgID][0]["usedKeys"].to_a
 	end
 	def webservice_getUsedKeys
-		getUsedKeys($c["gpgID"]).join("\n")
+		getOldUsedKeys($c["gpgID"]).join("\n")
 	end
 
 	def Poll.webservicedescription_2VoteCasting_setKickOutKeys
@@ -318,22 +336,25 @@ FOO
 	def webservice_setKickOutKeys
 		victim = $c["gpgIDLeaver"]
 		kicker = $c["gpgIDKicker"]
-		unless $dc["participants"].include?(victim)
+		if !@dc["participants"] || !@dc["participants"].include?(victim) 
 			$header["status"] = "403 Forbidden"
 			return "#{victim} is not participant of this poll!"
 		end
-
-		unless $dc[kicker].collect{|v|
-			v["usedKeys"].include?(victim)
+		
+		#FIXME: this checks only if there is any col with a used key, not if every col in key is used
+		if !@dc[kicker] || !@dc[kicker].collect{|cols|
+			if @head.columns.include?(cols[0])
+				cols[1][:usedKeys].include?(victim)
+			end
 		}.include?(true)
 			$header["status"] = "403 Forbidden"
 			return "#{kicker} did not used the key of #{victim}!"
 		end
 
 		$header["status"] = "202 Accepted"
-		$dc["flying"] ||= {}
-		$dc["flying"][victim] ||= {}
-		$dc["flying"][victim][kicker] ||= []
+		@dc["flying"] ||= {}
+		@dc["flying"][victim] ||= {}
+		@dc["flying"][victim][kicker] ||= []
 		kickOut = {}
 		begin
 			kickOut["keys"] = JSON.parse($c["keys"])
@@ -353,13 +374,13 @@ FOO
 			return "Keys have invalid structure: #{e}"
 		end
 
-		if $dc["flying"][victim][kicker].include?(kickOut)
+		if @dc["flying"][victim][kicker].include?(kickOut)
 			$header["status"] = "304 Not Modified"
 			return "The same information were already sent before"
 		end
 
-		$dc["flying"][victim][kicker] << kickOut
-		store_dc($dc,"Participant #{$k.humanreadable(kicker)} wants to kick out #{$k.humanreadable(victim)} from anonymous voting")
+		@dc["flying"][victim][kicker] << kickOut
+		store_dc("Participant #{@k.humanreadable(kicker)} wants to kick out #{@k.humanreadable(victim)} from anonymous voting")
 		return "Removal request stored"
 	end
 	
@@ -376,20 +397,20 @@ FOO
 			$header["status"] = "403 Forbidden"
 			return "Die Umfrage wurde noch nicht beendet!"
 		end
+
 		getVote.to_json
 	end
 
 	def getVote
-		ret = $dc
-		ret.delete("participants")
-		fly = ret.delete("flying")
-		ret.each_value{|votes|
-			votes.each{|v|
-				v.delete("usedKeys")
-				v['vote'].each_value{|tab|
-					tab.each{|norm_inv|
-						norm_inv.collect!{|i| i.to_s(36)}
-					}
+		@dc.delete("participants")
+		fly = @dc.delete("flying")
+		ret = {}
+		@dc.each{|p,votes|
+			ret[p] = []
+			votes[:raw].each{|v|
+				ret[p] << { 
+					"vote" => JSON.parse(v[:vote]), 
+					"signature" => v[:signature]
 				}
 			}
 		}
@@ -417,7 +438,7 @@ FOO
 		{ "return" => "debug" }
 	end
 	def webservice_getDebug
-		$dc.pretty_inspect + "\n" + self.pretty_inspect
+		@dc.pretty_inspect + "\n" + self.pretty_inspect
 	end
 	def Poll.webservicedescription_4Debug_getParticipantsPP
 		{ "return" => "getParticipants.pretty_inspect" }
@@ -432,151 +453,232 @@ FOO
 		getVote.pretty_inspect
 	end
 
+	def store_dc(comment)
+		File.open("dc_data.yaml","w"){|f|
+			f << @dc.to_yaml
+		}
+		VCS.commit(comment)
+		"Sucessfully Stored"
+	end
+	def initialize_dc
+		@k = Keyserver.new("keyserverdata/")
+		if File.exist?("dc_data.yaml")
+			@dc = YAML::load_file("dc_data.yaml")
+		else
+			@dc = {}
+			File.open("dc_data.yaml","w").close
+			VCS.add("dc_data.yaml")
+			store_dc("Initialized for anonymous voting")
+		end
+	end
 
-end
-
-def store_dc(data,comment)
-	File.open("dc_data.yaml","w"){|f|
-		f << data.to_yaml
-	}
-	VCS.commit(comment)
-	"Sucessfully Stored"
 end
 
 
 if __FILE__ == $0
-require "pp"
 require 'test/unit'
+class PollHead
+	attr_accessor :columns
+end
+class Poll
+	attr_accessor :head, :dc
+	def initialize
+		@head = PollHead.new
+		@k = Keyserver.new("keyserverdata/")
+		@dc = {}
+	end
+	def store_dc(comment)
+	end
+	def store
+	end
+end
 class Webservice_test < Test::Unit::TestCase
 	def setup
 		@votes = {
 			:Alice => { 
-				:id => "0xD189C27D",
-				:vote =>{
-					"a"=> [[1,0], [0,0], [0,0]],
-					"b"=> [[0,0], [0,1], [0,0]],
-					"c"=> [[0,0], [0,1], [0,0]]
+				"gpgID" => "0xD189C27D",
+				"vote" =>{
+					"a"=> [["1","0"], ["0","0"], ["0","0"]],
+					"b"=> [["0","0"], ["0","1"], ["0","0"]],
+					"c"=> [["0","0"], ["0","1"], ["0","0"]]
+				}.to_json,
+				"signature" =>"TODO"
 				},
-				:signature =>"TODO",
-				:usedKeys => ["0x2289ADC1", "0x7EF2BF4E"]
-				},
-			:Bob => {
-				:id => "0x2289ADC1",
-		 		:vote => {
-					"a"=> [[0,0], [1,0], [0,0]],
-					"b"=> [[0,1], [0,0], [0,0]],
-					"c"=> [[0,0], [1,0], [0,0]]
-				},
-				:signature =>"TODO",
-				:usedKeys =>["0x7EF2BF4E", "0xD189C27D"]
+			:Bob1 => {
+				"gpgID" => "0x2289ADC1",
+		 		"vote" => {
+					"a"=> [["0","0"], ["1","0"], ["0","0"]],
+					"c"=> [["0","0"], ["1","0"], ["0","0"]]
+				}.to_json,
+				"signature" =>"TODO"
+			},
+			:Bob2 => {
+				"gpgID" => "0x2289ADC1",
+		 		"vote" => {
+					"b"=> [["0","1"], ["0","0"], ["0","0"]]
+				}.to_json,
+				"signature" =>"TODO"
 			}
 		}
 		@participants = {:Bob => "0x2289ADC1", :Alice => "0xD189C27D", :Mallory => "0x7EF2BF4E"}
-		@flyerchunks = {
+		@kickkeys = {
 			:Alice1 => {
-				:keys=>{
-					"a"=> [[0, 0], [0, 0], [0, 0]],
-					"b"=> [[0, 0], [0, 0], [0, 0]]
-				},
-				:signature =>"TODO"
+				"keys"=>{
+					"a"=> [["0", "0"], ["0", "0"], ["0", "0"]],
+					"b"=> [["0", "0"], ["0", "0"], ["0", "0"]]
+				}.to_json,
+				"gpgIDKicker" => "0xD189C27D",
+				"gpgIDLeaver" => "0x7EF2BF4E",
+				"signature" =>"TODO"
 			},
 			:Alice2 => {
-				:keys=>{
-					"c"=> [[0, 0], [0, 0], [0, 0]]
-				},
-				:signature=>"TODO"
+				"keys" =>{
+					"c"=> [["0", "0"], ["0", "0"], ["0", "0"]]
+				}.to_json,
+				"gpgIDKicker" => "0xD189C27D",
+				"gpgIDLeaver" => "0x7EF2BF4E",
+				"signature"=>"TODO"
 			},
 			:Bob =>{
-				:keys=>{
-					"a"=> [[0, 0], [0, 0], [0, 0]],
-					"c"=> [[0, 0], [0, 0], [0, 0]]
-				},
-				:signature=>"TODO"
+				"keys"=>{
+					"a"=> [["0", "0"], ["0", "0"], ["0", "0"]],
+					"b"=> [["0", "0"], ["0", "0"], ["0", "0"]],
+					"c"=> [["0", "0"], ["0", "0"], ["0", "0"]]
+				}.to_json,
+				"gpgIDKicker" => "0x2289ADC1",
+				"gpgIDLeaver" => "0x7EF2BF4E",
+				"signature"=>"TODO"
 			}
 		}
-		$dc = {
-			"participants"=>["0x2289ADC1", "0xD189C27D", "0x7EF2BF4E"],
-			"flying"=>{
-				"0x7EF2BF4E"=> {
-					"0xD189C27D"=>[{
-						"keys"=>{
-							"a"=> [[0, 0], [0, 0], [0, 0]],
-							"b"=> [[0, 0], [0, 0], [0, 0]]
-						},
-						"signature"=>"TODO"
-					},{
-						"keys"=>{
-							"c"=> [[0, 0], [0, 0], [0, 0]]
-						},
-						"signature"=>"TODO"
-					}
-					],
-					"0x2289ADC1"=>[{
-						"keys"=>{
-							"a"=> [[0, 0], [0, 0], [0, 0]],
-							"c"=> [[0, 0], [0, 0], [0, 0]]
-						},
-						"signature"=>"TODO"
-					}]
-				}
-			},
-			"0xD189C27D"=> [{
-				"vote"=>{
-					"a"=> [[1,0], [0,0], [0,0]],
-					"b"=> [[0,0], [0,1], [0,0]],
-					"c"=> [[0,0], [0,1], [0,0]]
-				},
-				"signature"=>"TODO",
-				"usedKeys"=>["0x2289ADC1", "0x7EF2BF4E"]
-			}],
-		 "0x2289ADC1"=> [{
-		 		"vote"=> {
-					"a"=> [[0,0], [1,0], [0,0]],
-					"b"=> [[0,1], [0,0], [0,0]],
-					"c"=> [[0,0], [1,0], [0,0]]
-				},
-				"signature"=>"TODO",
-				"usedKeys"=>["0x7EF2BF4E", "0xD189C27D"]
-			}]
-		}
-		$d = Poll.new
+		@d = Poll.new
+		@d.head.columns = ["a","b","c"]
 		$header = {}
-		$cgi = {}
+		$c = {}
 	end
-	def finishpoll
-		$dc["flying"]["0x7EF2BF4E"]["0x2289ADC1"] << {"keys" =>{"b"=> [[0, 0], [0, 0], [0, 0]]},"signature"=>"TODO"}
+	def addtestparticipants
+		backup = $c
+		@participants.each_value{|id|
+			$c["gpgID"] = id
+			@d.webservice_addParticipant
+		}
+		$c = backup
+	end
+	def addtestvote(name)
+		backup = $c
+		$c = @votes[name]
+		@d.webservice_setVote
+		$c = backup
+	end
+	def addtestvotes
+		@votes.each_key{|name|
+			addtestvote(name)
+		}
+	end
+	def addtestkickers
+		@kickkeys.each_value{|kickkey|
+			$c = kickkey
+			@d.webservice_setKickOutKeys
+		}
+	end
+	def test_getColumns
+		assert_equal(["a","b","c"],@d.webservice_getColumns.scan(/^.*$/).flatten.sort)
+	end
+	def test_add_simpleget_remove_Participants
+		assert_equal({},@d.getParticipants)
+
+		$c["gpgID"] = @participants[:Alice]
+		@d.webservice_addParticipant
+		assert_equal({@participants[:Alice] => {}},@d.getParticipants)
+
+		$c["gpgID"] = @participants[:Bob]
+		@d.webservice_addParticipant
+		@d.webservice_removeParticipant
+		assert_equal(CGI::HTTP_STATUS[202],$header["status"])
+
+		$c["gpgID"] = "0xdeadbeef"
+		@d.webservice_removeParticipant
+		assert_equal(CGI::HTTP_STATUS[404],$header["status"])
+
+		assert_equal({@participants[:Alice] => {}},@d.getParticipants)
 	end
 	def test_getParticipants
-		assert_equal(["a","b","c"],$d.getParticipants["0x2289ADC1"]['voted'][0][0])
-		assert_equal(["a","b","c"],$d.getParticipants["0x7EF2BF4E"]["flying"]["0xD189C27D"])
+		assert_equal({},@d.getParticipants)
+		addtestparticipants
+		addtestvotes
+		
+		assert(@d.getParticipants[@participants[:Alice]].include?("voted"))
+		assert(@d.getParticipants[@participants[:Bob]].include?("voted"))
+		assert(!@d.getParticipants[@participants[:Mallory]].include?("voted"))
+		assert_equal(["a","b","c"],@d.getParticipants[@participants[:Alice]]["voted"][0][0])
+		addtestkickers
+		assert(@d.getParticipants[@participants[:Mallory]].include?("flying"))
+		assert_equal(["a","b","c"],@d.getParticipants[@participants[:Mallory]]["flying"][@participants[:Alice]])
 	end
 	def test_getPollState
-		assert_equal("open",$d.webservice_getPollState)
-		finishpoll
-		assert_equal("closed",$d.webservice_getPollState)
+		assert_equal("open",@d.webservice_getPollState)
+		addtestparticipants
+		assert_equal("open",@d.webservice_getPollState)
+		addtestvote(:Alice)
+		assert_equal("open",@d.webservice_getPollState)
+		addtestvotes
+		addtestkickers
+		assert_equal("closed",@d.webservice_getPollState)
 	end
 	def test_getParticipantState
-		$dc["participants"] << "0xdeadbeef"
-		assert_equal("notVoted",$d.getParticipantState("0xdeadbeef","b"))
-		$dc["0xdeadbeef"] = [{
-		 		"vote"=> {
-					"a"=> [[0,0], [1,0], [0,0]],
-					"c"=> [[0,0], [1,0], [0,0]]
-				},
-				"signature"=>"TODO",
-				"usedKeys"=>["0x7EF2BF4E", "0xD189C27D"]
-			}]
-		assert_equal("notVoted",$d.getParticipantState("0xdeadbeef","b"))
+		assert_raise(RuntimeError){@d.getParticipantState("0xdeadbeef","b")}
+		addtestparticipants
+		assert_equal("notVoted",@d.getParticipantState(@participants[:Alice],"b"))
 
-		assert_equal("voted",$d.getParticipantState("0x2289ADC1","b"))
-		assert_equal("flying",$d.getParticipantState("0x7EF2BF4E","b"))
+		addtestvotes
+		assert_equal("voted",@d.getParticipantState(@participants[:Alice],"b"))
+		addtestkickers
+		assert_equal("flying",@d.getParticipantState(@participants[:Mallory],"b"))
+	end
+	def test_setVote
+		$c = @votes[:Alice]
+		@d.webservice_setVote
+		assert_equal(CGI::HTTP_STATUS[403],$header["status"])
+
+		addtestparticipants
+		@d.webservice_setVote
+		assert_equal(CGI::HTTP_STATUS[202],$header["status"])
+
+		$c = @votes[:Bob1]
+		@d.webservice_setVote
+		assert_equal(CGI::HTTP_STATUS[202],$header["status"])
+
+		$c["vote"] = {"a" => {}}
+		@d.webservice_setVote
+		assert_equal(CGI::HTTP_STATUS[400],$header["status"])
+	end
+	def test_getUsedKeys
+		addtestparticipants
+		assert_equal([],@d.getUsedKeys(@participants[:Alice],"b"))
+		addtestvote(:Alice)
+		assert_equal([@participants[:Bob],@participants[:Mallory]].sort,@d.getUsedKeys(@participants[:Alice],"b").sort)
+
+	end
+	def test_setKickOutKeys
+		$c = @kickkeys[:Bob]
+		@d.webservice_setKickOutKeys
+		assert_equal(CGI::HTTP_STATUS[403],$header["status"])
+
+		addtestparticipants
+		@d.webservice_setKickOutKeys
+		assert_equal(CGI::HTTP_STATUS[403],$header["status"])
+
+		addtestvotes
+		@d.webservice_setKickOutKeys
+		assert_equal(CGI::HTTP_STATUS[202],$header["status"])
 	end
 	def test_getVote
-		$d.webservice_getVote
+		@d.webservice_getVote
 		assert_equal(CGI::HTTP_STATUS[403], $header["status"])
-		finishpoll
-		result = JSON.parse($d.webservice_getVote)
-		assert_equal([["1", "0"], ["0", "0"], ["0", "0"]], result["0xD189C27D"][0]["vote"]["a"])
+		addtestparticipants
+		addtestvotes
+		addtestkickers
+		result = JSON.parse(@d.webservice_getVote)
+		assert_equal([["1", "0"], ["0", "0"], ["0", "0"]], result[@participants[:Alice]][0]["vote"]["a"])
 	end
 end
 

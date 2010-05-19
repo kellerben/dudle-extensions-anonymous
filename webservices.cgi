@@ -46,14 +46,7 @@ if all.include?($c["service"])
 		load "../dudle.rb"
 		$d = Dudle.new
 
-		if File.exist?("dc_data.yaml")
-			$dc = YAML::load_file("dc_data.yaml")
-		else
-			$dc = {}
-			File.open("dc_data.yaml","w").close
-			VCS.add("dc_data.yaml")
-			store_dc($dc,"Initialized for anonymous voting")
-		end
+		$d.table.initialize_dc
 
 		$c.out($header){
 			$d.table.send("webservice_#{$c["service"]}")
