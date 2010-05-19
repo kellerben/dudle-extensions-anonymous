@@ -23,7 +23,7 @@ class CGI
 		202 => "202 Accepted",
 		400 => "400 Bad Request",
 		403 => "403 Forbidden",
-		404 => "404 Not Found"
+		404 => "404 Not Found",
 		409 => "409 Conflict"
 	})
 end
