@@ -143,10 +143,10 @@ class Keyserver
 			return "User #{$cgi["gpgID"]} is unknown."
 		end
 	end
-	def Keyserver.webservicedescription_Keyserver_listAllKeys
+	def Keyserver.webservicedescription_Keyserver_listAllIds
 		{ "return" => "list of gpgIDs" }
 	end
-	def webservice_listAllKeys
+	def webservice_listAllIds
 		@u.keys.sort.join("\n")
 	end
 	def Keyserver.webservicedescription_Keyserver_listAllNames
@@ -307,10 +307,10 @@ class Keyserver_test < Test::Unit::TestCase
 		assert_equal(CGI::HTTP_STATUS[404], $header["status"])
 	end
 	def test_listAll
-		assert_equal("", @k.webservice_listAllKeys)
+		assert_equal("", @k.webservice_listAllIds)
 		assert_equal("", @k.webservice_listAllNames)
 		setupkeys
-		assert_equal(@somekeys.values.collect{|k| k[:id]}.sort, @k.webservice_listAllKeys.scan(/^.*$/).flatten.sort)
+		assert_equal(@somekeys.values.collect{|k| k[:id]}.sort, @k.webservice_listAllIds.scan(/^.*$/).flatten.sort)
 		assert_equal(@somekeys.keys.collect{|n| n.to_s}.sort, @k.webservice_listAllNames.scan(/^.*$/).sort)
 	end
 end
