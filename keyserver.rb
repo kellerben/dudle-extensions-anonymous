@@ -92,7 +92,7 @@ class Keyserver
 	end
 
 	def Keyserver.webservicedescription_Keyserver_setKey
-		{ "return" => "202 or 400 if key bad formated or 403 if name already exists",
+		{ "return" => "202 or 400 if key bad formated or 409 if name already exists",
 			"input" => ["gpgKey"]}
 	end
 	def webservice_setKey
@@ -108,7 +108,7 @@ class Keyserver
 			end
 		end
 		if searchId(name)
-			$header["status"] = CGI::HTTP_STATUS[403]
+			$header["status"] = CGI::HTTP_STATUS[409]
 			return "The User already exists"
 		end
 
