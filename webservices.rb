@@ -17,6 +17,7 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+require "cgistatus"
 require "json"
 class Poll
 	###################################################################
@@ -460,16 +461,28 @@ class Webservice_test < Test::Unit::TestCase
 				"usedKeys"=>["0x7EF2BF4E", "0xD189C27D"]
 			}]
 		}
-     $d = Poll.new
+		$d = Poll.new
+		$header = {}
+		$cgi = {}
 	end
-	def test_getParticipants()
-		assert_equal(["a","b","c"],$d.getParticipants()["0x2289ADC1"]['voted'][0][0])
-		assert_equal(["a","b","c"],$d.getParticipants()["0x7EF2BF4E"]["flying"]["0xD189C27D"])
+	def finishpoll
+		$dc["flying"]["0x7EF2BF4E"]["0x2289ADC1"] << {"keys" =>{"b"=> [[0, 0], [0, 0], [0, 0]]},"signature"=>"TODO"}
+	end
+	def test_getParticipants
+		assert_equal(["a","b","c"],$d.getParticipants["0x2289ADC1"]['voted'][0][0])
+		assert_equal(["a","b","c"],$d.getParticipants["0x7EF2BF4E"]["flying"]["0xD189C27D"])
 	end
 	def test_getPollState
 		assert_equal("open",$d.webservice_getPollState)
-		$dc["flying"]["0x7EF2BF4E"]["0x2289ADC1"] << {"keys" =>{"b"=> [[0, 0], [0, 0], [0, 0]]},"signature"=>"TODO"}
+		finishpoll
 		assert_equal("closed",$d.webservice_getPollState)
+	end
+	def test_getVote
+		$d.webservice_getVote
+		assert_equal(CGI::HTTP_STATUS[403], $header["status"])
+		finishpoll
+		result = JSON.parse($d.webservice_getVote)
+		assert_equal([["1", "0"], ["0", "0"], ["0", "0"]], result["0xD189C27D"][0]["vote"]["a"])
 	end
 end
 
