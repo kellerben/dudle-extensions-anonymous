@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload giNumTables, goRealUserNames, Vote */
+/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload giNumTables, goRealUserNames, gfInitAESKey, Vote */
 
 var gParticipantTds;
 var gActiveParticipant;
@@ -64,7 +64,7 @@ function showKicker(_victim, _kicker) {
 	$(_victim + "_td").update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
 	$("key").disabled = false;
 	$("kickoutbutton").disabled = false;
-	Element.replace("cancelbutton",requestKickOutButton(_victim, gt.gettext("Cancel")));
+	Element.replace("cancelbutton", requestKickOutButton(_victim, gt.gettext("Cancel")));
 }
 
 function cancelButton() {
@@ -147,6 +147,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 					function (result) {
 						var ar;
 						goVoteVector.participants[_victim].dh = result;
+						goVoteVector.participants[_victim].aeskey = gfInitAESKey(result);
 
 						AES_Init();
 						keyMatrix = {};
@@ -327,7 +328,7 @@ function togglecheckbutton(id) {
  **************************************************/
 function showParticipants() {
 	$H(goParticipants).each(function (participant) {
-		var rowstart, row = "" , editable = false;
+		var rowstart, row = "", editable = false;
 
 		gaColumns.each(function (column) {
 			var classname, statustitle, statustext;
@@ -478,25 +479,64 @@ function calcResult() {
 	});
 }
 
-function pseudorandom(dh, uuid, col, tableindex, inverted) {
-	var seed, block, key, i;
-	seed = SHA256_hash(uuid + col + tableindex + inverted);
-	//FIXME: use 256 bit and not only the first 128 bit of SHA256
-	block = new Array(16);
-	for (i = 0; i < 16; i++) {
-		block[i] = new BigInteger(seed.charAt(i * 2) + seed.charAt(i * 2 + 1), 16);
+function gfInitAESKey(dh) {
+	var i, n, aeskey, dhstr, a;
+
+	dhstr = dh.toString(16);
+	a = [];
+	for (i = 0; i * 2 < dhstr.length; ++i) {
+		a[i] = parseInt(dhstr.charAt(i * 2) + dhstr.charAt(i * 2 + 1), 16);
 	}
 
-	seed = SHA256_hash(dh.toString());
-	key = new Array(32);
-	for (i = 0; i < 32; i++) {
-		key[i] = new BigInteger(seed.charAt(i * 2) + seed.charAt(i * 2 + 1), 16);
+	aeskey = new Array(16);
+	for (i = 0; i < 16; ++i) {
+		aeskey[i] = 0;
+		for (n = 0; 16 * n + i < a.length; ++n) {
+			aeskey[i] ^= a[16 * n + i];
+		}
 	}
 
-	AES_ExpandKey(key);
-	AES_Encrypt(block, key);
-	return block;
+	AES_ExpandKey(aeskey);
+	return aeskey;
 }
+
+function pseudorandom(aeskey, uuid, col, tableindex, inverted) {
+	var i, n, upper,
+		seed = uuid + col + tableindex + inverted,
+		round = 0,
+		block = [[]],
+		result = "";
+
+	for (i = 0; i < seed.length; i++) {
+		block[round].push(seed.charCodeAt(i) & 0xff);
+		if (block[round].length % 16 === 0) {
+			round++;
+			block[round] = [];
+		}
+		upper = seed.charCodeAt(i) >> 8;
+		if (upper !== 0) {
+			block[round].push(upper);
+			if (block[round].length % 16 === 0) {
+				round++;
+				block[round] = [];
+			}
+		}
+	}
+
+	for (i = 0; i <= round; ++i) {
+		AES_Decrypt(block[i], aeskey);
+		for (n = 0; n < block[i].length; ++n) {
+			result += block[i][n].toPaddedString(2, 16);
+			// for cbc mode
+			if (block[i + 1]) {
+				block[i + 1][n] ^= block[i][n];
+			}
+		}
+	}
+
+	return result;
+}
+
 
 function hash(block) {
 	return new BigInteger(SHA256_hash(block), 16);
@@ -507,8 +547,6 @@ function showSaveButton() {
 	v.value = gt.gettext("Save");
 	v.enable();
 }
-
-
 
 /*****************************************************************
  * Start all calculations, which can be done before vote casting *
@@ -568,7 +606,7 @@ Vote.prototype.calcSharedKey = function (otherID, timeslot, tableindex, inverted
 		return BigInteger.ZERO;
 	}
 
-	ret = hash(pseudorandom(this.participants[otherID].dh, gsPollID, timeslot, tableindex, inverted));
+	ret = hash(pseudorandom(this.participants[otherID].aeskey, gsPollID, timeslot, tableindex, inverted));
 	if (cmp > 0) {
 		return ret.negate().mod(this.dcmod);
 	}
@@ -646,6 +684,7 @@ Vote.prototype.calcNextDHKey = (function () {
 			this.participants[id].pub.modPow(this.sec, this.dhmod,
 				function (result) {
 					goVoteVector.participants[id].dh = result;
+					goVoteVector.participants[id].aeskey = gfInitAESKey(result);
 					goVoteVector.calcNextDHKey();
 				}
 			);

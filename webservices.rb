@@ -205,12 +205,14 @@ class Poll
 	VOTEDESCR = <<FOO 
 eigene Teilsumme:
 <ul>
-<li>{0,1}</li>
-<li>+ Schlüssel aller Teilnehmer, die noch nicht gewählt haben</li>
-<li>+ Schlüssel zu allen Teilnehmern in deren usedKeys man selbst steht</li>
+	<li>{0,1}</li>
+	<li>+ Schlüssel aller Teilnehmer, die noch nicht gewählt haben</li>
+	<li>+ Schlüssel zu allen Teilnehmern in deren usedKeys man selbst steht</li>
 </ul>
 Format:<br />
-vote[column][tableindex][inverted ? 1 : 0].toJSON()
+vote[column][tableindex][inverted ? 1 : 0].toJSON()<br />
+Schlüsselaufbau:<br />
+SHA256(AES(DHkey,
 FOO
 	def Poll.webservicedescription_2VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403" OR "HTTP400"',

@@ -41,11 +41,11 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 check: $(foreach p,$(wildcard *.js), $p.check)
 %.js.check: %.js
 	echo -n "/*jslint cap: true, newcap: false, regexp: false, strict: true, browser: true, nomen: false, plusplus: false */" > /tmp/$*.js
-	echo -n "/*global alert, confirm, window, localStorage, Ajax, $$, $$" >> /tmp/$*.js
+	echo -n "/*global alert, confirm, window, localStorage, Ajax, Element, $$, $$" >> /tmp/$*.js
 	echo -n "$$, $$" >> /tmp/$*.js
 	echo -n "H, $$" >> /tmp/$*.js
 	echo -n "A, $$" >> /tmp/$*.js
-	echo -n "F, Gettext, Autocompleter, BigInteger, SecureRandom, SHA256_hash, AES_Init, AES_Done, AES_ExpandKey, AES_Encrypt */" >> /tmp/$*.js
+	echo -n "F, Gettext, Autocompleter, BigInteger, SecureRandom, SHA256_hash, AES_Init, AES_Done, AES_ExpandKey, AES_Decrypt */" >> /tmp/$*.js
 	cat $*.js >> /tmp/$*.js
 	rhino lib/jslint.js /tmp/$*.js
 
