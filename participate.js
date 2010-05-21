@@ -479,7 +479,7 @@ function calcResult() {
 	});
 }
 
-function gfInitAESKey(dh) {
+function gfDH2AES(dh) {
 	var i, n, aeskey, dhstr, a;
 
 	dhstr = dh.toString(16);
@@ -495,9 +495,13 @@ function gfInitAESKey(dh) {
 			aeskey[i] ^= a[16 * n + i];
 		}
 	}
-
-	AES_ExpandKey(aeskey);
 	return aeskey;
+}
+
+function gfInitAESKey(dh) {
+	var aesfull = gfDH2AES(dh);
+	AES_ExpandKey(aesfull);
+	return aesfull;
 }
 
 function pseudorandom(aeskey, uuid, col, tableindex, inverted) {
@@ -527,10 +531,6 @@ function pseudorandom(aeskey, uuid, col, tableindex, inverted) {
 		AES_Decrypt(block[i], aeskey);
 		for (n = 0; n < block[i].length; ++n) {
 			result += block[i][n].toPaddedString(2, 16);
-			// for cbc mode
-			if (block[i + 1]) {
-				block[i + 1][n] ^= block[i][n];
-			}
 		}
 	}
 
@@ -591,6 +591,9 @@ Vote.prototype.save = function () {
 		parameters: {service: 'setVote', pollID: gsPollID, gpgID: goVoteVector.id, vote: Object.toJSON(_voteobj), signature: 'TODO'},
 		onSuccess: function (transport) {
 			gfReload();
+		},
+		onFailure: function (transport) {
+			alert("Something went wrong, could not send the vote!");
 		}
 	});
 };
