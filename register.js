@@ -40,17 +40,43 @@ function showContent() {
 	$('active_tab').update(gActiveTabInnerHTML);
 }
 
+function checkUserExistance() {
+	var label, ar;
+	$("registererror").update("");
+	if ($F("name")) {
+		$("next").disable();
+		label = $F("next");
+		$("next").value = gt.gettext("Checking Username");
+		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+			method: "get",
+			parameters: { service: 'searchId', name: $F("name")},
+			onSuccess: function (transport) {
+				$("next").value = label;
+				$("name").focus();
+				$("registererror").update("<td colspan='2' class='warning'>" + gt.gettext("A user with the same name already exists.") + "</td>");
+			},
+			onFailure: function (transport) {
+				$("next").enable();
+				$("next").value = label;
+			}
+		});
+	} else {
+		$("next").disable();
+	}
+	
+}
+
 function showRegister(name) {
 	var _r = "<h1>dudle</h1>";
 	_r += "<h2>" + gt.gettext("Register new Account") + "</h2>";
 	_r += "<table id='register' class='settingstable'><tr>";
 	_r += "<td class='label'><label for='name'>" + gt.gettext("Name:") + "</label></td>";
-	_r += "<td><input id='name' type='text' value='" + name + "' /></td>";
+	_r += "<td><input id='name' type='text' value='" + name + "' onChange='checkUserExistance()' /></td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
 	_r += "<td><input type='button' value='" + gt.gettext("Cancel") + "' onClick='showContent()'/> ";
 	_r += "<input disabled='disabled' type='button' id='next' value='" + gt.gettext("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
-	_r += "</tr></table>";
+	_r += "</tr><tr id='registererror' /></table>";
 	$('content').update(_r);
 
 	$('active_tab').removeClassName("active_tab");
@@ -63,11 +89,11 @@ function showRegister(name) {
 
 	if (!goVoteVector.sec) {
 		goVoteVector.setSecKey(new BigInteger(giDHLENGTH - 1, new SecureRandom()), function () {
-			$('next').enable();
 			$('next').value = gt.gettext('Next');
+			checkUserExistance();
 		});
 	} else {
-		$('next').enable();
+		checkUserExistance();
 		$('next').value = gt.gettext('Next');
 	}
 }
