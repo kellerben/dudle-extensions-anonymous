@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-18 09:53+0200\n"
+"POT-Creation-Date: 2010-05-25 13:15+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
@@ -15,7 +15,7 @@ msgid "Failed to fetch name for %1."
 msgstr "Konnte Namen von %1 nicht holen."
 
 #: invite_participants.js:31
-#: participate.js:672
+#: participate.js:713
 msgid "Failed to fetch participant list."
 msgstr "Konnte die Liste der Teilnehmer nicht laden."
 
@@ -27,31 +27,32 @@ msgstr "Datenschutzfreundlich"
 msgid "fetching user name for %1 ..."
 msgstr "hole Benutzername für %1 ..."
 
-#: invite_participants.js:100
+#: invite_participants.js:99
 msgid "Save Changes"
 msgstr "Änderungen speichern"
 
-#: invite_participants.js:126
-#: participate.js:208
+#: invite_participants.js:125
+#: participate.js:207
 msgid "Delete User"
 msgstr "Lösche Teilnehmer"
 
-#: invite_participants.js:160
+#: invite_participants.js:159
+#: register.js:49
 msgid "Checking Username"
 msgstr "Überprüfe Benutzername"
 
-#: invite_participants.js:172
+#: invite_participants.js:171
 msgid "Only registered users can participate privacy-enhanced."
 msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
 
 #: participate.js:64
-#: participate.js:203
+#: participate.js:202
 msgid "Secret Key for %1:"
 msgstr "Geheimer Schlüssel für %1:"
 
 #: participate.js:67
 #: participate.js:71
-#: register.js:51
+#: register.js:77
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -68,132 +69,134 @@ msgid "Something went wrong! The server said:"
 msgstr "Serverfehler:"
 
 #: participate.js:137
-#: participate.js:284
+#: participate.js:283
 msgid "Calculating the public key ..."
 msgstr "Berechne den öffentlichen Schlüssel ..."
 
 #: participate.js:138
-#: participate.js:285
+#: participate.js:284
 msgid "Please wait ..."
 msgstr "Bitte warten …"
 
 #: participate.js:142
-msgid "Do you really want to remove the participant from the poll?"
-msgstr "Wollen Sie den Teilnehmer wirklich löschen?"
-
-#: participate.js:143
 msgid "Please wait while removing %1 ..."
 msgstr "Bitte warten Sie während %1 entfernt wird …"
 
-#: participate.js:183
-#: participate.js:293
+#: participate.js:182
+#: participate.js:292
 msgid "You entered a wrong key!"
 msgstr "Der eingegebene Schlüssel ist falsch!"
 
-#: participate.js:184
-#: participate.js:296
+#: participate.js:183
+#: participate.js:295
 msgid "Try again?"
 msgstr "Nochmal versuchen?"
 
-#: participate.js:207
-#: register.js:67
-#: register.js:71
+#: participate.js:206
+#: register.js:92
+#: register.js:97
 msgid "Next"
 msgstr "Weiter"
 
-#: participate.js:262
+#: participate.js:261
 msgid "Calculating keys ..."
 msgstr "Berechne Schlüssel ..."
 
-#: participate.js:340
+#: participate.js:339
 msgid "Has voted anonymously."
 msgstr "Hat anonym abgestimmt."
 
-#: participate.js:346
+#: participate.js:345
 msgid "Has not voted yet."
 msgstr "Hat noch nicht abgestimmt."
 
-#: participate.js:352
+#: participate.js:351
 msgid "Is to be removed."
 msgstr "Soll entfernt werden."
 
-#: participate.js:357
+#: participate.js:356
 msgid "Is removed."
 msgstr "Wurde entfernt."
 
-#: participate.js:367
+#: participate.js:366
 msgid "Edit User"
 msgstr "Bearbeite Teilnehmer"
 
-#: participate.js:371
+#: participate.js:370
 msgid "Fetching Name for %1 ..."
 msgstr "Hole status für %1 ..."
 
-#: participate.js:459
+#: participate.js:458
 msgid "decrease"
 msgstr "erniedrigen"
 
-#: participate.js:459
+#: participate.js:458
 msgid "increase"
 msgstr "erhöhen"
 
-#: participate.js:460
+#: participate.js:459
 msgid "Somebody tried to %1 column %2 by %3!!!"
 msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
 
-#: participate.js:472
+#: participate.js:471
 msgid "Somebody sent inconsistent values at column %1!!!"
 msgstr "Jemand hat inkonsistente Werte für Spalte %1 gesendet!!!"
 
-#: participate.js:509
+#: participate.js:547
 msgid "Save"
 msgstr "Speichern"
 
 #: register.js:24
-#: register.js:61
+#: register.js:87
 msgid "Register"
 msgstr "Anmelden"
 
-#: register.js:45
+#: register.js:56
+msgid "A user with the same name already exists."
+msgstr "Ein Benutzer mit diesem Namen existiert bereits."
+
+#: register.js:71
 msgid "Register new Account"
 msgstr "Neuen Account anlegen"
 
-#: register.js:47
+#: register.js:73
 msgid "Name:"
 msgstr "Name:"
 
-#: register.js:52
+#: register.js:78
 msgid "Please wait while calculating a secret key ..."
 msgstr "Bitte warten Sie, ein geheimer Schlüssel wird berechnet ..."
 
-#: register.js:78
+#: register.js:104
 msgid "Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile)."
-msgstr "Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;b. indem Sie ihn in eine Textdatei kopieren)."
+msgstr "Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;B. indem Sie ihn in eine Textdatei kopieren)."
 
-#: register.js:80
+#: register.js:106
 msgid "Secret Key:"
 msgstr "Geheimer Schlüssel:"
 
-#: register.js:85
+#: register.js:111
 msgid "Alternatively, you may bookmark this link, which inserts the key into the login field:"
 msgstr "Alternativ können Sie ein Lesezeichen dieses Links erstellen, welcher den Schlüssel in das Loginfeld kopiert:"
 
-#: register.js:90
+#: register.js:116
 msgid "insert dudle key (%1)"
 msgstr "dudle Schlüssel einfügen (%1)"
 
-#: register.js:94
+#: register.js:120
 msgid "Previous"
 msgstr "Zurück"
 
-#: register.js:96
+#: register.js:122
 msgid "Finish"
 msgstr "Fertig"
 
-#: register.js:110
+#: register.js:136
 msgid "Failed to store key, the server said:"
 msgstr "Konnte Schlüssel nicht am server registrieren:"
 
+#~ msgid "Do you really want to remove the participant from the poll?"
+#~ msgstr "Wollen Sie den Teilnehmer wirklich löschen?"
 #~ msgid "Invite"
 #~ msgstr "Einladen"
 #~ msgid "Login"
