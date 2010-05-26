@@ -53,7 +53,11 @@ if $d.is_poll?
 	case $d.tab
 	when "invite_participants.cgi"
 
-		$d.html.add_script("var gsEdit = '#{EDIT}';")
+		$d.html.add_script(<<SCRIPT
+var gsEdit = '#{EDIT}';
+var gsDelete = '#{DELETE}';
+SCRIPT
+);
 
 		e.add_lib("scriptaculous-effects")
 		e.add_lib("scriptaculous-controls")

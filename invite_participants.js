@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfRemoveParticipant, gsEdit */
+/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfReload, gfRemoveParticipant, gsEdit, gsDelete */
 var gsKeyId;
 
 var _oParticipants;
@@ -52,14 +52,19 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		}).compact().flatten();
 
 		$H(_oParticipants).keys().each(function (_p) {
-			var _tr = "<tr class='participantrow' id='" + _p + "_tr'><td title='" + _p + "'>";
+			var _tr = "<tr class='participantrow' id='" + _p + "_tr' title='" + _p + "'>";
 			if (!usedKeys.include(_p)) {
-				_tr += "<a href='javascript:editUser(\"" + _p + "\")'>";
+				_tr += "<td><span class='edituser'><a href='javascript:editUser(\"" + _p + "\")'";
+				_tr += "title='" + Gettext.strargs(gt.gettext("Edit user %1..."), [_p]) + "'>";
+				_tr += gsEdit + "</a>";
+				_tr += " | <a href='javascript:gfRemoveParticipant(\"" + _p + "\", gfReload)'";
+				_tr += "title='" + Gettext.strargs(gt.gettext("Delete user %1..."), [_p]) + "'>";
+				_tr += gsDelete + "</a></span></td>";
+			} else {
+				_tr += "<td class='invisible'></td>";
 			}
+			_tr += "<td>";
 			_tr += "<span id='" + _p + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."), [_p]) + "</span>";
-			if (!usedKeys.include(_p)) {
-				_tr += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
-			}
 			_tr += "</td>";
 			_tr += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>";
 			_tr += "</tr>";
@@ -68,18 +73,20 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		});
 
 		
-		// Modify participation form
-		$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
-		$("add_participant_input").insert({after: "<div id='autocomplete' class='autocomplete' style='display: none; position:absolute;'></div>"});
-		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
-			parameters: {service: 'listAllNames'},
-			method: 'get',
-			onSuccess: function (transport) {
-				gaAllUsers = transport.responseText.split("\n");
-				var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
-			}
-		});
+		if ($("add_participant_input")) {
+			// Modify participation form
+			$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
+			$("add_participant_input").insert({after: "<div id='autocomplete' class='autocomplete' style='display: none; position:absolute;'></div>"});
+			ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+				parameters: {service: 'listAllNames'},
+				method: 'get',
+				onSuccess: function (transport) {
+					gaAllUsers = transport.responseText.split("\n");
+					var ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
+				}
+			});
 
+		}
 
 		$("participanttable").select("td.name").each(function (td) {
 			td.insert({after: "<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
@@ -91,6 +98,11 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	}
 });
 
+/* 
+ * display edit user form
+ * save previous content in
+ * gsOldUserTr and gsOldUser
+ */
 var gsOldUserTr, gsOldUser;
 function editUser(_user) {
 	var _inputTr, _savebutton, ac,
@@ -98,6 +110,7 @@ function editUser(_user) {
 
 	gsSaveButtonLabel = gt.gettext("Save Changes");
 
+	/* if something was saved, restore it */
 	if (gsOldUser) {
 		_inputTr = $(gsOldUser + "_tr").innerHTML;
 		$(gsOldUser + "_tr").update(gsOldUserTr);
@@ -109,11 +122,12 @@ function editUser(_user) {
 			// should be run after reload
 			return;
 		}
-		_inputTr = $("add_participant_row").innerHTML;
-		$("add_participant_row").remove();
+		_inputTr = $("add_participant").innerHTML;
+		$("add_participant").remove();
 	}
 	gsOldUser = _user;
 	gsOldUserTr = $(_user + "_tr").innerHTML;
+
 
 	$(_user + "_tr").update(_inputTr);
 
@@ -122,8 +136,8 @@ function editUser(_user) {
 	_savebutton += '" id="savebutton" onclick="gfRemoveParticipant(\'' + _user + '\', addParticipant);" />';
 	_savebutton += '<br />';
 	_savebutton += '<input type="button" value="';
-	_savebutton += gt.gettext("Delete User");
-	_savebutton += '" onClick="gfRemoveParticipant(\'' + _user + '\', gfReload)" style="margin-top: 1ex;" />';
+	_savebutton += gt.gettext("Cancel");
+	_savebutton += '" onClick="gfReload()" style="margin-top: 1ex;" />';
 	$("savebutton").parentNode.update(_savebutton);
 
 	$("add_participant_input").value = _username;
@@ -138,7 +152,7 @@ function addParticipant() {
 			onSuccess: function () {
 				if (location.href.include("?edituser=")) {
 					$("savebutton").insert({
-						after: "<input type='hidden' name='delete_participant' value='true' />"
+						after: "<input type='hidden' name='delete_participant_confirm' value='" + $$("input[name=olduser]")[0].value + "' />"
 					});
 					$("invite_participants_form").submit();
 				} else {
@@ -151,7 +165,7 @@ function addParticipant() {
 	}
 }
 
-$("add_participant_row").insert({after: "<tr id='registerederror' />"});
+$("add_participant").insert({after: "<tr id='registerederror' />"});
 function checkcheckbox() {
 	$("registerederror").update("");
 	if ($F("add_participant_check_privacy_enhanced")) {
