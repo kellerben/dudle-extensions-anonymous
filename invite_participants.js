@@ -92,7 +92,10 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			td.insert({after: "<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
 		});
 		
-		$("add_participant_input_td").insert({after: "<td style='text-align:center'><input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox()' /></td>"});
+		$("add_participant_input_td").insert({
+			after: "<td style='text-align:center' onclick=\"$('add_participant_check_privacy_enhanced').click()\" >" + 
+			"<input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox();event.cancelBubble = true' /></td>"
+		});
 
 		Element.replace("savebutton", "<input id='savebutton' value='" + gsSaveButtonLabel + "' type='button' onclick='addParticipant()' />");
 	}

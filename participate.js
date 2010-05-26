@@ -251,8 +251,8 @@ function insertParticipationCheckboxes() {
 		case "flying":
 			/* insert participation checkboxes */
 			var _td;
-			_td = "<td title='" + col + "' class='undecided' onclick=\"togglecheckbutton('" + htmlid(col) + "');\">";
-			_td += "<input id='" + htmlid(col) + "' type='checkbox' onclick=\"togglecheckbutton('" + htmlid(col) + "');\"/></td>";
+			_td = "<td title='" + col + "' class='undecided' onclick=\"$('" + htmlid(col) + "').click()\">";
+			_td += "<input id='" + htmlid(col) + "' type='checkbox' onclick=\"event.cancelBubble = true\"/></td>";
 			$(htmlid(col + "." + goVoteVector.id)).replace(_td);
 
 			if (participationVisible) {
@@ -316,10 +316,6 @@ function getPollState(_successFunction) {
 			_successFunction(_t.responseText);
 		}
 	});
-}
-
-function togglecheckbutton(id) {
-	$(id).checked = !$(id).checked;
 }
 
 
