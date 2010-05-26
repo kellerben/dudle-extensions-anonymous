@@ -152,7 +152,7 @@ function addParticipant() {
 			onSuccess: function () {
 				if (location.href.include("?edituser=")) {
 					$("savebutton").insert({
-						after: "<input type='hidden' name='delete_participant_confirm' value='" + $$("input[name=olduser]")[0].value + "' />"
+						after: "<input type='hidden' name='deleteuser' value='true' /><input type='hidden' name='edituser' value='" + $$("input[name=olduser]")[0].value + "' />"
 					});
 					$("invite_participants_form").submit();
 				} else {
