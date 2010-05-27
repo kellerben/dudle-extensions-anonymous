@@ -97,7 +97,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			"<input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox();event.cancelBubble = true' /></td>"
 		});
 
-		$("invite_participants_form").writeAttribute("onsubmit", "return addParticipant();");
+		$("invite_participants_form").writeAttribute("onsubmit", "return addParticipantCheckOldUser();");
 		$("cancelbutton").writeAttribute("type", "button");
 		$("cancelbutton").writeAttribute("onclick", "gfReload()");
 	}
@@ -162,6 +162,9 @@ function addPEParticipant() {
 			} else {
 				gfReload();
 			}
+		},
+		onFailure: function (transport) {
+			alert("Failed to add participant!\n" + transport.responseText);
 		}
 	});
 }
@@ -173,13 +176,15 @@ function addParticipant() {
 			addPEParticipant();
 		}
 	} else {
-		if (gsOldUser) {
-			gfRemoveParticipant(gsOldUser, function () {
-				$("invite_participants_form").submit();
-			});
-		} else {
-			$("invite_participants_form").submit();
-		}
+		$("invite_participants_form").submit();
+	}
+}
+
+function addParticipantCheckOldUser() {
+	if (gsOldUser) {
+		gfRemoveParticipant(gsOldUser, addParticipant);
+	}	else {
+		addParticipant();
 	}
 	return false;
 }
