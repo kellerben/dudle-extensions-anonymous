@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfUserTd, gfReload, gfRemoveParticipant */
+/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfUserTd, gfCancelButton, gfReload, gfRemoveParticipant */
 var gsKeyId, gsCheckedName;
 
 var _oParticipants;
@@ -83,7 +83,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		}).compact().flatten();
 
 		$("participanttable").select("td.name").each(function (td) {
-			td.insert({after: "<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
+			td.insert({after: "<td><input type='checkbox' disabled='disabled' /></td>"});
 		});
 		
 		$H(_oParticipants).keys().each(function (_p) {
@@ -162,10 +162,7 @@ function editUser(_user) {
 	_savebutton = '<input type="submit" value="';
 	_savebutton += gsSaveButtonLabel;
 	_savebutton += '" id="savebutton" />';
-	_savebutton += '<br />';
-	_savebutton += '<input type="button" id="cancelbutton" value="';
-	_savebutton += gt.gettext("Cancel");
-	_savebutton += '" onClick="gfReload()" style="margin-top: 1ex;" />';
+	_savebutton += gfCancelButton();
 	$("savebutton").parentNode.update(_savebutton);
 
 	$("add_participant_input").value = _username;

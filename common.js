@@ -71,3 +71,10 @@ function gfUserTd(userid, editable) {
 	return _ret;
 }
 
+function gfCancelButton() {
+	var _ret = '<br />';
+	_ret += '<input type="button" id="cancelbutton" value="';
+	_ret += gt.gettext("Cancel");
+	_ret += '" onClick="gfReload()" style="margin-top: 1ex;" />';
+	return _ret;
+}
