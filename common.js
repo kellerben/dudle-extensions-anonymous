@@ -17,7 +17,7 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-/*global gsExtensiondir */
+/*global gsExtensiondir, gsEdit, gsDelete */
 "use strict";
 
 var gt = new Gettext({ 'domain' : 'dudle_dc-net' });
@@ -50,6 +50,24 @@ function gfRemoveParticipant(_user, _successfunc) {
 }
 
 function gfReload() {
-	location.assign(location.href.gsub(/\?.*/, ''))
+	location.assign(location.href.gsub(/\?.*/, ''));
+}
+
+function gfUserTd(userid, editable) {
+	var _ret = "";
+	if (editable) {
+		_ret += "<td><span class='edituser'><a href='javascript:editUser(\"" + userid + "\")'";
+		_ret += "title='" + Gettext.strargs(gt.gettext("Edit user %1..."), [userid]) + "'>";
+		_ret += gsEdit + "</a>";
+		_ret += " | <a href='javascript:deleteUser(\"" + userid + "\")'";
+		_ret += "title='" + Gettext.strargs(gt.gettext("Delete user %1..."), [userid]) + "'>";
+		_ret += gsDelete + "</a></span></td>";
+	} else {
+		_ret += "<td class='invisible'></td>";
+	}
+	_ret += "<td class='name'>";
+	_ret += "<span id='" + userid + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."), [userid]) + "</span>";
+	_ret += "</td>";
+	return _ret;
 }
 

@@ -18,12 +18,43 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfReload, gfRemoveParticipant, gsEdit, gsDelete */
+/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfUserTd, gfReload, gfRemoveParticipant */
 var gsKeyId, gsCheckedName;
 
 var _oParticipants;
 var gsSaveButtonLabel = $("savebutton").value;
 var gaAllUsers;
+
+$("add_participant").insert({after: "<tr><td colspan='3' class='warning' id='registerederror'></td></tr>"});
+function checkcheckbox(successfunction) {
+	var ar, curname = $F("add_participant_input");
+	$("registerederror").update("");
+	if ($F("add_participant_check_privacy_enhanced")) {
+		$("savebutton").disable();
+		$("savebutton").value = gt.gettext("Checking Username");
+		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+			method: "get",
+			parameters: { service: 'searchId', name: $F("add_participant_input")},
+			onSuccess: function (transport) {
+				gsCheckedName = curname;
+				gsKeyId = transport.responseText;
+				$("savebutton").enable();
+				$("savebutton").value = gsSaveButtonLabel;
+				if (typeof(successfunction) !== 'undefined') {
+					successfunction();
+				}
+			},
+			onFailure: function (transport) {
+				$("savebutton").value = gsSaveButtonLabel;
+				$("add_participant_input").focus();
+				$("registerederror").update(gt.gettext("Only registered users can participate privacy-enhanced."));
+			}
+		});
+	} else {
+		$("savebutton").enable();
+	}
+}
+
 var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
 	parameters: { service: 'getParticipants', pollID: gsPollID},
@@ -51,21 +82,13 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			}
 		}).compact().flatten();
 
+		$("participanttable").select("td.name").each(function (td) {
+			td.insert({after: "<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
+		});
+		
 		$H(_oParticipants).keys().each(function (_p) {
 			var _tr = "<tr class='participantrow' id='" + _p + "_tr' title='" + _p + "'>";
-			if (!usedKeys.include(_p)) {
-				_tr += "<td><span class='edituser'><a href='javascript:editUser(\"" + _p + "\")'";
-				_tr += "title='" + Gettext.strargs(gt.gettext("Edit user %1..."), [_p]) + "'>";
-				_tr += gsEdit + "</a>";
-				_tr += " | <a href='javascript:gfRemoveParticipant(\"" + _p + "\", gfReload)'";
-				_tr += "title='" + Gettext.strargs(gt.gettext("Delete user %1..."), [_p]) + "'>";
-				_tr += gsDelete + "</a></span></td>";
-			} else {
-				_tr += "<td class='invisible'></td>";
-			}
-			_tr += "<td>";
-			_tr += "<span id='" + _p + "'>" + Gettext.strargs(gt.gettext("fetching user name for %1 ..."), [_p]) + "</span>";
-			_tr += "</td>";
+			_tr += gfUserTd(_p, !usedKeys.include(_p));
 			_tr += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>";
 			_tr += "</tr>";
 			$("participanttable").select("tr")[0].insert({after: _tr});
@@ -88,10 +111,6 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 
 		}
 
-		$("participanttable").select("td.name").each(function (td) {
-			td.insert({after: "<td style='text-align:center'><input type='checkbox' disabled='disabled' /></td>"});
-		});
-		
 		$("add_participant_input_td").insert({
 			after: "<td style='text-align:center' onclick=\"$('add_participant_check_privacy_enhanced').click()\" >" + 
 			"<input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox();event.cancelBubble = true' /></td>"
@@ -102,6 +121,10 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		$("cancelbutton").writeAttribute("onclick", "gfReload()");
 	}
 });
+
+function deleteUser(_userid) {
+	gfRemoveParticipant(_userid, gfReload);
+}
 
 /* 
  * display edit user form
@@ -189,33 +212,4 @@ function addParticipantCheckOldUser() {
 	return false;
 }
 
-$("add_participant").insert({after: "<tr><td colspan='3' class='warning' id='registerederror'></td></tr>"});
-function checkcheckbox(successfunction) {
-	var curname = $F("add_participant_input");
-	$("registerederror").update("");
-	if ($F("add_participant_check_privacy_enhanced")) {
-		$("savebutton").disable();
-		$("savebutton").value = gt.gettext("Checking Username");
-		var ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
-			method: "get",
-			parameters: { service: 'searchId', name: $F("add_participant_input")},
-			onSuccess: function (transport) {
-				gsCheckedName = curname;
-				gsKeyId = transport.responseText;
-				$("savebutton").enable();
-				$("savebutton").value = gsSaveButtonLabel;
-				if (typeof(successfunction) !== 'undefined') {
-					successfunction();
-				}
-			},
-			onFailure: function (transport) {
-				$("savebutton").value = gsSaveButtonLabel;
-				$("add_participant_input").focus();
-				$("registerederror").update(gt.gettext("Only registered users can participate privacy-enhanced."));
-			}
-		});
-	} else {
-		$("savebutton").enable();
-	}
-}
 

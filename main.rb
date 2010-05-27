@@ -78,6 +78,7 @@ else
 end
 		$d.html.add_script(<<SCRIPT
 var gsEdit = '#{EDIT}';
+var gsDelete = '#{DELETE}';
 var gsUnknown = '#{UNKNOWN}';
 var gsKickOut = '#{DELETE}';
 var gsVoted = '#{PASSWORDSTAR}';

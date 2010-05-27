@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsEdit, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload giNumTables, goRealUserNames, gfInitAESKey, Vote */
+/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, giNumTables, goRealUserNames, gfInitAESKey, Vote */
 
 var gParticipantTds;
 var gActiveParticipant;
@@ -180,14 +180,14 @@ Vote.prototype.kickOutUser = function (_victim) {
 				);
 			} else {
 				var _errormsg = gt.gettext("You entered a wrong key!");
-				_errormsg += " <a href='javascript:(function () {showLogin(\"" + _victim + "\");requestKickOut(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
+				_errormsg += " <a href='javascript:(function () {editUser(\"" + _victim + "\");requestKickOut(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
 			}
 		});
 	}
 };
 
-function showLogin(_participant) {
+function editUser(_participant) {
 	var _l;
 	if ($("add_participant")) {
 		$("add_participant").remove();
@@ -198,7 +198,7 @@ function showLogin(_participant) {
 	$("separator_top").remove();
 	$("separator_bottom").remove();
 
-	_l = "<td id='" + _participant + "_td' class='label'><label for='key'>";
+	_l = "<td colspan='2' id='" + _participant + "_td' class='label'><label for='key'>";
 	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_participant]]);
 	_l += "</label></td>";
 
@@ -290,7 +290,7 @@ function login() {
 				insertParticipationCheckboxes();
 			} else {
 				var _errormsg = gt.gettext("You entered a wrong key!");
-				_errormsg += " <a href='javascript:showLogin(\"";
+				_errormsg += " <a href='javascript:editUser(\"";
 				_errormsg += gActiveParticipant.id.gsub("participant_", "") + "\")'>";
 				_errormsg += gt.gettext("Try again?");
 				_errormsg += "</a>";
@@ -356,19 +356,8 @@ function showParticipants() {
 			row += "<td class='" + classname + "' id='" + htmlid(column  + "."  + participant.key) + "' title='" + statustitle + "'>" +  statustext + "</td>";
 		});
 
-		rowstart = "<tr class='participantrowstart' id='participant_" + participant.key + "'>";
-		rowstart += "<td class='name' title='" + participant.key + "' id='" + participant.key + "_td'>";
-		if (editable) {
-			rowstart += "<a href='javascript:showLogin(\"" + participant.key + "\")' title='" + gt.gettext("Edit User") + "'>";
-		}
-
-		rowstart += "<span id='" + participant.key + "'>";
-		rowstart += Gettext.strargs(gt.gettext("Fetching Name for %1 ..."), [participant.key]) + "</span>";
-
-		if (editable) {
-			rowstart += " <span class='edituser'><sup>" + gsEdit + "</sup></span></a>";
-		}
-		rowstart += "</td>";
+		rowstart = "<tr class='participantrow' id='participant_" + participant.key + "'>";
+		rowstart += gfUserTd(participant.key, editable);
 
 		row += "<td class='invisible' id='" + htmlid("lastedit_" + participant.key) + "'></td></tr>";
 		$("separator_top").insert({ before: rowstart + row });
