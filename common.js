@@ -50,6 +50,6 @@ function gfRemoveParticipant(_user, _successfunc) {
 }
 
 function gfReload() {
-	location.assign(location.href);
+	location.assign(location.href.gsub(/\?.*/, ''))
 }
 

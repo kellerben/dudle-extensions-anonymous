@@ -19,7 +19,7 @@
 
 "use strict";
 /*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfReload, gfRemoveParticipant, gsEdit, gsDelete */
-var gsKeyId;
+var gsKeyId, gsCheckedName;
 
 var _oParticipants;
 var gsSaveButtonLabel = $("savebutton").value;
@@ -97,7 +97,9 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			"<input id='add_participant_check_privacy_enhanced' type='checkbox' onclick='checkcheckbox();event.cancelBubble = true' /></td>"
 		});
 
-		Element.replace("savebutton", "<input id='savebutton' value='" + gsSaveButtonLabel + "' type='button' onclick='addParticipant()' />");
+		$("invite_participants_form").writeAttribute("onsubmit", "return addParticipant();");
+		$("cancelbutton").writeAttribute("type", "button");
+		$("cancelbutton").writeAttribute("onclick", "gfReload()");
 	}
 });
 
@@ -134,11 +136,11 @@ function editUser(_user) {
 
 	$(_user + "_tr").update(_inputTr);
 
-	_savebutton = '<input type="button" value="';
+	_savebutton = '<input type="submit" value="';
 	_savebutton += gsSaveButtonLabel;
-	_savebutton += '" id="savebutton" onclick="gfRemoveParticipant(\'' + _user + '\', addParticipant);" />';
+	_savebutton += '" id="savebutton" />';
 	_savebutton += '<br />';
-	_savebutton += '<input type="button" value="';
+	_savebutton += '<input type="button" id="cancelbutton" value="';
 	_savebutton += gt.gettext("Cancel");
 	_savebutton += '" onClick="gfReload()" style="margin-top: 1ex;" />';
 	$("savebutton").parentNode.update(_savebutton);
@@ -148,28 +150,43 @@ function editUser(_user) {
 	ac = new Autocompleter.Local('add_participant_input', 'autocomplete', gaAllUsers);
 }
 
+function addPEParticipant() {
+	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
+		onSuccess: function () {
+			if (location.href.include("?edituser=")) {
+				$("savebutton").insert({
+					after: "<input type='hidden' name='deleteuser' value='true' /><input type='hidden' name='edituser' value='" + $$("input[name=olduser]")[0].value + "' />"
+				});
+				$("invite_participants_form").submit();
+			} else {
+				gfReload();
+			}
+		}
+	});
+}
 function addParticipant() {
 	if ($F("add_participant_check_privacy_enhanced")) {
-		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-			parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
-			onSuccess: function () {
-				if (location.href.include("?edituser=")) {
-					$("savebutton").insert({
-						after: "<input type='hidden' name='deleteuser' value='true' /><input type='hidden' name='edituser' value='" + $$("input[name=olduser]")[0].value + "' />"
-					});
-					$("invite_participants_form").submit();
-				} else {
-					gfReload();
-				}
-			}
-		});
+		if (gsCheckedName !== $F("add_participant_input")) {
+			checkcheckbox(addPEParticipant);
+		} else {
+			addPEParticipant();
+		}
 	} else {
-		$("invite_participants_form").submit();
+		if (gsOldUser) {
+			gfRemoveParticipant(gsOldUser, function () {
+				$("invite_participants_form").submit();
+			});
+		} else {
+			$("invite_participants_form").submit();
+		}
 	}
+	return false;
 }
 
-$("add_participant").insert({after: "<tr id='registerederror' />"});
-function checkcheckbox() {
+$("add_participant").insert({after: "<tr><td colspan='3' class='warning' id='registerederror'></td></tr>"});
+function checkcheckbox(successfunction) {
+	var curname = $F("add_participant_input");
 	$("registerederror").update("");
 	if ($F("add_participant_check_privacy_enhanced")) {
 		$("savebutton").disable();
@@ -178,14 +195,18 @@ function checkcheckbox() {
 			method: "get",
 			parameters: { service: 'searchId', name: $F("add_participant_input")},
 			onSuccess: function (transport) {
+				gsCheckedName = curname;
 				gsKeyId = transport.responseText;
 				$("savebutton").enable();
 				$("savebutton").value = gsSaveButtonLabel;
+				if (typeof(successfunction) !== 'undefined') {
+					successfunction();
+				}
 			},
 			onFailure: function (transport) {
 				$("savebutton").value = gsSaveButtonLabel;
 				$("add_participant_input").focus();
-				$("registerederror").update("<td colspan='3' class='warning'>" + gt.gettext("Only registered users can participate privacy-enhanced.") + "</td>");
+				$("registerederror").update(gt.gettext("Only registered users can participate privacy-enhanced."));
 			}
 		});
 	} else {
