@@ -266,7 +266,8 @@ function insertParticipationCheckboxes() {
 				_td += "</td>";
 				$("lastedit_" + goVoteVector.id).replace(_td);
 
-				$(goVoteVector.id + "_td").childElements()[0].replace($(goVoteVector.id));
+				$("participant_" + goVoteVector.id).childElements()[0].remove();
+				$("participant_" + goVoteVector.id).childElements()[0].writeAttribute("colspan", "2");
 
 				if ($("add_participant")) {
 					$("add_participant").remove();
@@ -283,8 +284,7 @@ function insertParticipationCheckboxes() {
 function login() {
 	if ($F('key')) {
 		var key = new BigInteger($F('key'), 16);
-		startCalcDisableButton("loginbutton")
-		Element.replace("deletebutton", cancelButton());
+		startCalcDisableButton("loginbutton");
 		goVoteVector.setSecKey(key, function () {
 			if ("participant_" + goVoteVector.id === gActiveParticipant.id) {
 				gActiveParticipant.update(gParticipantTds);
