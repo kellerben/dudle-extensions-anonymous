@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-25 13:15+0200\n"
+"POT-Creation-Date: 2010-05-28 20:54+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
@@ -14,135 +14,128 @@ msgstr ""
 msgid "Failed to fetch name for %1."
 msgstr "Konnte Namen von %1 nicht holen."
 
-#: invite_participants.js:31
-#: participate.js:713
-msgid "Failed to fetch participant list."
-msgstr "Konnte die Liste der Teilnehmer nicht laden."
+#: common.js:60
+msgid "Edit user %1..."
+msgstr "Bearbeite Teilnehmer %1..."
 
-#: invite_participants.js:40
-msgid "Privacy Enhanced"
-msgstr "Datenschutzfreundlich"
+#: common.js:63
+msgid "Delete user %1..."
+msgstr "Lösche Teilnehmer %1..."
 
-#: invite_participants.js:59
+#: common.js:69
 msgid "fetching user name for %1 ..."
 msgstr "hole Benutzername für %1 ..."
 
-#: invite_participants.js:99
-msgid "Save Changes"
-msgstr "Änderungen speichern"
-
-#: invite_participants.js:125
-#: participate.js:207
-msgid "Delete User"
-msgstr "Lösche Teilnehmer"
-
-#: invite_participants.js:159
-#: register.js:49
-msgid "Checking Username"
-msgstr "Überprüfe Benutzername"
-
-#: invite_participants.js:171
-msgid "Only registered users can participate privacy-enhanced."
-msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
-
-#: participate.js:64
-#: participate.js:202
-msgid "Secret Key for %1:"
-msgstr "Geheimer Schlüssel für %1:"
-
-#: participate.js:67
-#: participate.js:71
+#: common.js:77
+#: participate.js:66
 #: register.js:77
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: participate.js:90
-msgid "Please select your username:"
-msgstr "Bitte wählen Sie Ihren Namen:"
+#: invite_participants.js:34
+#: register.js:49
+msgid "Checking Username"
+msgstr "Überprüfe Benutzername"
 
-#: participate.js:102
-msgid "Delete %1"
-msgstr "Lösche %1"
+#: invite_participants.js:50
+msgid "Only registered users can participate privacy-enhanced."
+msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
 
-#: participate.js:128
+#: invite_participants.js:62
+#: participate.js:704
+msgid "Failed to fetch participant list."
+msgstr "Konnte die Liste der Teilnehmer nicht laden."
+
+#: invite_participants.js:71
+msgid "Privacy Enhanced"
+msgstr "Datenschutzfreundlich"
+
+#: invite_participants.js:139
+msgid "Save Changes"
+msgstr "Änderungen speichern"
+
+#: participate.js:59
+#: participate.js:180
+msgid "Secret Key for %1:"
+msgstr "Geheimer Schlüssel für %1:"
+
+#: participate.js:88
 msgid "Something went wrong! The server said:"
 msgstr "Serverfehler:"
 
-#: participate.js:137
-#: participate.js:283
+#: participate.js:93
 msgid "Calculating the public key ..."
 msgstr "Berechne den öffentlichen Schlüssel ..."
 
-#: participate.js:138
-#: participate.js:284
+#: participate.js:94
 msgid "Please wait ..."
 msgstr "Bitte warten …"
 
-#: participate.js:142
+#: participate.js:105
 msgid "Please wait while removing %1 ..."
 msgstr "Bitte warten Sie während %1 entfernt wird …"
 
-#: participate.js:182
-#: participate.js:292
+#: participate.js:145
+#: participate.js:298
 msgid "You entered a wrong key!"
 msgstr "Der eingegebene Schlüssel ist falsch!"
 
-#: participate.js:183
-#: participate.js:295
+#: participate.js:146
+#: participate.js:301
 msgid "Try again?"
 msgstr "Nochmal versuchen?"
 
-#: participate.js:206
+#: participate.js:184
 #: register.js:92
 #: register.js:97
 msgid "Next"
 msgstr "Weiter"
 
-#: participate.js:261
+#: participate.js:209
+msgid "Please select your username:"
+msgstr "Bitte wählen Sie Ihren Namen:"
+
+#: participate.js:218
+msgid "Delete %1"
+msgstr "Lösche %1"
+
+#: participate.js:269
 msgid "Calculating keys ..."
 msgstr "Berechne Schlüssel ..."
 
-#: participate.js:339
+#: participate.js:341
 msgid "Has voted anonymously."
 msgstr "Hat anonym abgestimmt."
 
-#: participate.js:345
+#: participate.js:347
 msgid "Has not voted yet."
 msgstr "Hat noch nicht abgestimmt."
 
-#: participate.js:351
+#: participate.js:353
 msgid "Is to be removed."
 msgstr "Soll entfernt werden."
 
-#: participate.js:356
+#: participate.js:358
 msgid "Is removed."
 msgstr "Wurde entfernt."
 
-#: participate.js:366
-msgid "Edit User"
-msgstr "Bearbeite Teilnehmer"
-
-#: participate.js:370
-msgid "Fetching Name for %1 ..."
-msgstr "Hole status für %1 ..."
-
-#: participate.js:458
+#: participate.js:449
 msgid "decrease"
 msgstr "erniedrigen"
 
-#: participate.js:458
+#: participate.js:449
 msgid "increase"
 msgstr "erhöhen"
 
-#: participate.js:459
+#: participate.js:450
 msgid "Somebody tried to %1 column %2 by %3!!!"
 msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
 
-#: participate.js:471
+#: participate.js:462
 msgid "Somebody sent inconsistent values at column %1!!!"
 msgstr "Jemand hat inkonsistente Werte für Spalte %1 gesendet!!!"
 
-#: participate.js:547
+#: participate.js:538
 msgid "Save"
 msgstr "Speichern"
 
@@ -195,6 +188,8 @@ msgstr "Fertig"
 msgid "Failed to store key, the server said:"
 msgstr "Konnte Schlüssel nicht am server registrieren:"
 
+#~ msgid "Fetching Name for %1 ..."
+#~ msgstr "Hole status für %1 ..."
 #~ msgid "Do you really want to remove the participant from the poll?"
 #~ msgstr "Wollen Sie den Teilnehmer wirklich löschen?"
 #~ msgid "Invite"
