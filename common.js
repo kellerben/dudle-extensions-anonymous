@@ -17,7 +17,7 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-/*global gsExtensiondir, gsEdit, gsDelete */
+/*global gsExtensiondir, gsEdit, gsDelete, gaColumnsLen */
 "use strict";
 
 var gt = new Gettext({ 'domain' : 'dudle_dc-net' });
@@ -77,4 +77,8 @@ function gfCancelButton() {
 	_ret += gt.gettext("Cancel");
 	_ret += '" onClick="gfReload()" style="margin-top: 1ex;" />';
 	return _ret;
+}
+
+function gfKeyTd() {
+	return "<td id='key_td' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
 }

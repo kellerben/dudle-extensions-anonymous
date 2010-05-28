@@ -18,9 +18,8 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote */
+/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfKeyTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote */
 
-var gParticipantTds;
 var gActiveParticipant;
 var gaColumns;
 var gaColumnsLen;
@@ -54,58 +53,17 @@ var htmlid = (function () {
 	};
 }());
 
-function deleteUserButton(_victim, _label) {
-	return "<input id='deletebutton' type='button' value='" + _label + "' onclick='deleteUser(\"" + _victim + "\")' style='margin-top:1ex'/>";
-}
-
 var gsKickerId;
 function showKicker(_victim, _kicker) {
 	gsKickerId = _kicker;
-	$(_victim + "_td").update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
+	$("participant_" + _victim).childElements()[0].update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
 	$("key").disabled = false;
 	$("kickoutbutton").disabled = false;
-	Element.replace("cancelbutton", deleteUserButton(_victim, gt.gettext("Cancel")));
+	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + _victim + "')");
 }
 
 function cancelButton() {
 	return "<input id='cancelbutton' type='button' value='" + gt.gettext("Cancel") + "' onclick='gfReload()' style='margin-top:1ex'/>";
-}
-
-function deleteUser(_victim) {
-	var usersNeeded = [], queryUser, kickoutbutton;
-	$H(goParticipants).each(function (_pair) {
-		if (_pair.value.voted) {
-			if (!goParticipants[_victim].flying || (goParticipants[_victim].flying && !goParticipants[_victim].flying[_pair.key])) {
-				for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
-					if (_pair.value.voted[_i][1].include(_victim)) {
-						usersNeeded.push(_pair.key);
-					}
-				}
-			}
-		}
-	});
-	if (usersNeeded.size() === 0) {
-		gfRemoveParticipant(_victim, gfReload);
-	} else {
-		queryUser = gt.gettext("Please select your username:");
-		queryUser += "<ul style='text-align: left'>";
-		queryUser += usersNeeded.uniq().collect(function (e) {
-			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
-		}).join("");
-		queryUser += "</ul>";
-		$("participant_" + _victim).childElements()[0].remove();
-		$("participant_" + _victim).childElements()[0].writeAttribute("colspan", "2");
-		$("participant_" + _victim).childElements()[0].update(queryUser);
-		$("key").disabled = true;
-		Element.replace("deletebutton", cancelButton());
-
-		if ($("loginbutton")) {
-			kickoutbutton = "<input id='kickoutbutton' type='button' value='";
-			kickoutbutton += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
-			kickoutbutton += "' onClick='goVoteVector.kickOutUser(\"" + _victim + "\")' disabled='' />";
-			Element.replace("loginbutton", kickoutbutton);
-		}
-	}
 }
 
 // TODO: transform into asynchronus call
@@ -185,15 +143,15 @@ Vote.prototype.kickOutUser = function (_victim) {
 				);
 			} else {
 				var _errormsg = gt.gettext("You entered a wrong key!");
-				_errormsg += " <a href='javascript:(function () {editUser(\"" + _victim + "\");deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
+				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
 			}
 		});
 	}
 };
 
-function editUser(_participant) {
-	var _l;
+var gParticipantTds;
+function exchangeParticipantRow(_participant, _newTds) {
 	if ($("add_participant")) {
 		$("add_participant").remove();
 	} else {
@@ -203,14 +161,6 @@ function editUser(_participant) {
 	$("separator_top").remove();
 	$("separator_bottom").remove();
 
-	_l = "<td colspan='2' id='" + _participant + "_td' class='label'><label for='key'>";
-	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_participant]]);
-	_l += "</label></td>";
-
-	_l += "<td id='key_td' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
-	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
-	_l += gfCancelButton();
-	_l += "</td>";
 
 
 	gActiveParticipant = $("participant_" + _participant);
@@ -219,8 +169,61 @@ function editUser(_participant) {
 		before: "<tr id='separator_top'><td colspan='" + (gaColumnsLen + 2) + "' class='invisible'></td></tr>",
 		after: "<tr id='separator_bottom'><td colspan='" + (gaColumnsLen + 2) + "' class='invisible'></td></tr>"
 	});
-	gActiveParticipant.update(_l);
+	gActiveParticipant.update(_newTds);
 }
+/*
+ * display the Edit User form
+ */
+function editUser(_participant) {
+	var _l;
+	_l = "<td colspan='2' id='" + _participant + "_td' class='label'><label for='key'>";
+	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_participant]]);
+	_l += "</label></td>";
+
+	_l += gfKeyTd();
+	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
+	_l += gfCancelButton();
+	_l += "</td>";
+	exchangeParticipantRow(_participant, _l);
+}
+
+/* 
+ * display the delete user form
+ */
+function deleteUser(_victim) {
+	var usersNeeded = [], _tds;
+	$H(goParticipants).each(function (_pair) {
+		if (_pair.value.voted) {
+			if (!goParticipants[_victim].flying || (goParticipants[_victim].flying && !goParticipants[_victim].flying[_pair.key])) {
+				for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
+					if (_pair.value.voted[_i][1].include(_victim)) {
+						usersNeeded.push(_pair.key);
+					}
+				}
+			}
+		}
+	});
+	if (usersNeeded.size() === 0) {
+		alert("Implement me");
+	} else {
+		_tds = "<td colspan='2'>" + gt.gettext("Please select your username:");
+		_tds += "<ul style='text-align: left'>";
+		_tds += usersNeeded.uniq().collect(function (e) {
+			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
+		}).join("");
+		_tds += "</ul></td>";
+		_tds += gfKeyTd();
+
+		_tds += "<td><input id='kickoutbutton' type='button' value='";
+		_tds += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
+		_tds += "' onClick='goVoteVector.kickOutUser(\"" + _victim + "\")' disabled='disabled' />";
+		_tds += gfCancelButton();
+		_tds += "</td>";
+		exchangeParticipantRow(_victim, _tds);
+		$("key").disabled = true;
+	}
+}
+
 
 function getState(participant, column) {
 	var state = "notVoted";
