@@ -129,14 +129,17 @@ function fetchKey(id) {
 	}
 }
 
+function startCalcDisableButton(button) {
+	$("key_td").update(gt.gettext("Calculating the public key ..."));
+	$(button).value = gt.gettext("Please wait ...");
+	$(button).disabled = true;
+}
 
 Vote.prototype.kickOutUser = function (_victim) {
 	var _colidx, _col, _inverted, _table, keyMatrix, key;
 	if ($F('key')) {
 		key = new BigInteger($F('key'), 16);
-		$("key_td").update(gt.gettext("Calculating the public key ..."));
-		$("kickoutbutton").value = gt.gettext("Please wait ...");
-		$("kickoutbutton").disabled = true;
+		startCalcDisableButton("kickoutbutton");
 		goVoteVector.setSecKey(key, function () {
 			if (goVoteVector.id === gsKickerId) {
 				$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
@@ -280,9 +283,7 @@ function insertParticipationCheckboxes() {
 function login() {
 	if ($F('key')) {
 		var key = new BigInteger($F('key'), 16);
-		$("key_td").update(gt.gettext("Calculating the public key ..."));
-		$("loginbutton").value = gt.gettext("Please wait ...");
-		$("loginbutton").disabled = true;
+		startCalcDisableButton("loginbutton")
 		Element.replace("deletebutton", cancelButton());
 		goVoteVector.setSecKey(key, function () {
 			if ("participant_" + goVoteVector.id === gActiveParticipant.id) {
