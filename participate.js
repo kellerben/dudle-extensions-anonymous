@@ -93,7 +93,9 @@ function deleteUser(_victim) {
 			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
 		}).join("");
 		queryUser += "</ul>";
-		$(_victim + "_td").update(queryUser);
+		$("participant_" + _victim).childElements()[0].remove();
+		$("participant_" + _victim).childElements()[0].writeAttribute("colspan", "2");
+		$("participant_" + _victim).childElements()[0].update(queryUser);
 		$("key").disabled = true;
 		Element.replace("deletebutton", cancelButton());
 
