@@ -57,8 +57,8 @@ var gsKickerId;
 function showKicker(_victim, _kicker) {
 	gsKickerId = _kicker;
 	$("participant_" + _victim).childElements()[0].update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
-	$("key").disabled = false;
-	$("kickoutbutton").disabled = false;
+	$("key").enable();
+	$("kickoutbutton").enable();
 	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + _victim + "')");
 }
 
@@ -92,7 +92,7 @@ function fetchKey(id) {
 function startCalcDisableButton(button) {
 	$("key_td").update(gt.gettext("Calculating the public key ..."));
 	$(button).value = gt.gettext("Please wait ...");
-	$(button).disabled = true;
+	$(button).disable();
 }
 
 Vote.prototype.kickOutUser = function (_victim) {
@@ -100,6 +100,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 	if ($F('key')) {
 		key = new BigInteger($F('key'), 16);
 		startCalcDisableButton("kickoutbutton");
+		$("cancelbutton").disable();
 		goVoteVector.setSecKey(key, function () {
 			if (goVoteVector.id === gsKickerId) {
 				$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
@@ -220,7 +221,7 @@ function deleteUser(_victim) {
 		_tds += gfCancelButton();
 		_tds += "</td>";
 		exchangeParticipantRow(_victim, _tds);
-		$("key").disabled = true;
+		$("key").disable();
 	}
 }
 
@@ -553,6 +554,7 @@ Vote.prototype.startKeyCalc = function () {
 Vote.prototype.save = function () {
 	var _inverted, _colidx, _col, randomTable, voteval, _voteobj, _table, ar;
 	$("votebutton").disable();
+	$("cancelbutton").disable();
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
