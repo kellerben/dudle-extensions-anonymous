@@ -262,10 +262,10 @@ FOO
 			return "invalid json format: #{e}"
 		end
 
-		ret = {}
+		parsedvote = {}
 		begin
 			h.each{|col,votearray|
-				ret[col] = {}
+				parsedvote[col] = {}
 
 				participants = {"voted" => [], "notVoted" => [], "flying" => []}
 				(@dc["participants"] - [gpgID]).each{|p|
@@ -275,13 +275,13 @@ FOO
 				participants["voted"].each{|p|
 					usedKeys << p if getUsedKeys(p, col).include?(gpgID)
 				}
-				ret[col][:usedKeys] = usedKeys
+				parsedvote[col][:usedKeys] = usedKeys
 
-				ret[col][:vote] ||= []
+				parsedvote[col][:vote] ||= []
 				votearray.each_with_index{|norm_inv,tableindex|
-					ret[col][:vote][tableindex] ||= []
+					parsedvote[col][:vote][tableindex] ||= []
 					norm_inv.each_with_index{|vote,inverted|
-						ret[col][:vote][tableindex][inverted] = vote.to_i(36)
+						parsedvote[col][:vote][tableindex][inverted] = vote.to_i(36)
 					}
 				}
 			}
@@ -295,8 +295,10 @@ FOO
 		@dc[gpgID] ||= {}
 		@dc[gpgID][:raw] ||= []
 		@dc[gpgID][:raw] << {:vote => $c["vote"], :signature => signature }
-		@dc[gpgID].merge!(ret)
+		@dc[gpgID].merge!(parsedvote)
 
+		# if somebody already asked to kickout gpgID, remove his revealed keys
+		@dc["flying"].delete(gpgID) if @dc["flying"] && @dc["flying"][gpgID] 
 		store_dc("Participant " + @k.humanreadable(gpgID) + " voted anonymously")
 	end
 
