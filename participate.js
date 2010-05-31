@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfKeyTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote */
+/*global goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfKeyTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote */
 
 var gActiveParticipant;
 var gaColumns;
@@ -56,7 +56,7 @@ var htmlid = (function () {
 var gsKickerId;
 function showKicker(_victim, _kicker) {
 	var tdtext = "<label for='key'>";
-	tdtext += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]);
+	tdtext += printf(_("Secret Key for %1:"), [goRealUserNames[_kicker]]);
 	tdtext += "</label>";
 	$("participant_" + _victim).childElements()[0].update(tdtext);
 
@@ -67,7 +67,7 @@ function showKicker(_victim, _kicker) {
 }
 
 function cancelButton() {
-	return "<input id='cancelbutton' type='button' value='" + gt.gettext("Cancel") + "' onclick='gfReload()' style='margin-top:1ex'/>";
+	return "<input id='cancelbutton' type='button' value='" + _("Cancel") + "' onclick='gfReload()' style='margin-top:1ex'/>";
 }
 
 // TODO: transform into asynchronus call
@@ -89,13 +89,13 @@ function fetchKey(id) {
 		}
 		return participant;
 	} else {
-		return gt.gettext('Something went wrong! The server said:') + " " + req.responseText;
+		return _('Something went wrong! The server said:') + " " + req.responseText;
 	}
 }
 
 function startCalcDisableButton(button) {
-	$("key_td").update(gt.gettext("Calculating the public key ..."));
-	$(button).value = gt.gettext("Please wait ...");
+	$("key_td").update(_("Calculating the public key ..."));
+	$(button).value = _("Please wait ...");
 	$(button).disable();
 }
 
@@ -107,7 +107,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 		$("cancelbutton").disable();
 		goVoteVector.setSecKey(key, function () {
 			if (goVoteVector.id === gsKickerId) {
-				$("key_td").update(Gettext.strargs(gt.gettext("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
+				$("key_td").update(printf(_("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
 				goVoteVector.participants[_victim] = fetchKey(_victim);
 
 				// calculate the dh secret
@@ -147,10 +147,10 @@ Vote.prototype.kickOutUser = function (_victim) {
 					}
 				);
 			} else {
-				var _errormsg = gt.gettext("You entered a wrong key!");
-				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
+				var _errormsg = _("You entered a wrong key!");
+				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + _("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
-				$("kickoutbutton").value = Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
+				$("kickoutbutton").value = printf(_("Delete %1"), [goRealUserNames[_victim]]);
 			}
 		});
 	}
@@ -183,11 +183,11 @@ function exchangeParticipantRow(_participant, _newTds) {
 function editUser(_participant) {
 	var _l;
 	_l = "<td colspan='2' id='" + _participant + "_td' class='label'><label for='key'>";
-	_l += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_participant]]);
+	_l += printf(_("Secret Key for %1:"), [goRealUserNames[_participant]]);
 	_l += "</label></td>";
 
 	_l += gfKeyTd();
-	_l += "<td><input id='loginbutton' type='button' value='" + gt.gettext("Next") + "' onClick='login()'/>";
+	_l += "<td><input id='loginbutton' type='button' value='" + _("Next") + "' onClick='login()'/>";
 	_l += gfCancelButton();
 	_l += "</td>";
 	exchangeParticipantRow(_participant, _l);
@@ -212,7 +212,7 @@ function deleteUser(_victim) {
 	if (usersNeeded.size() === 0) {
 		alert("Implement me");
 	} else {
-		_tds = "<td colspan='2'>" + gt.gettext("Please select your username:");
+		_tds = "<td colspan='2'>" + _("Please select your username:");
 		_tds += "<ul style='text-align: left'>";
 		_tds += usersNeeded.uniq().collect(function (e) {
 			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
@@ -221,7 +221,7 @@ function deleteUser(_victim) {
 		_tds += gfKeyTd();
 
 		_tds += "<td><input id='kickoutbutton' type='button' value='";
-		_tds += Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
+		_tds += printf(_("Delete %1"), [goRealUserNames[_victim]]);
 		_tds += "' onClick='goVoteVector.kickOutUser(\"" + _victim + "\")' disabled='disabled' />";
 		_tds += gfCancelButton();
 		_tds += "</td>";
@@ -272,7 +272,7 @@ function insertParticipationCheckboxes() {
 			if (participationVisible) {
 				participationVisible = false;
 				_td = "<td id='submit'>";
-				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + gt.gettext("Calculating keys ...") + "' disabled='disabled'>";
+				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + _("Calculating keys ...") + "' disabled='disabled'>";
 				_td += "<br />" + cancelButton();
 				_td += "</td>";
 				$("lastedit_" + goVoteVector.id).replace(_td);
@@ -301,10 +301,10 @@ function login() {
 				gActiveParticipant.update(gParticipantTds);
 				insertParticipationCheckboxes();
 			} else {
-				var _errormsg = gt.gettext("You entered a wrong key!");
+				var _errormsg = _("You entered a wrong key!");
 				_errormsg += " <a href='javascript:editUser(\"";
 				_errormsg += gActiveParticipant.id.gsub("participant_", "") + "\")'>";
-				_errormsg += gt.gettext("Try again?");
+				_errormsg += _("Try again?");
 				_errormsg += "</a>";
 				$("key_td").update(_errormsg);
 			}
@@ -344,24 +344,24 @@ function showParticipants() {
 			switch (getState(participant.key, column)) {
 			case "voted":
 				classname = 'voted';
-				statustitle = gt.gettext('Has voted anonymously.');
+				statustitle = _('Has voted anonymously.');
 				statustext = gsVoted;
 				break;
 			case 'notVoted':
 				editable = true;
 				classname = 'undecided';
-				statustitle = gt.gettext('Has not voted yet.');
+				statustitle = _('Has not voted yet.');
 				statustext = gsUnknown;
 				break;
 			case 'flying':
 				editable = true;
 				classname = 'bmaybe';
-				statustitle = gt.gettext('Is to be removed.');
+				statustitle = _('Is to be removed.');
 				statustext = gsFlying;
 				break;
 			case 'kickedOut':
 				classname = 'undecided';
-				statustitle = gt.gettext('Is removed.');
+				statustitle = _('Is removed.');
 				statustext = gsKickedOut;
 				break;
 			}
@@ -452,8 +452,8 @@ function calcResult() {
 
 						result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
 						if (result.compareTo(BigInteger.ZERO) < 0) {
-							_attack = _inverted === 0 ? gt.gettext("decrease") : gt.gettext("increase");
-							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody tried to %1 column %2 by %3!!!"), [_attack, _col, result.abs()]) + "</div>"});
+							_attack = _inverted === 0 ? _("decrease") : _("increase");
+							$('comments').insert({before: "<div class='warning'>" + printf(_("Somebody tried to %1 column %2 by %3!!!"), [_attack, _col, result.abs()]) + "</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
 						}
@@ -465,7 +465,7 @@ function calcResult() {
 					} else {
 /*FIXME auf spalten anpassen*/
 						if (new BigInteger(numParticipants.toString()).compareTo(_colResults[0][_col].add(_colResults[1][_col])) !== 0) {
-							$('comments').insert({before: "<div class='warning'>" + Gettext.strargs(gt.gettext("Somebody sent inconsistent values at column %1!!!"), [_col]) + "</div>"});
+							$('comments').insert({before: "<div class='warning'>" + printf(_("Somebody sent inconsistent values at column %1!!!"), [_col]) + "</div>"});
 							sumelement.setStyle("background-color:red");
 							sumelement.addClassName("wrong");
 						}
@@ -540,7 +540,7 @@ function hash(block) {
 }
 
 function showSaveButton() {
-	$("votebutton").value = gt.gettext("Save");
+	$("votebutton").value = _("Save");
 	$("votebutton").enable();
 }
 
@@ -707,7 +707,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			parameters: {service: 'getParticipants', pollID: gsPollID},
 			method: "get",
 			onFailure: function () { 
-				alert(gt.gettext('Failed to fetch participant list.'));
+				alert(_('Failed to fetch participant list.'));
 			},
 			onSuccess: function (transport) {
 				/* FIXME evalJSON() is evil, as others may inject some code*/

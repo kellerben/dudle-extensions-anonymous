@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, gsExtensiondir, gsPollID, gfUpdateName, gfUserTd, gfCancelButton, gfReload, gfRemoveParticipant */
+/*global gsExtensiondir, gsPollID, gfUpdateName, gfUserTd, gfCancelButton, gfReload, gfRemoveParticipant */
 var gsKeyId, gsCheckedName;
 
 var _oParticipants;
@@ -31,7 +31,7 @@ function checkcheckbox(successfunction) {
 	$("registerederror").update("");
 	if ($F("add_participant_check_privacy_enhanced")) {
 		$("savebutton").disable();
-		$("savebutton").value = gt.gettext("Checking Username");
+		$("savebutton").value = _("Checking Username");
 		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			method: "get",
 			parameters: { service: 'searchId', name: $F("add_participant_input")},
@@ -47,7 +47,7 @@ function checkcheckbox(successfunction) {
 			onFailure: function (transport) {
 				$("savebutton").value = gsSaveButtonLabel;
 				$("add_participant_input").focus();
-				$("registerederror").update(gt.gettext("Only registered users can participate privacy-enhanced."));
+				$("registerederror").update(_("Only registered users can participate privacy-enhanced."));
 			}
 		});
 	} else {
@@ -59,7 +59,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 	method: "get",
 	parameters: { service: 'getParticipants', pollID: gsPollID},
 	onFailure: function () {
-		alert(gt.gettext('Failed to fetch participant list.'));
+		alert(_('Failed to fetch participant list.'));
 	},
 	onSuccess: function (transport) {
 		var ar, usedKeys;
@@ -68,7 +68,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		// Add existing participants
 
 		$("participanttable").select("th").each(function (th) {
-			th.insert({after: "<th>" + gt.gettext("Privacy Enhanced") + "</th>"});
+			th.insert({after: "<th>" + _("Privacy Enhanced") + "</th>"});
 		});
 
 		usedKeys = $H(_oParticipants).collect(function (_elem) {
@@ -136,7 +136,7 @@ function editUser(_user) {
 	var _inputTr, _savebutton, ac,
 		_username = $(_user).innerHTML;
 
-	gsSaveButtonLabel = gt.gettext("Save Changes");
+	gsSaveButtonLabel = _("Save Changes");
 
 	/* if something was saved, restore it */
 	if (gsOldUser) {

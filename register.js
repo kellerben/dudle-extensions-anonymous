@@ -18,10 +18,10 @@
  ***************************************************************************/
 
 "use strict";
-/*global gt, goVoteVector, giDHLENGTH, gsExtensiondir */
+/*global goVoteVector, giDHLENGTH, gsExtensiondir */
 
 function showRegisterTab() {
-	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;" + gt.gettext("Register") + "&nbsp;</a></li>");
+	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;" + _("Register") + "&nbsp;</a></li>");
 }
 
 $("tablist").insert({ bottom: "<li id='registerTab' class='nonactive_tab'/>" });
@@ -46,14 +46,14 @@ function checkUserExistance() {
 	if ($F("name")) {
 		$("next").disable();
 		label = $F("next");
-		$("next").value = gt.gettext("Checking Username");
+		$("next").value = _("Checking Username");
 		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
 			method: "get",
 			parameters: { service: 'searchId', name: $F("name")},
 			onSuccess: function (transport) {
 				$("next").value = label;
 				$("name").focus();
-				$("registererror").update("<td colspan='2' class='warning'>" + gt.gettext("A user with the same name already exists.") + "</td>");
+				$("registererror").update("<td colspan='2' class='warning'>" + _("A user with the same name already exists.") + "</td>");
 			},
 			onFailure: function (transport) {
 				$("next").enable();
@@ -68,14 +68,14 @@ function checkUserExistance() {
 
 function showRegister(name) {
 	var _r = "<h1>dudle</h1>";
-	_r += "<h2>" + gt.gettext("Register new Account") + "</h2>";
+	_r += "<h2>" + _("Register new Account") + "</h2>";
 	_r += "<table id='register' class='settingstable'><tr>";
-	_r += "<td class='label'><label for='name'>" + gt.gettext("Name:") + "</label></td>";
+	_r += "<td class='label'><label for='name'>" + _("Name:") + "</label></td>";
 	_r += "<td><input id='name' type='text' value='" + name + "' onChange='checkUserExistance()' /></td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
-	_r += "<td><input type='button' value='" + gt.gettext("Cancel") + "' onClick='showContent()'/> ";
-	_r += "<input disabled='disabled' type='button' id='next' value='" + gt.gettext("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
+	_r += "<td><input type='button' value='" + _("Cancel") + "' onClick='showContent()'/> ";
+	_r += "<input disabled='disabled' type='button' id='next' value='" + _("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
 	_r += "</tr><tr id='registererror' /></table>";
 	$('content').update(_r);
 
@@ -84,42 +84,42 @@ function showRegister(name) {
 	$('registerTab').addClassName("active_tab");
 	$('registerTab').removeClassName("nonactive_tab");
 
-	$('registerTab').update('&nbsp;' + gt.gettext("Register") + '&nbsp;');
+	$('registerTab').update('&nbsp;' + _("Register") + '&nbsp;');
 	$('active_tab').update('<a href="javascript:showContent()">' + gActiveTabInnerHTML + '</a>');
 
 	if (!goVoteVector.sec) {
 		goVoteVector.setSecKey(new BigInteger(giDHLENGTH - 1, new SecureRandom()), function () {
-			$('next').value = gt.gettext('Next');
+			$('next').value = _('Next');
 			checkUserExistance();
 		});
 	} else {
 		checkUserExistance();
-		$('next').value = gt.gettext('Next');
+		$('next').value = _('Next');
 	}
 }
 
 function secondRegisterStep() {
 	var _r = "<tr>";
 	_r += "</td><td>";
-	_r += "<td>" + gt.gettext("Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).") + "</td>";
+	_r += "<td>" + _("Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).") + "</td>";
 	_r += "</tr><tr>";
-	_r += "<td class='label'><label for='key'>" + gt.gettext("Secret Key:") + "</label></td>";
+	_r += "<td class='label'><label for='key'>" + _("Secret Key:") + "</label></td>";
 	_r += "<td><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
 	_r += goVoteVector.sec.toString(16) + "</textarea></td>";
 	_r += "</tr><tr>";
 	_r += "<td></td>";
-	_r += "<td>" + gt.gettext("Alternatively, you may bookmark this link, which inserts the key into the login field:");
+	_r += "<td>" + _("Alternatively, you may bookmark this link, which inserts the key into the login field:");
 	_r += " <a href=\"javascript:void(";
 	_r += "document.getElementById('key').value='";
 	_r += goVoteVector.sec.toString(16);
 	_r += "')\">";
-	_r += Gettext.strargs(gt.gettext('insert dudle key (%1)'), [$F('name')]) + '</a>.';
+	_r += printf(_('insert dudle key (%1)'), [$F('name')]) + '</a>.';
 	_r += "</td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
-	_r += "<td><input type='button' value='" + gt.gettext("Previous") + "' onclick='showRegister(\"" + $F('name') + "\");' /> ";
+	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='showRegister(\"" + $F('name') + "\");' /> ";
 	_r += "<input type='hidden' id='name' value='" + $F('name') + "' />";
-	_r += "<input type='button' value='" + gt.gettext("Finish") + "' onclick='register()'/></td>";
+	_r += "<input type='button' value='" + _("Finish") + "' onclick='register()'/></td>";
 	_r += "</tr>";
 	$('register').update(_r);
 }
@@ -133,7 +133,7 @@ function register() {
 	_ar = new Ajax.Request(gsExtensiondir + "keyserver.cgi", {
 		parameters: {service: 'setKey', gpgKey: _pubkey},
 		onFailure: function (transport) {
-			alert(gt.gettext("Failed to store key, the server said:") + " " + transport.responseText);
+			alert(_("Failed to store key, the server said:") + " " + transport.responseText);
 		},
 		onSuccess: function (transport) {
 			showContent();

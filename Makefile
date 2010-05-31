@@ -45,7 +45,7 @@ check: $(foreach p,$(wildcard *.js), $p.check)
 	echo -n "$$, $$" >> /tmp/$*.js
 	echo -n "H, $$" >> /tmp/$*.js
 	echo -n "A, $$" >> /tmp/$*.js
-	echo -n "F, Gettext, Autocompleter, BigInteger, SecureRandom, SHA256_hash, AES_Init, AES_Done, AES_ExpandKey, AES_Decrypt */" >> /tmp/$*.js
+	echo -n "F, _, printf, Autocompleter, BigInteger, SecureRandom, SHA256_hash, AES_Init, AES_Done, AES_ExpandKey, AES_Decrypt */" >> /tmp/$*.js
 	cat $*.js >> /tmp/$*.js
 	rhino lib/jslint.js /tmp/$*.js
 
