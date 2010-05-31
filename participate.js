@@ -540,9 +540,8 @@ function hash(block) {
 }
 
 function showSaveButton() {
-	var v = $("votebutton");
-	v.value = gt.gettext("Save");
-	v.enable();
+	$("votebutton").value = gt.gettext("Save");
+	$("votebutton").enable();
 }
 
 /*****************************************************************

@@ -267,11 +267,11 @@ FOO
 			h.each{|col,votearray|
 				ret[col] = {}
 
-				participants = {"voted" => [], "notVoted" => []}
+				participants = {"voted" => [], "notVoted" => [], "flying" => []}
 				(@dc["participants"] - [gpgID]).each{|p|
 					participants[getParticipantState(p, col)] << p
 				}
-				usedKeys = participants["notVoted"]
+				usedKeys = participants["notVoted"] + participants["flying"]
 				participants["voted"].each{|p|
 					usedKeys << p if getUsedKeys(p, col).include?(gpgID)
 				}
