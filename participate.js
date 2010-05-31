@@ -55,8 +55,12 @@ var htmlid = (function () {
 
 var gsKickerId;
 function showKicker(_victim, _kicker) {
+	var tdtext = "<label for='key'>";
+	tdtext += Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]);
+	tdtext += "</label>";
+	$("participant_" + _victim).childElements()[0].update(tdtext);
+
 	gsKickerId = _kicker;
-	$("participant_" + _victim).childElements()[0].update(Gettext.strargs(gt.gettext("Secret Key for %1:"), [goRealUserNames[_kicker]]));
 	$("key").enable();
 	$("kickoutbutton").enable();
 	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + _victim + "')");
@@ -146,6 +150,7 @@ Vote.prototype.kickOutUser = function (_victim) {
 				var _errormsg = gt.gettext("You entered a wrong key!");
 				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + gt.gettext("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
+				$("kickoutbutton").value = Gettext.strargs(gt.gettext("Delete %1"), [goRealUserNames[_victim]]);
 			}
 		});
 	}
