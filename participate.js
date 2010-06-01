@@ -66,10 +66,6 @@ function showKicker(_victim, _kicker) {
 	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + _victim + "')");
 }
 
-function cancelButton() {
-	return "<input id='cancelbutton' type='button' value='" + _("Cancel") + "' onclick='gfReload()' style='margin-top:1ex'/>";
-}
-
 // TODO: transform into asynchronus call
 function fetchKey(id) {
 
@@ -273,7 +269,7 @@ function insertParticipationCheckboxes() {
 				participationVisible = false;
 				_td = "<td id='submit'>";
 				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + _("Calculating keys ...") + "' disabled='disabled'>";
-				_td += "<br />" + cancelButton();
+				_td += gfCancelButton();
 				_td += "</td>";
 				$("lastedit_" + goVoteVector.id).replace(_td);
 
