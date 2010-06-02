@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-02 11:57+0200\n"
+"POT-Creation-Date: 2010-06-02 14:51+0200\n"
 "PO-Revision-Date: 2010-03-10 14:41+0100\n"
 "Last-Translator: Erica <erica.resare@kau.se>\n"
 "Language-Team: \n"
@@ -46,11 +46,11 @@ msgstr ""
 msgid "fetching user name for %1 ..."
 msgstr "hämtar användarnamn för %1 ..."
 
-#: common.js:83 register.js:77
+#: common.js:83 register.js:53
 msgid "Cancel"
 msgstr "Avboka"
 
-#: invite_participants.js:34 register.js:49
+#: invite_participants.js:34 register.js:120
 msgid "Checking Username"
 msgstr "Kontrollerar användarnamn"
 
@@ -105,7 +105,7 @@ msgstr ""
 msgid "Delete %1"
 msgstr ""
 
-#: participate.js:194 participate.js:302 register.js:92 register.js:97
+#: participate.js:194 participate.js:302 register.js:54 register.js:71
 msgid "Next"
 msgstr "Nästa"
 
@@ -189,27 +189,23 @@ msgstr ""
 msgid "Continue with non-anonymous voting."
 msgstr ""
 
-#: register.js:24 register.js:87
+#: register.js:24 register.js:63
 msgid "Register"
 msgstr ""
 
-#: register.js:56
-msgid "A user with the same name already exists."
-msgstr ""
-
-#: register.js:71
+#: register.js:47
 msgid "Register new Account"
 msgstr "Registrera nytt konto"
 
-#: register.js:73
+#: register.js:49
 msgid "Name:"
 msgstr "Namn:"
 
-#: register.js:78
+#: register.js:68
 msgid "Please wait while calculating a secret key ..."
 msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
 
-#: register.js:104
+#: register.js:82
 msgid ""
 "Please store the secret key somewhere at your computer (e.&thinsp;g., by "
 "copying it to a textfile)."
@@ -217,11 +213,11 @@ msgstr ""
 "Vänligen lagra hemlig nyckel någonstans på din dator (t ex genom att kopiera "
 "det till en textfil)."
 
-#: register.js:106
+#: register.js:84
 msgid "Secret Key:"
 msgstr "Hemlig nyckel:"
 
-#: register.js:111
+#: register.js:89
 msgid ""
 "Alternatively, you may bookmark this link, which inserts the key into the "
 "login field:"
@@ -229,19 +225,38 @@ msgstr ""
 "Alternativt kan du bokmärka denna länk för att infoga nyckeln i fältet för "
 "inloggning:"
 
-#: register.js:116
+#: register.js:94
 msgid "insert dudle key (%1)"
 msgstr "Infoga dudle nyckel (%1)"
 
-#: register.js:120
+#: register.js:107
 msgid "Previous"
 msgstr "Föregående"
 
-#: register.js:122
+#: register.js:108
 msgid "Finish"
 msgstr "Klar"
 
-#: register.js:136
+#: register.js:127
+msgid "A user with the same name already exists."
+msgstr ""
+
+#: register.js:151
+msgid ""
+"You successfully registered an Account. With your secret key, you are able "
+"to participate in anonymous polls. Make sure, that you do not loose your "
+"secret key. Without the key, nobody is able to vote for the username."
+msgstr ""
+
+#: register.js:154
+msgid "Click here in order to view and backup your secret key (last chance)"
+msgstr ""
+
+#: register.js:155
+msgid "Return to dudle home and Schedule a new Poll"
+msgstr ""
+
+#: register.js:171
 msgid "Failed to store key, the server said:"
 msgstr "Misslyckades med lagring av nyckel. Servern säger:"
 
