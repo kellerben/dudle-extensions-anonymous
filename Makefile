@@ -41,7 +41,7 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 check: $(foreach p,$(wildcard *.js), $p.check)
 %.js.check: %.js
 	echo -n "/*jslint cap: true, newcap: false, regexp: false, strict: true, browser: true, nomen: false, plusplus: false */" > /tmp/$*.js
-	echo -n "/*global alert, confirm, window, localStorage, Ajax, Element, $$, $$" >> /tmp/$*.js
+	echo -n "/*global alert, confirm, window, localStorage, Ajax, Element, Hash, $$, $$" >> /tmp/$*.js
 	echo -n "$$, $$" >> /tmp/$*.js
 	echo -n "H, $$" >> /tmp/$*.js
 	echo -n "A, $$" >> /tmp/$*.js

@@ -300,6 +300,7 @@ FOO
 		# if somebody already asked to kickout gpgID, remove his revealed keys
 		@dc["flying"].delete(gpgID) if @dc["flying"] && @dc["flying"][gpgID] 
 		store_dc("Participant " + @k.humanreadable(gpgID) + " voted anonymously")
+#		"FIXME"
 	end
 
 	def Poll.webservicedescription_5Deprecated_getState

@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfKeyTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote */
+/*global goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfKeyTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote, gt */
 
 var gActiveParticipant;
 var gaColumns;
@@ -95,8 +95,44 @@ function startCalcDisableButton(button) {
 	$(button).disable();
 }
 
-Vote.prototype.kickOutUser = function (_victim) {
-	var _colidx, _col, _inverted, _table, keyMatrix, key;
+/**********************************************
+ * kickout a user
+ * the dh key should be calculated and stored
+ **********************************************/
+Vote.prototype.kickOut = function (_victim, callafterwards) {
+	var _inverted, _table, ar, keyMatrix, _colidx, _col;
+	AES_Init();
+	keyMatrix = {};
+	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
+		_col = gaColumns[_colidx];
+		keyMatrix[_col] = [];
+		for (_table = 0; _table < giNumTables;_table++) {
+			keyMatrix[_col][_table] = [];
+			for (_inverted = 0; _inverted < 2; _inverted++) {
+				keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
+			}
+		}
+	}
+	AES_Done();
+
+	ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+		parameters: {
+			service: 'setKickOutKeys', 
+			pollID: gsPollID, 
+			gpgIDKicker: goVoteVector.id, 
+			gpgIDLeaver: _victim, 
+			keys: Object.toJSON(keyMatrix),
+			signature: 'TODO'
+		},
+		onSuccess: function (transport) {
+			callafterwards();
+		}
+	});
+};
+
+
+Vote.prototype.kickOutUserInterface = function (_victim) {
+	var key;
 	if ($F('key')) {
 		key = new BigInteger($F('key'), 16);
 		startCalcDisableButton("kickoutbutton");
@@ -109,38 +145,10 @@ Vote.prototype.kickOutUser = function (_victim) {
 				// calculate the dh secret
 				goVoteVector.participants[_victim].pub.modPow(goVoteVector.sec, goVoteVector.dhmod,
 					function (result) {
-						var ar;
-						goVoteVector.participants[_victim].dh = result;
-						goVoteVector.participants[_victim].aeskey = gfInitAESKey(result);
-
-						AES_Init();
-						keyMatrix = {};
-						for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-							_col = gaColumns[_colidx];
-							keyMatrix[_col] = [];
-							for (_table = 0; _table < giNumTables;_table++) {
-								keyMatrix[_col][_table] = [];
-								for (_inverted = 0; _inverted < 2; _inverted++) {
-									keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
-								}
-							}
+							goVoteVector.participants[_victim].dh = result;
+							goVoteVector.participants[_victim].aeskey = gfInitAESKey(result);
+							goVoteVector.kickOut(_victim, gfReload);
 						}
-						AES_Done();
-
-						ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-							parameters: {
-								service: 'setKickOutKeys', 
-								pollID: gsPollID, 
-								gpgIDKicker: goVoteVector.id, 
-								gpgIDLeaver: _victim, 
-								keys: Object.toJSON(keyMatrix),
-								signature: 'TODO'
-							},
-							onSuccess: function (transport) {
-								gfReload();
-							}
-						});
-					}
 				);
 			} else {
 				var _errormsg = _("You entered a wrong key!");
@@ -218,7 +226,7 @@ function deleteUser(_victim) {
 
 		_tds += "<td><input id='kickoutbutton' type='button' value='";
 		_tds += printf(_("Delete %1"), [goRealUserNames[_victim]]);
-		_tds += "' onClick='goVoteVector.kickOutUser(\"" + _victim + "\")' disabled='disabled' />";
+		_tds += "' onClick='goVoteVector.kickOutUserInterface(\"" + _victim + "\")' disabled='disabled' />";
 		_tds += gfCancelButton();
 		_tds += "</td>";
 		exchangeParticipantRow(_victim, _tds);
@@ -253,6 +261,29 @@ function getState(participant, column) {
 	return state;
 }
 
+/******************************************************************
+ * checks if there are additional steps needed after vote casting *
+ * If there is somebody, who should be kicked out, it should be   *
+ * asked if the user agrees. Users who should be asked for are    *
+ * written into goFlyingUsers[flyer] = [kicker_1,...,kicker_x]    *
+ ******************************************************************/
+var goFlyingUsers = new Hash();
+var gbQuestionsAnswered = true;
+function checkforAdditionalQuestions() {
+	var _button;
+
+	$H(goParticipants).each(function (_pair) {
+		var _participant = _pair[0], _status = _pair[1];
+		if (typeof(_status.flying) !== 'undefined' && _participant !== goVoteVector.id) {
+			goFlyingUsers.set(_participant, _status.flying);
+			gbQuestionsAnswered = false;
+		}
+	});
+	if (gbQuestionsAnswered) {
+		$("votebutton").value = _("Save");
+	}
+}
+
 function insertParticipationCheckboxes() {
 	var participationVisible = true;
 	gaColumns.each(function (col) {
@@ -268,10 +299,11 @@ function insertParticipationCheckboxes() {
 			if (participationVisible) {
 				participationVisible = false;
 				_td = "<td id='submit'>";
-				_td += "<input id='votebutton' onclick='goVoteVector.save();' type='button' value='" + _("Calculating keys ...") + "' disabled='disabled'>";
+				_td += "<input id='votebutton' onclick='goVoteVector.save()' type='button' value='" + _("Next") + "'>";
 				_td += gfCancelButton();
 				_td += "</td>";
 				$("lastedit_" + goVoteVector.id).replace(_td);
+				checkforAdditionalQuestions();
 
 				$("participant_" + goVoteVector.id).childElements()[0].remove();
 				$("participant_" + goVoteVector.id).childElements()[0].writeAttribute("colspan", "2");
@@ -535,10 +567,14 @@ function hash(block) {
 	return new BigInteger(SHA256_hash(block), 16);
 }
 
-function showSaveButton() {
-	$("votebutton").value = _("Save");
-	$("votebutton").enable();
-}
+/***********************************************
+ * If user votes faster than calculation, 
+ * save will overwrite this function to send
+ ***********************************************/
+var gbCalculationFinished = false;
+Vote.prototype.calculationReady = function () {
+	gbCalculationFinished = true;
+};
 
 /*****************************************************************
  * Start all calculations, which can be done before vote casting *
@@ -548,49 +584,168 @@ Vote.prototype.startKeyCalc = function () {
 	this.calcNextDHKey();
 };
 
+/******************************************************************
+ * stores user into gaKickUsers if kickuser == true               *
+ * if user == null, nothing is stored (first round)               *
+ * asks the user to kickout next user (goFlyingUsers.random)      *
+ * deletes this user from goFlyingUsers afterwards                *
+ ******************************************************************/
+var gaKickUsers = [], gsPreviousUserRow;
+Vote.prototype.askKickOutNext = function (user, kickuser) {
+	var nextuser, nextkickers, i, kickoutquestion;
+
+	if (typeof(user) === "undefined") {
+		// first call of the function, remove the vote buttons
+		for (i = 0; i < gaColumnsLen; ++i) {
+			$$("#participant_" + this.id + " td")[1].remove();
+		}
+		$("votebutton").remove();
+	} else {
+		// we are not in the first run
+		// remove the old question
+		$("kickoutquestion").remove();
+		// restore the previously saved row
+		$("participant_" + user).update(gsPreviousUserRow);
+
+		if (kickuser) {
+			gaKickUsers.push(user);
+		}
+	}
+
+	kickoutquestion = "<td id='kickoutquestion' colspan='" + gaColumnsLen + "'>";
+
+	if (goFlyingUsers.size() === 0) {
+		// this was the last question, stop here and send everything
+		kickoutquestion += "</td>";
+		$$("#participant_" + goVoteVector.id + " td")[0].insert({
+			after: kickoutquestion
+		});
+		if (gbCalculationFinished) {
+			this.sendVote();
+		} else {
+			this.userWasFaster();
+		}
+		return;
+	}
+	nextuser = goFlyingUsers.keys()[0];
+	nextkickers = $H(goFlyingUsers.unset(nextuser)).keys().collect(function (user) {
+		return goRealUserNames[user];
+	});
+
+	// save the row
+	gsPreviousUserRow = $("participant_" + nextuser).innerHTML;
+
+	// make the belonging fields red
+	$$("#participant_" + nextuser + " td.name, #participant_" + nextuser + " td.bmaybe").each(function (field) {
+		field.setStyle({
+			backgroundColor: 'red' 
+		});
+	});
+
+	kickoutquestion += printf(gt.ngettext('%1 wants to remove %2.', 
+			'Some Users (%1) want to remove %2.', 
+			nextkickers.size()),
+		[nextkickers.join(", "), goRealUserNames[nextuser]]
+	);
+	kickoutquestion += "<br />";
+	kickoutquestion += "<input type='button' onclick='goVoteVector.askKickOutNext(\"" + nextuser + "\", true)' value='" + _("I agree.") + "' id='agreebutton' />";
+	kickoutquestion += "&nbsp;";
+	kickoutquestion += "<input type='button' onclick='goVoteVector.askKickOutNext(\"" + nextuser + "\", false)' value='" + _("I do not agree.") + "' id='disagreebutton'/>";
+	kickoutquestion += "</td>";
+
+	$$("#participant_" + goVoteVector.id + " td")[0].insert({
+		after: kickoutquestion
+	});
+
+
+};
+
 /*********************************
  * called from the "Save"-Button *
  *********************************/
 Vote.prototype.save = function () {
-	var _inverted, _colidx, _col, randomTable, voteval, _voteobj, _table, ar;
-	$("votebutton").disable();
-	$("cancelbutton").disable();
+	var _colidx, _col;
+	this.votes = {};
+
+	// read the votes
+	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
+		_col = gaColumns[_colidx];
+		this.votes[_col] = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
+	}
+
+	// check if we can send the vote
+	if (gbQuestionsAnswered) {
+		if (gbCalculationFinished) {
+			this.sendVote();
+		} else {
+			this.userWasFaster();
+		}
+	} else {
+		this.askKickOutNext();
+	}
+};
+
+/*************************************
+ * recursively send all kickout keys *
+ *************************************/
+Vote.prototype.sendNextKickoutKey = function () {
+	var nextvictim;
+	if (gaKickUsers.size() === 0) {
+		// all users send, finish
+		gfReload();
+		return;
+	}
+	nextvictim = gaKickUsers.pop();
+	$("participant_" + this.id).update("<td colspan='" + (giNumTables + 3) + "'>" + printf(_("Please wait while removing %1 ..."), [goRealUserNames[nextvictim]]) + "</td>");
+	this.kickOut(nextvictim, goVoteVector.sendNextKickoutKey);
+};
+
+/****************************************************
+ * this function is called, when the user is faster 
+ * in answering the questions than the calculation
+ ****************************************************/
+Vote.prototype.userWasFaster = function () {
+	this.calculationReady = this.sendVote;
+	$("participant_" + this.id).update("<td colspan='" + (giNumTables + 3) + "'>" + _("Please wait while calculating keys ...") + "</td>");
+};
+
+Vote.prototype.sendVote = function () {
+	var _inverted, _colidx, _col, randomTable, voteval, _table, ar;
+
+	$("participant_" + this.id).update("<td colspan='" + (giNumTables + 3) + "'>" + _("Please wait while sending the vote ...") + "</td>");
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
 		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 			_col = gaColumns[_colidx];
 			randomTable = Math.round(Math.random() * (giNumTables - 1));
-			voteval = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
-			voteval = voteval.subtract(new BigInteger(_inverted.toString())).abs();
+			voteval = this.votes[_col].subtract(new BigInteger(_inverted.toString())).abs();
 			this.keyMatrix[_inverted][_col][randomTable] = this.keyMatrix[_inverted][_col][randomTable].add(voteval);//.mod(this.dcmod);
 		}
 	}
 
 	// write vote string
-	_voteobj = {};
+	this.voteobj = {};
 	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 		_col = gaColumns[_colidx];
-		_voteobj[_col] = [];
+		this.voteobj[_col] = [];
 		for (_table = 0; _table < giNumTables;_table++) {
-			_voteobj[_col][_table] = [];
+			this.voteobj[_col][_table] = [];
 			for (_inverted = 0; _inverted < 2; _inverted++) {
-				_voteobj[_col][_table][_inverted] = this.keyMatrix[_inverted][_col][_table].toString(36);
+				this.voteobj[_col][_table][_inverted] = this.keyMatrix[_inverted][_col][_table].toString(36);
 			}
 		}
 	}
-
 	ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: {service: 'setVote', pollID: gsPollID, gpgID: goVoteVector.id, vote: Object.toJSON(_voteobj), signature: 'TODO'},
+		parameters: {service: 'setVote', pollID: gsPollID, gpgID: goVoteVector.id, vote: Object.toJSON(this.voteobj), signature: 'TODO'},
 		onSuccess: function (transport) {
-			gfReload();
+			goVoteVector.sendNextKickoutKey();
 		},
 		onFailure: function (transport) {
 			alert("Something went wrong, could not send the vote!");
 		}
 	});
 };
-
 
 /*******************************************************
  * calculate one DC-Net key with one other participant *
@@ -666,7 +821,7 @@ Vote.prototype.calcNextDHKey = (function () {
 		return function () {
 			if (i >= this.otherParticipantArray.length) {
 				this.calculateVoteKeys();
-				window.setTimeout('showSaveButton()', 1000);
+				this.calculationReady();
 				return;
 			}
 
