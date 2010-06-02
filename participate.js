@@ -302,7 +302,7 @@ function insertParticipationCheckboxes() {
 				_td += "<input id='votebutton' onclick='goVoteVector.save()' type='button' value='" + _("Next") + "'>";
 				_td += gfCancelButton();
 				_td += "</td>";
-				Element.replace($("lastedit_" + goVoteVector.id, _td));
+				Element.replace($("lastedit_" + goVoteVector.id), _td);
 				checkforAdditionalQuestions();
 
 				$("participant_" + goVoteVector.id).childElements()[0].remove();
