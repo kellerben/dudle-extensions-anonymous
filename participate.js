@@ -214,7 +214,7 @@ function deleteUser(_victim) {
 		}
 	});
 	if (usersNeeded.size() === 0) {
-		alert("Implement me");
+		alert(_("There are no votes depending on this user. Please vote before removing other participants."));
 	} else {
 		_tds = "<td colspan='2'>" + _("Please select your username:");
 		_tds += "<ul style='text-align: left'>";

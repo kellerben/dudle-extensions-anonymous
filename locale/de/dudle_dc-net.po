@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-02 09:26+0200\n"
+"POT-Creation-Date: 2010-06-02 11:57+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
@@ -42,7 +42,7 @@ msgid "Only registered users can participate privacy-enhanced."
 msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
 
 #: invite_participants.js:62
-#: participate.js:861
+#: participate.js:917
 msgid "Failed to fetch participant list."
 msgstr "Konnte die Liste der Teilnehmer nicht laden."
 
@@ -97,6 +97,10 @@ msgstr "Lösche %1"
 #: register.js:97
 msgid "Next"
 msgstr "Weiter"
+
+#: participate.js:217
+msgid "There are no votes depending on this user. Please vote before removing other participants."
+msgstr "Es gibt momentan keine Stimmen, die von diesem Benutzer abhängig sind. Bitte stimmen sie erst ab, bevor sie andere Teilnehmer entfernen."
 
 #: participate.js:219
 msgid "Please select your username:"
@@ -159,6 +163,14 @@ msgstr "Bitte warten Sie, während die Schlüssel berechnet werden ..."
 #: participate.js:715
 msgid "Please wait while sending the vote ..."
 msgstr "Bitte warten Sie während ihre Auswahl gesendet wird …"
+
+#: participate.js:876
+msgid "I have the secret key for user %1."
+msgstr "Ich habe den geheimen Schlüssel für Benutzer %1."
+
+#: participate.js:878
+msgid "Continue with non-anonymous voting."
+msgstr "Nicht anonym abstimmen (jeder sieht meine Stimme)."
 
 #: register.js:24
 #: register.js:87

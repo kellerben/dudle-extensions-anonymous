@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-02 09:26+0200\n"
+"POT-Creation-Date: 2010-06-02 11:57+0200\n"
 "PO-Revision-Date: 2010-03-10 14:41+0100\n"
 "Last-Translator: Erica <erica.resare@kau.se>\n"
 "Language-Team: \n"
@@ -58,7 +58,7 @@ msgstr "Kontrollerar användarnamn"
 msgid "Only registered users can participate privacy-enhanced."
 msgstr "Endast registrerade användare kan delta med förhöjd integritet."
 
-#: invite_participants.js:62 participate.js:861
+#: invite_participants.js:62 participate.js:917
 msgid "Failed to fetch participant list."
 msgstr "Misslyckades med hämtning av deltagarlista."
 
@@ -108,6 +108,12 @@ msgstr ""
 #: participate.js:194 participate.js:302 register.js:92 register.js:97
 msgid "Next"
 msgstr "Nästa"
+
+#: participate.js:217
+msgid ""
+"There are no votes depending on this user. Please vote before removing other "
+"participants."
+msgstr ""
 
 #: participate.js:219
 msgid "Please select your username:"
@@ -174,6 +180,14 @@ msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
 #, fuzzy
 msgid "Please wait while sending the vote ..."
 msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
+
+#: participate.js:876
+msgid "I have the secret key for user %1."
+msgstr ""
+
+#: participate.js:878
+msgid "Continue with non-anonymous voting."
+msgstr ""
 
 #: register.js:24 register.js:87
 msgid "Register"
