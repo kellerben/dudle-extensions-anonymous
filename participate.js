@@ -844,6 +844,62 @@ Vote.prototype.calcNextDHKey = (function () {
 );
 
 /*********************************************************
+ * checks, if the name entered in the username input     *
+ * is configured in the privacy-enhanced poll            *
+ *********************************************************/
+var gsOldParticipateTr, gsRequestedUserName;
+function checkIfUserIsAnonymousConfigured() {
+	var pequestion, 
+			requesteduserid;
+	gsRequestedUserName = $F("add_participant_input");
+	if ($H(goRealUserNames).values().include(gsRequestedUserName)){
+		
+		//store old tr for later use
+		$("add_participant_input").value = gsRequestedUserName;
+		gsOldParticipateTr = $("add_participant").innerHTML;
+		for (i = 0; i < gaColumnsLen; ++i) {
+			$$("#add_participant td.checkboxes")[0].remove();
+		}
+
+		// search for the id
+		$H(goRealUserNames).each(function (_pair) {
+			if (_pair.value == gsRequestedUserName) {
+				requesteduserid = _pair.key;
+			}
+		});
+
+		// ask user if he is the configured one
+		$("savebutton").disable();
+		pequestion = "<td id='pequestion' colspan='" + gaColumnsLen + "'>";
+		pequestion += "A user with the same name is configured for voting privacy-enhanced!";
+		pequestion += "<br />";
+		pequestion += "<input type='button' onclick='editUser(\"" + requesteduserid + "\")' value='" + printf(_("I have the secret key for user %1."), [gsRequestedUserName]) + "' id='pebutton' />";
+		pequestion += "&nbsp;";
+		pequestion += "<input type='button' onclick='continueNonPe()' value='" + _("Continue with non-anonymous voting.") + "' id='nonpebutton'/>";
+		pequestion += "</td>";
+		$("add_participant_input_td").insert({
+			after: pequestion
+		});
+	};
+}
+function continueNonPe() {
+	$("add_participant").update(gsOldParticipateTr);
+	$("add_participant_input").value = gsRequestedUserName;
+}
+
+function onAjaxComplete(callfunc) {
+	var wait = function () {
+		if (Ajax.activeRequestCount === 0) {
+			callfunc();
+		} else {
+			window.setTimeout(wait, 1000);
+		}
+	};
+	window.setTimeout(wait, 1);
+}
+
+
+/*********************************************************
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *
  *********************************************************/
@@ -868,6 +924,10 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 					showParticipants();
 					if (_pollState === "closed") {
 						calcResult();
+					} else {
+						// check, if user tries to vote with the non-privacy-enhanced interface
+						$("add_participant_input").writeAttribute("onchange","checkIfUserIsAnonymousConfigured()");
+						onAjaxComplete(checkIfUserIsAnonymousConfigured);
 					}
 				});
 			}
