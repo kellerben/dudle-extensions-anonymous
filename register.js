@@ -54,16 +54,15 @@ function checkUserExistance() {
 				$("next").value = label;
 				$("name").focus();
 				$("registererror").update("<td colspan='2' class='warning'>" + _("A user with the same name already exists.") + "</td>");
+				$("next").enable();
 			},
 			onFailure: function (transport) {
-				$("next").enable();
 				$("next").value = label;
+				$("next").enable();
+				secondRegisterStep();
 			}
 		});
-	} else {
-		$("next").disable();
 	}
-	
 }
 
 function showRegister(name) {
@@ -71,11 +70,11 @@ function showRegister(name) {
 	_r += "<h2>" + _("Register new Account") + "</h2>";
 	_r += "<table id='register' class='settingstable'><tr>";
 	_r += "<td class='label'><label for='name'>" + _("Name:") + "</label></td>";
-	_r += "<td><input id='name' type='text' value='" + name + "' onChange='checkUserExistance()' /></td>";
+	_r += "<td><input id='name' type='text' value='" + name + "' /></td>";
 	_r += "</tr><tr>";
 	_r += "</td><td>";
 	_r += "<td><input type='button' value='" + _("Cancel") + "' onClick='showContent()'/> ";
-	_r += "<input disabled='disabled' type='button' id='next' value='" + _("Please wait while calculating a secret key ...") + "' onclick='secondRegisterStep()'/></td>";
+	_r += "<input type='button' id='next' value='" + _("Next") + "' onclick='checkUserExistance()'/></td>";
 	_r += "</tr><tr id='registererror' /></table>";
 	$('content').update(_r);
 
@@ -88,14 +87,13 @@ function showRegister(name) {
 	$('active_tab').update('<a href="javascript:showContent()">' + gActiveTabInnerHTML + '</a>');
 
 	if (!goVoteVector.sec) {
+		$('next').disable();
+		$('next').value = _("Please wait while calculating a secret key ...");
 		goVoteVector.setSecKey(new BigInteger(giDHLENGTH - 1, new SecureRandom()), function () {
+			$('next').enable();
 			$('next').value = _('Next');
-			checkUserExistance();
 		});
-	} else {
-		checkUserExistance();
-		$('next').value = _('Next');
-	}
+	} 
 }
 
 function secondRegisterStep() {
