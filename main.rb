@@ -24,8 +24,8 @@ class Extension
 		load "#{@basedir}/config.rb"
 		$d.html.add_script("var gsExtensiondir='#{@basedir}/';")
 
-		if File.exists?("#{@basedir}/locale/#{GetText.locale}/dudle_dc-net.po")
-			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{@basedir}/locale/#{GetText.locale}/dudle_dc-net.po' />")
+		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po")
+			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po' />")
 		end
 		$d.html.add_head_script("#{@basedir}/lib/Gettext.js")
 		$d.html.add_head_script("#{@basedir}/lib/prototype.js")
