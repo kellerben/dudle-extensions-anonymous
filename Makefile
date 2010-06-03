@@ -34,8 +34,8 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 	else\
 		touch locale/$*/$(DOMAIN).po;\
 	fi
-	if [ "`postats -f locale/$*/$(DOMAIN).po|tail -n1 |cut -d"(" -f3|cut -d")" -f1`" = "100%\n" ];\
-		then poedit locale/$*/$(DOMAIN).po;\
+	if [ "`potool -fnt locale/$*/$(DOMAIN).po -s`" != "0" -o "`potool -ff locale/$*/$(DOMAIN).po -s`" != "0" ];then\
+		poedit locale/$*/$(DOMAIN).po;\
 	fi
 
 check: $(foreach p,$(wildcard *.js), $p.check)
