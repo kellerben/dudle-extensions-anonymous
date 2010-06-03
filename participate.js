@@ -872,7 +872,7 @@ function checkIfUserIsAnonymousConfigured() {
 		// ask user if he is the configured one
 		$("savebutton").disable();
 		pequestion = "<td id='pequestion' colspan='" + gaColumnsLen + "'>";
-		pequestion += "A user with the same name is configured for voting privacy-enhanced!";
+		pequestion += _("A user with the same name is configured for anonymous voting!");
 		pequestion += "<br />";
 		pequestion += "<input type='button' onclick='editUser(\"" + requesteduserid + "\")' value='" + printf(_("I have the secret key for user %1."), [gsRequestedUserName]) + "' id='pebutton' />";
 		pequestion += "&nbsp;";
