@@ -285,13 +285,12 @@ function checkforAdditionalQuestions() {
 }
 
 function insertParticipationCheckboxes() {
-	var participationVisible = false;
+	var _td, participationVisible = false;
 	gaColumns.each(function (col) {
 		switch (getState(goVoteVector.id, col)) {
 		case "notVoted":
 		case "flying":
 			/* insert participation checkboxes */
-			var _td;
 			_td = "<td title='" + col + "' class='undecided' onclick=\"$('" + htmlid(col) + "').click()\">";
 			_td += "<input id='" + htmlid(col) + "' type='checkbox' onclick=\"event.cancelBubble = true\"/></td>";
 			$(htmlid(col + "." + goVoteVector.id)).replace(_td);
@@ -300,6 +299,7 @@ function insertParticipationCheckboxes() {
 			break;
 		}
 	});
+	// insert save buttons when at least one checkbox was inserted
 	if (participationVisible) {
 		_td = "<td id='submit'>";
 		_td += "<input id='votebutton' onclick='goVoteVector.save()' type='button' value='" + _("Next") + "'>";
@@ -850,9 +850,10 @@ Vote.prototype.calcNextDHKey = (function () {
 var gsOldParticipateTr, gsRequestedUserName;
 function checkIfUserIsAnonymousConfigured() {
 	var pequestion, 
-			requesteduserid;
+			requesteduserid,
+			i;
 	gsRequestedUserName = $F("add_participant_input");
-	if ($H(goRealUserNames).values().include(gsRequestedUserName)){
+	if ($H(goRealUserNames).values().include(gsRequestedUserName)) {
 		
 		//store old tr for later use
 		$("add_participant_input").value = gsRequestedUserName;
@@ -863,7 +864,7 @@ function checkIfUserIsAnonymousConfigured() {
 
 		// search for the id
 		$H(goRealUserNames).each(function (_pair) {
-			if (_pair.value == gsRequestedUserName) {
+			if (_pair.value === gsRequestedUserName) {
 				requesteduserid = _pair.key;
 			}
 		});
@@ -880,7 +881,7 @@ function checkIfUserIsAnonymousConfigured() {
 		$("add_participant_input_td").insert({
 			after: pequestion
 		});
-	};
+	}
 }
 function continueNonPe() {
 	$("add_participant").update(gsOldParticipateTr);
@@ -926,7 +927,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 						calcResult();
 					} else {
 						// check, if user tries to vote with the non-privacy-enhanced interface
-						$("add_participant_input").writeAttribute("onchange","checkIfUserIsAnonymousConfigured()");
+						$("add_participant_input").writeAttribute("onchange", "checkIfUserIsAnonymousConfigured()");
 						onAjaxComplete(checkIfUserIsAnonymousConfigured);
 					}
 				});
