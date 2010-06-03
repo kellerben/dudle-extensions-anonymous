@@ -285,7 +285,7 @@ function checkforAdditionalQuestions() {
 }
 
 function insertParticipationCheckboxes() {
-	var participationVisible = true;
+	var participationVisible = false;
 	gaColumns.each(function (col) {
 		switch (getState(goVoteVector.id, col)) {
 		case "notVoted":
@@ -296,28 +296,28 @@ function insertParticipationCheckboxes() {
 			_td += "<input id='" + htmlid(col) + "' type='checkbox' onclick=\"event.cancelBubble = true\"/></td>";
 			$(htmlid(col + "." + goVoteVector.id)).replace(_td);
 
-			if (participationVisible) {
-				participationVisible = false;
-				_td = "<td id='submit'>";
-				_td += "<input id='votebutton' onclick='goVoteVector.save()' type='button' value='" + _("Next") + "'>";
-				_td += gfCancelButton();
-				_td += "</td>";
-				Element.replace($("lastedit_" + goVoteVector.id), _td);
-				checkforAdditionalQuestions();
-
-				$("participant_" + goVoteVector.id).childElements()[0].remove();
-				$("participant_" + goVoteVector.id).childElements()[0].writeAttribute("colspan", "2");
-
-				if ($("add_participant")) {
-					$("add_participant").remove();
-					$("separator_top").remove();
-					$("separator_bottom").remove();
-				}
-				goVoteVector.startKeyCalc();
-			}
+			participationVisible = true;
 			break;
 		}
 	});
+	if (participationVisible) {
+		_td = "<td id='submit'>";
+		_td += "<input id='votebutton' onclick='goVoteVector.save()' type='button' value='" + _("Next") + "'>";
+		_td += gfCancelButton();
+		_td += "</td>";
+		Element.replace($("lastedit_" + goVoteVector.id), _td);
+		checkforAdditionalQuestions();
+
+		$("participant_" + goVoteVector.id).childElements()[0].remove();
+		$("participant_" + goVoteVector.id).childElements()[0].writeAttribute("colspan", "2");
+
+		if ($("add_participant")) {
+			$("add_participant").remove();
+			$("separator_top").remove();
+			$("separator_bottom").remove();
+		}
+		goVoteVector.startKeyCalc();
+	}
 }
 
 function login() {
