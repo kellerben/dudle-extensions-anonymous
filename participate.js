@@ -855,13 +855,6 @@ function checkIfUserIsAnonymousConfigured() {
 	gsRequestedUserName = $F("add_participant_input");
 	if ($H(goRealUserNames).values().include(gsRequestedUserName)) {
 		
-		//store old tr for later use
-		$("add_participant_input").value = gsRequestedUserName;
-		gsOldParticipateTr = $("add_participant").innerHTML;
-		for (i = 0; i < gaColumnsLen; ++i) {
-			$$("#add_participant td.checkboxes")[0].remove();
-		}
-
 		// search for the id
 		$H(goRealUserNames).each(function (_pair) {
 			if (_pair.value === gsRequestedUserName) {
@@ -869,18 +862,28 @@ function checkIfUserIsAnonymousConfigured() {
 			}
 		});
 
-		// ask user if he is the configured one
-		$("savebutton").disable();
-		pequestion = "<td id='pequestion' colspan='" + gaColumnsLen + "'>";
-		pequestion += _("A user with the same name is configured for anonymous voting!");
-		pequestion += "<br />";
-		pequestion += "<input type='button' onclick='editUser(\"" + requesteduserid + "\")' value='" + printf(_("I have the secret key for user %1."), [gsRequestedUserName]) + "' id='pebutton' />";
-		pequestion += "&nbsp;";
-		pequestion += "<input type='button' onclick='continueNonPe()' value='" + _("Continue with non-anonymous voting.") + "' id='nonpebutton'/>";
-		pequestion += "</td>";
-		$("add_participant_input_td").insert({
-			after: pequestion
-		});
+		// check if user already voted
+		if (typeof(goParticipants[requesteduserid].voted) === "undefined") {
+			//store old tr for later use
+			$("add_participant_input").value = gsRequestedUserName;
+			gsOldParticipateTr = $("add_participant").innerHTML;
+			for (i = 0; i < gaColumnsLen; ++i) {
+				$$("#add_participant td.checkboxes")[0].remove();
+			}
+
+			// ask user if he is the configured one
+			$("savebutton").disable();
+			pequestion = "<td id='pequestion' colspan='" + gaColumnsLen + "'>";
+			pequestion += _("A user with the same name is configured for anonymous voting!");
+			pequestion += "<br />";
+			pequestion += "<input type='button' onclick='editUser(\"" + requesteduserid + "\")' value='" + printf(_("I have the secret key for user %1."), [gsRequestedUserName]) + "' id='pebutton' />";
+			pequestion += "&nbsp;";
+			pequestion += "<input type='button' onclick='continueNonPe()' value='" + _("Continue with non-anonymous voting.") + "' id='nonpebutton'/>";
+			pequestion += "</td>";
+			$("add_participant_input_td").insert({
+				after: pequestion
+			});
+		}
 	}
 }
 function continueNonPe() {
