@@ -65,7 +65,7 @@ function gfUserTd(userid, editable) {
 		_ret += "<td><span class='edituser'><a href='javascript:editUser(\"" + userid + "\")'";
 		_ret += "title='" + printf(_("Edit user %1..."), [userid]) + "'>";
 		_ret += gsEdit + "</a>";
-		_ret += " | <a href='javascript:deleteUser(\"" + userid + "\")'";
+		_ret += "&nbsp;|&nbsp;<a href='javascript:deleteUser(\"" + userid + "\")'";
 		_ret += "title='" + printf(_("Delete user %1..."), [userid]) + "'>";
 		_ret += gsDelete + "</a></span></td>";
 		_ret += "<td class='name'>";

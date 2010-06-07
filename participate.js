@@ -893,7 +893,7 @@ function onAjaxComplete(callfunc) {
 		if (Ajax.activeRequestCount === 0) {
 			callfunc();
 		} else {
-			window.setTimeout(wait, 1000);
+			window.setTimeout(wait, 100);
 		}
 	};
 	window.setTimeout(wait, 1);
