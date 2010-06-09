@@ -212,7 +212,19 @@ eigene Teilsumme:
 Format:<br />
 vote[column][tableindex][inverted ? 1 : 0].toJSON()<br />
 Schlüsselaufbau:<br />
-SHA256(AES(DHkey,
+SHA256(AES_decrypt(KeyDeriv(DHkey),pollid||col||index||inverted ? 1 : 0))<br />
+Bsp.:<br />
+DHkey = 14aeb580cf3cf1b582c11a0043a8a5e9972b5e840f6fa01dd2985a72bc1ca902f881c236b8f1c11ac08a7d345a7d3010e8833ce79ff778e60392fb3ea66f0d624262bf111b4cfd73818edd4e5cbbdcadb8964281e054875348b69d40f04683c0360ee<br />
+pollid = coffee<br />
+col = 2010-05-23 12:00<br />
+index = 23<br/>
+inverted = true<br/>
+= DH key derivation =><br />
+5f7de6451c4d92745a798676af5b6ef4<br />
+= AES decrypt =><br />
+f3923e6d927a857c2f14fb040b4a37620189233e1f44b963b1840eee0707feaf<br />
+= SHA256 =><br />
+d4cd7f581b40b50b7d079d56f4fe202ff16d8b2055588781749ff8ea95ce0410
 FOO
 	def Poll.webservicedescription_2VoteCasting_setVote
 		{ "return" => '"HTTP202" OR "HTTP403" OR "HTTP400"',
