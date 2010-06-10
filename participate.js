@@ -505,22 +505,27 @@ function calcResult() {
 }
 
 function gfDH2AES(dh) {
-	var i, n, aeskey, dhstr, a;
+	var i, n, aeskey32, aeskey16, dhstr, a;
 
 	dhstr = dh.toString(16);
 	a = [];
-	for (i = 0; i * 2 < dhstr.length; ++i) {
-		a[i] = parseInt(dhstr.charAt(i * 2) + dhstr.charAt(i * 2 + 1), 16);
+	for (i = 0; i < dhstr.length; ++i) {
+		a[i] = parseInt(dhstr.charAt(i), 16);
 	}
 
-	aeskey = new Array(16);
-	for (i = 0; i < 16; ++i) {
-		aeskey[i] = 0;
-		for (n = 0; 16 * n + i < a.length; ++n) {
-			aeskey[i] ^= a[16 * n + i];
+	aeskey32 = new Array(32);
+	for (i = 0; i < 32; ++i) {
+		aeskey32[i] = 0;
+		for (n = 0; 32 * n + i < a.length; ++n) {
+			aeskey32[i] ^= a[32 * n + i];
 		}
 	}
-	return aeskey;
+
+	aeskey16 = new Array(16);
+	for (i = 0; i < 16; ++i) {
+		aeskey16[i] = (aeskey32[2*i] << 4) + aeskey32[2*i+1]; 
+	}
+	return aeskey16;
 }
 
 function gfInitAESKey(dh) {
