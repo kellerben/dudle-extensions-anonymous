@@ -47,22 +47,32 @@ class Poll
 	end
 	def webservice_removeParticipant
 		user = $c["gpgID"]
+
 		unless @dc["participants"].include?(user)
 			$header["status"] = "404 Not Found"
 			return "The participant was not configured anyway!"
 		end
+
 		if @dc.keys.include?(user) 
 			$header["status"] = "403 Forbidden"
 			return "This participant already voted. Removing is forbidden"
 		end
+
 		if @dc["participants"].collect{|u|
 			if @dc[u]
-				@dc[u].collect{|v| v["usedKeys"].include?(user)}
+				@dc[u].collect{|col,v|
+					if col == :raw
+						false
+					else
+						v[:usedKeys].include?(user)
+					end
+				}
 			else 
 				false
 			end
 		}.flatten.include?(true)
 			return "The key of this user is already used in the poll. Please use kickOut to remove him."
+
 		else
 			@dc["participants"].delete(user)
 			store_dc("Participant "+ @k.humanreadable($c["gpgID"]) + " removed from anonymous voting")
