@@ -321,6 +321,7 @@ function insertParticipationCheckboxes() {
 }
 
 function login() {
+//	time.start("login");
 	if ($F('key')) {
 		var key = new BigInteger($F('key'), 16);
 		startCalcDisableButton("loginbutton");
@@ -801,6 +802,7 @@ Vote.prototype.calculateVoteKeys = function () {
 		}
 	}
 	AES_Init();
+//	time.start("symmetric")
 	for (_id in this.participants) {
 		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
 			_col = gaColumns[_colidx];
@@ -815,8 +817,23 @@ Vote.prototype.calculateVoteKeys = function () {
 			}
 		}
 	}
+//	time.stop("symmetric")
 	AES_Done();
 };
+
+/*time.setReportMethod(function (log) {
+	var i = 0, total = {}, message = "";
+	for (; i < log.length; i++){
+		if (typeof(total[log[i].name]) == "undefined") total[log[i].name] = 0;
+		total[log[i].name] += log[i].delta;
+	}
+	
+	$H(total).each(function(_pair){
+		message += _pair.key + ": " + _pair.value + " ms\n";
+	});
+	alert(log.join(" | ") + "\n---------- total ----------\n" + message);
+});
+*/
 
 /**************************************************
  * calculate a DH secret with another participant *
@@ -827,6 +844,8 @@ Vote.prototype.calcNextDHKey = (function () {
 			if (i >= this.otherParticipantArray.length) {
 				this.calculateVoteKeys();
 				this.calculationReady();
+//				time.stop("login");
+//				time.report();
 				return;
 			}
 
@@ -837,8 +856,10 @@ Vote.prototype.calcNextDHKey = (function () {
 			this.participants[id] = fetchKey(id);
 
 			// calculate the dh secret
+//			time.start("dh");
 			this.participants[id].pub.modPow(this.sec, this.dhmod,
 				function (result) {
+//					time.stop("dh");
 					goVoteVector.participants[id].dh = result;
 					goVoteVector.participants[id].aeskey = gfInitAESKey(result);
 					goVoteVector.calcNextDHKey();
