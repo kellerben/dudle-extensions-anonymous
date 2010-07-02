@@ -821,7 +821,8 @@ Vote.prototype.calculateVoteKeys = function () {
 	AES_Done();
 };
 
-/*time.setReportMethod(function (log) {
+/*
+time.setReportMethod(function (log) {
 	var i = 0, total = {}, message = "";
 	for (; i < log.length; i++){
 		if (typeof(total[log[i].name]) == "undefined") total[log[i].name] = 0;
@@ -829,9 +830,11 @@ Vote.prototype.calculateVoteKeys = function () {
 	}
 	
 	$H(total).each(function(_pair){
-		message += _pair.key + ": " + _pair.value + " ms\n";
+		message += _pair.key + ": " + _pair.value + " ms<br />";
 	});
-	alert(log.join(" | ") + "\n---------- total ----------\n" + message);
+	$("comments").insert({
+		after : "<h2>Benchmark</h2>" + log.join(" | ") + "<br />---------- total ----------<br />" + message
+	});
 });
 */
 
