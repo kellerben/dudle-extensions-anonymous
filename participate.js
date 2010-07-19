@@ -542,12 +542,17 @@ function pseudorandom(aeskey, uuid, col, tableindex, inverted) {
 		block = [[]],
 		result = "";
 
+	// transform seed into block[round][aesbyte] = [[aesround_1],...,[aesround_x]]
 	for (i = 0; i < seed.length; i++) {
 		block[round].push(seed.charCodeAt(i) & 0xff);
+
+		// check and start new aesround
 		if (block[round].length % 16 === 0) {
 			round++;
 			block[round] = [];
 		}
+
+		// there may be an additional byte in utf-8 strings
 		upper = seed.charCodeAt(i) >> 8;
 		if (upper !== 0) {
 			block[round].push(upper);
@@ -556,6 +561,12 @@ function pseudorandom(aeskey, uuid, col, tableindex, inverted) {
 				block[round] = [];
 			}
 		}
+	}
+
+	// fill the last block with 0
+	lastblock = block.last();
+	while (lastblock.length < 16) {
+		lastblock.push(0);
 	}
 
 	for (i = 0; i <= round; ++i) {
