@@ -482,9 +482,13 @@ FOO
 
 	def store_dc(comment)
 		firstcommit = true unless File.exist?("dc_data.yaml")
-		File.open("dc_data.yaml","w"){|f|
-			f << @dc.to_yaml
-		}
+		if @dc.empty? || @dc["participants"].empty?
+			VCS.rm("dc_data.yaml") 
+		else
+			File.open("dc_data.yaml","w"){|f|
+				f << @dc.to_yaml
+			}
+		end
 		VCS.add("dc_data.yaml") if firstcommit
 		VCS.commit(comment)
 		"Sucessfully Stored"
