@@ -49,6 +49,7 @@ end
 
 if $d.is_poll?
 	e = Extension.new("..")
+	$d.html.add_script("var gsPollID = '#{$d.urlsuffix}';")
 
 	case $d.tab
 	when "invite_participants.cgi"
@@ -68,14 +69,14 @@ SCRIPT
 
 	when "." 
 
-if $USEUTF
-# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
-	FLY = "✄"
-	KICKED = "☠"
-else
-	FLY = "-"
-	KICKED = "-"
-end
+		if $USEUTF
+		# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
+			FLY = "✄"
+			KICKED = "☠"
+		else
+			FLY = "-"
+			KICKED = "-"
+		end
 		$d.html.add_script(<<SCRIPT
 var gsEdit = '#{EDIT}';
 var gsDelete = '#{DELETE}';

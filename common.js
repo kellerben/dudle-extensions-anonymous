@@ -17,7 +17,7 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-/*global gsExtensiondir, gsEdit, gsDelete, gaColumnsLen, Gettext */
+/*global gsExtensiondir, gsEdit, gsDelete, gsPollID, gaColumnsLen, Gettext */
 "use strict";
 
 var gt = new Gettext({ 'domain' : 'dudle_dc-net' });
@@ -27,8 +27,7 @@ function _(msgid) {
 function printf(msg, replaceary) {
 	return Gettext.strargs(msg, replaceary); 
 }
-var gsPollID = (window.location.href).split("/");
-gsPollID = gsPollID[gsPollID.length - 2];
+
 var goRealUserNames = {};
 
 function gfUpdateName(gpgID) {
