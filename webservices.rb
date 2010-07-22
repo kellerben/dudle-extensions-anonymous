@@ -481,9 +481,11 @@ FOO
 	end
 
 	def store_dc(comment)
+		firstcommit = true unless File.exist?("dc_data.yaml")
 		File.open("dc_data.yaml","w"){|f|
 			f << @dc.to_yaml
 		}
+		VCS.add("dc_data.yaml") if firstcommit
 		VCS.commit(comment)
 		"Sucessfully Stored"
 	end
@@ -493,9 +495,6 @@ FOO
 			@dc = YAML::load_file("dc_data.yaml")
 		else
 			@dc = {}
-			File.open("dc_data.yaml","w").close
-			VCS.add("dc_data.yaml")
-			store_dc("Initialized for anonymous voting")
 		end
 	end
 

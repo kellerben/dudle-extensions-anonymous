@@ -48,36 +48,38 @@ end
 
 
 if $d.is_poll?
-	e = Extension.new("..")
-	$d.html.add_script("var gsDCPollID = '#{$d.urlsuffix}';")
+	if File.exist?("dc_data.yaml") || $d.tab == "invite_participants.cgi"
 
-	case $d.tab
-	when "invite_participants.cgi"
+		e = Extension.new("..")
+		$d.html.add_script("var gsDCPollID = '#{$d.urlsuffix}';")
 
-		$d.html.add_script(<<SCRIPT
+		case $d.tab
+		when "invite_participants.cgi"
+
+			$d.html.add_script(<<SCRIPT
 var gsDCEdit = '#{EDIT}';
 var gsDCDelete = '#{DELETE}';
 SCRIPT
 );
 
-		e.add_lib("scriptaculous-effects")
-		e.add_lib("scriptaculous-controls")
+			e.add_lib("scriptaculous-effects")
+			e.add_lib("scriptaculous-controls")
 
-		e.add_script("common")
-		e.add_script("invite_participants")
-		e.add_css("invite_participants")
+			e.add_script("common")
+			e.add_script("invite_participants")
+			e.add_css("invite_participants")
 
-	when "." 
+		when "." 
 
-		if $USEUTF
-		# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
-			FLY = "✄"
-			KICKED = "☠"
-		else
-			FLY = "-"
-			KICKED = "-"
-		end
-		$d.html.add_script(<<SCRIPT
+			if $USEUTF
+			# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
+				FLY = "✄"
+				KICKED = "☠"
+			else
+				FLY = "-"
+				KICKED = "-"
+			end
+			$d.html.add_script(<<SCRIPT
 var gsDCEdit = '#{EDIT}';
 var gsDCDelete = '#{DELETE}';
 var gsDCUnknown = '#{UNKNOWN}';
@@ -87,17 +89,18 @@ var gsDCFlying = '#{FLY}';
 var gsDCKickedOut = '#{KICKED}';
 SCRIPT
 )
-		e.add_lib("jsbn")
-		e.add_lib("jsbn2")
-		e.add_lib("jssha256")
-		e.add_lib("jsaes")
-		e.add_lib("prng4")
-		e.add_lib("rng")
+			e.add_lib("jsbn")
+			e.add_lib("jsbn2")
+			e.add_lib("jssha256")
+			e.add_lib("jsaes")
+			e.add_lib("prng4")
+			e.add_lib("rng")
 
-		e.add_script("common")
-		e.add_script("login_register_common")
-		e.add_script("participate")
-		e.add_css("participate")
+			e.add_script("common")
+			e.add_script("login_register_common")
+			e.add_script("participate")
+			e.add_css("participate")
+		end
 	end
 else
 
