@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global goVoteVector, giDHLENGTH, gsExtensiondir */
+/*global goDCVoteVector, giDCDHLENGTH, gsDCExtensiondir */
 
 function showRegisterTab() {
 	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;" + _("Register") + "&nbsp;</a></li>");
@@ -27,18 +27,18 @@ function showRegisterTab() {
 $("tablist").insert({ bottom: "<li id='registerTab' class='nonactive_tab'/>" });
 showRegisterTab();
 
-var gActiveTabInnerHTML = $('active_tab').innerHTML;
-var gContent = $('content').innerHTML;
+var gDCActiveTabInnerHTML = $('active_tab').innerHTML;
+var gDCContent = $('content').innerHTML;
 
 // return to last visible tab
 function showContent() {
-	$('content').update(gContent);
+	$('content').update(gDCContent);
 	$('active_tab').removeClassName("nonactive_tab");
 	$('active_tab').addClassName("active_tab");
 	$('registerTab').addClassName("nonactive_tab");
 	$('registerTab').removeClassName("active_tab");
 	showRegisterTab();
-	$('active_tab').update(gActiveTabInnerHTML);
+	$('active_tab').update(gDCActiveTabInnerHTML);
 }
 
 // the first step
@@ -61,19 +61,19 @@ function showRegister(name) {
 	$('registerTab').removeClassName("nonactive_tab");
 
 	$('registerTab').update('&nbsp;' + _("Register") + '&nbsp;');
-	$('active_tab').update('<a href="javascript:showContent()">' + gActiveTabInnerHTML + '</a>');
+	$('active_tab').update('<a href="javascript:showContent()">' + gDCActiveTabInnerHTML + '</a>');
 
-	if (!goVoteVector.sec) {
+	if (!goDCVoteVector.sec) {
 		$('next').disable();
 		$('next').value = _("Please wait while calculating a secret key ...");
-		goVoteVector.setSecKey(new BigInteger(giDHLENGTH - 1, new SecureRandom()), function () {
+		goDCVoteVector.setSecKey(new BigInteger(giDCDHLENGTH - 1, new SecureRandom()), function () {
 			$('next').enable();
 			$('next').value = _('Next');
 		});
 	} 
 }
 
-var gsUserName;
+var gsDCUserName;
 
 // returns all information about the storage of the secret key within a <tr></tr>
 function keyTr() {
@@ -83,15 +83,15 @@ function keyTr() {
 	_r += "</tr><tr>";
 	_r += "<td class='label'><label for='key'>" + _("Secret Key:") + "</label></td>";
 	_r += "<td><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
-	_r += goVoteVector.sec.toString(16) + "</textarea></td>";
+	_r += goDCVoteVector.sec.toString(16) + "</textarea></td>";
 	_r += "</tr><tr>";
 	_r += "<td></td>";
 	_r += "<td class='textcolumn'>" + _("Alternatively, you may bookmark this link, which inserts the key into the login field:");
 	_r += " <a href=\"javascript:void(";
 	_r += "document.getElementById('key').value='";
-	_r += goVoteVector.sec.toString(16);
+	_r += goDCVoteVector.sec.toString(16);
 	_r += "')\">";
-	_r += printf(_('insert dudle key (%1)'), [gsUserName]) + '</a>.';
+	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a>.';
 	_r += "</td>";
 	_r += "</tr>";
 	return _r;
@@ -100,11 +100,11 @@ function keyTr() {
 // the second and last step (asks to store the key)
 function secondRegisterStep() {
 	var _r;
-	gsUserName = $F('name');
+	gsDCUserName = $F('name');
 	_r = keyTr();
 	_r += "<tr>";
 	_r += "<td></td>";
-	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='showRegister(\"" + gsUserName + "\");' /> ";
+	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='showRegister(\"" + gsDCUserName + "\");' /> ";
 	_r += "<input type='button' value='" + _("Finish") + "' onclick='register()'/></td>";
 	_r += "</tr>";
 	$('register').update(_r);
@@ -118,7 +118,7 @@ function checkUserExistance() {
 		$("next").disable();
 		label = $F("next");
 		$("next").value = _("Checking Username");
-		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+		ar = new Ajax.Request(gsDCExtensiondir + 'keyserver.cgi', {
 			method: "get",
 			parameters: { service: 'searchId', name: $F("name")},
 			onSuccess: function (transport) {
@@ -137,10 +137,10 @@ function checkUserExistance() {
 }
 
 
-var gbKeyVisible = false;
+var gbDCKeyVisible = false;
 function showKeyAgain() {
-	if (!gbKeyVisible) {
-		gbKeyVisible = true;
+	if (!gbDCKeyVisible) {
+		gbDCKeyVisible = true;
 		Element.replace($('keyplaceholder'), "<tr><td class='separator_top' colspan='2'></td></tr>" + keyTr());
 	}
 }
@@ -152,7 +152,7 @@ function showFinish() {
 	_r += "</tr><tr>";
 	_r += "<td colspan='2'><ul>";
 	_r += "<li><a href='javascript:showKeyAgain()'>" + _('Click here in order to view and backup your secret key (last chance)') + "</a></li>";
-	_r += "<li><a href='javascript:gfReload()'>" + _('Return to dudle home and Schedule a new Poll') + "</a></li>";
+	_r += "<li><a href='javascript:gfDCReload()'>" + _('Return to dudle home and Schedule a new Poll') + "</a></li>";
 	_r += "</ul></td>";
 	_r += "</tr><tr id='keyplaceholder'></tr>";
 	$('register').update(_r);
@@ -163,9 +163,9 @@ function showFinish() {
 function register() {
 	var _pubkey, _ar;
 
-	_pubkey = "NAME " + gsUserName + "\n";
-	_pubkey += "DHPUB " + goVoteVector.pub.toString(16);
-	_ar = new Ajax.Request(gsExtensiondir + "keyserver.cgi", {
+	_pubkey = "NAME " + gsDCUserName + "\n";
+	_pubkey += "DHPUB " + goDCVoteVector.pub.toString(16);
+	_ar = new Ajax.Request(gsDCExtensiondir + "keyserver.cgi", {
 		parameters: {service: 'setKey', gpgKey: _pubkey},
 		onFailure: function (transport) {
 			alert(_("Failed to store key, the server said:") + " " + transport.responseText);

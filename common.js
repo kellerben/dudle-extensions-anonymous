@@ -17,7 +17,7 @@
  * along with dudle.  If not, see <http://www.gnu.org/licenses/>.           *
  ***************************************************************************/
 
-/*global gsExtensiondir, gsEdit, gsDelete, gsPollID, gaColumnsLen, Gettext */
+/*global gsDCExtensiondir, gsDCEdit, gsDCDelete, gsDCPollID, gaDCColumnsLen, Gettext */
 "use strict";
 
 var gt = new Gettext({ 'domain' : 'dudle_dc-net' });
@@ -28,14 +28,14 @@ function printf(msg, replaceary) {
 	return Gettext.strargs(msg, replaceary); 
 }
 
-var goRealUserNames = {};
+var goDCRealUserNames = {};
 
-function gfUpdateName(gpgID) {
-	var ar = new Ajax.Updater(gpgID, gsExtensiondir + 'keyserver.cgi', {
+function gfDCUpdateName(gpgID) {
+	var ar = new Ajax.Updater(gpgID, gsDCExtensiondir + 'keyserver.cgi', {
 		parameters: { service: "getName", gpgID: gpgID },
 		method: 'get',
 		onSuccess: function (transport) {
-			goRealUserNames[gpgID] = transport.responseText;
+			goDCRealUserNames[gpgID] = transport.responseText;
 		},
 		onFailure: function () {
 			$(gpgID).update(printf(_("Failed to fetch name for %1."), [gpgID]));
@@ -43,10 +43,10 @@ function gfUpdateName(gpgID) {
 	});
 }
 
-function gfRemoveParticipant(_user, _successfunc) {
-	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+function gfDCRemoveParticipant(_user, _successfunc) {
+	var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
 		method: "get",
-		parameters: { service: 'removeParticipant', pollID: gsPollID, gpgID: _user },
+		parameters: { service: 'removeParticipant', pollID: gsDCPollID, gpgID: _user },
 		onFailure: function (error) {
 			alert(error.responseText);
 		},
@@ -54,19 +54,19 @@ function gfRemoveParticipant(_user, _successfunc) {
 	});
 }
 
-function gfReload() {
+function gfDCReload() {
 	location.assign(location.href.gsub(/\?.*/, ''));
 }
 
-function gfUserTd(userid, editable) {
+function gfDCUserTd(userid, editable) {
 	var _ret = "";
 	if (editable) {
 		_ret += "<td><span class='edituser'><a href='javascript:editUser(\"" + userid + "\")'";
 		_ret += "title='" + printf(_("Edit user %1..."), [userid]) + "'>";
-		_ret += gsEdit + "</a>";
+		_ret += gsDCEdit + "</a>";
 		_ret += "&nbsp;|&nbsp;<a href='javascript:deleteUser(\"" + userid + "\")'";
 		_ret += "title='" + printf(_("Delete user %1..."), [userid]) + "'>";
-		_ret += gsDelete + "</a></span></td>";
+		_ret += gsDCDelete + "</a></span></td>";
 		_ret += "<td class='name'>";
 	} else {
 		_ret += "<td class='name' colspan='2'>";
@@ -76,14 +76,14 @@ function gfUserTd(userid, editable) {
 	return _ret;
 }
 
-function gfCancelButton() {
+function gfDCCancelButton() {
 	var _ret = '<br />';
 	_ret += '<input type="button" id="cancelbutton" value="';
 	_ret += _("Cancel");
-	_ret += '" onClick="gfReload()" style="margin-top: 1ex;" />';
+	_ret += '" onClick="gfDCReload()" style="margin-top: 1ex;" />';
 	return _ret;
 }
 
-function gfKeyTd() {
-	return "<td id='key_td' colspan='" + gaColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
+function gfDCKeyTd() {
+	return "<td id='key_td' colspan='" + gaDCColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
 }

@@ -22,7 +22,7 @@ class Extension
 	def initialize(basedir)
 		@basedir = basedir + "/extensions/dc-net"
 		load "#{@basedir}/config.rb"
-		$d.html.add_script("var gsExtensiondir='#{@basedir}/';")
+		$d.html.add_script("var gsDCExtensiondir='#{@basedir}/';")
 
 		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po")
 			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po' />")
@@ -49,14 +49,14 @@ end
 
 if $d.is_poll?
 	e = Extension.new("..")
-	$d.html.add_script("var gsPollID = '#{$d.urlsuffix}';")
+	$d.html.add_script("var gsDCPollID = '#{$d.urlsuffix}';")
 
 	case $d.tab
 	when "invite_participants.cgi"
 
 		$d.html.add_script(<<SCRIPT
-var gsEdit = '#{EDIT}';
-var gsDelete = '#{DELETE}';
+var gsDCEdit = '#{EDIT}';
+var gsDCDelete = '#{DELETE}';
 SCRIPT
 );
 
@@ -78,13 +78,13 @@ SCRIPT
 			KICKED = "-"
 		end
 		$d.html.add_script(<<SCRIPT
-var gsEdit = '#{EDIT}';
-var gsDelete = '#{DELETE}';
-var gsUnknown = '#{UNKNOWN}';
-var gsKickOut = '#{DELETE}';
-var gsVoted = '#{PASSWORDSTAR}';
-var gsFlying = '#{FLY}';
-var gsKickedOut = '#{KICKED}';
+var gsDCEdit = '#{EDIT}';
+var gsDCDelete = '#{DELETE}';
+var gsDCUnknown = '#{UNKNOWN}';
+var gsDCKickOut = '#{DELETE}';
+var gsDCVoted = '#{PASSWORDSTAR}';
+var gsDCFlying = '#{FLY}';
+var gsDCKickedOut = '#{KICKED}';
 SCRIPT
 )
 		e.add_lib("jsbn")

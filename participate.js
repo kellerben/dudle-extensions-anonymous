@@ -18,13 +18,13 @@
  ***************************************************************************/
 
 "use strict";
-/*global goVoteVector, gsExtensiondir, gsPollID, gsVoted, gsUnknown, gsFlying, gsKickedOut, gfUpdateName, gfRemoveParticipant, gfReload, gfUserTd, gfKeyTd, gfCancelButton, giNumTables, goRealUserNames, gfInitAESKey, Vote, gt */
+/*global goDCVoteVector, gsDCExtensiondir, gsDCPollID, gsDCVoted, gsDCUnknown, gsDCFlying, gsDCKickedOut, gfDCUpdateName, gfDCRemoveParticipant, gfDCReload, gfDCUserTd, gfDCKeyTd, gfDCCancelButton, giDCNumTables, goDCRealUserNames, gfDCInitAESKey, Vote, gt */
 
-var gActiveParticipant;
-var gaColumns;
-var gaColumnsLen;
-var goParticipants;
-var gsPollState;
+var gDCActiveParticipant;
+var gaDCColumns;
+var gaDCColumnsLen;
+var goDCParticipants;
+var gsDCPollState;
 
 /**********************************************************
  * remove non-standard characters to give a valid html id *
@@ -53,14 +53,14 @@ var htmlid = (function () {
 	};
 }());
 
-var gsKickerId;
+var gsDCKickerId;
 function showKicker(_victim, _kicker) {
 	var tdtext = "<label for='key'>";
-	tdtext += printf(_("Secret Key for %1:"), [goRealUserNames[_kicker]]);
+	tdtext += printf(_("Secret Key for %1:"), [goDCRealUserNames[_kicker]]);
 	tdtext += "</label>";
 	$("participant_" + _victim).childElements()[0].update(tdtext);
 
-	gsKickerId = _kicker;
+	gsDCKickerId = _kicker;
 	$("key").enable();
 	$("kickoutbutton").enable();
 	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + _victim + "')");
@@ -71,7 +71,7 @@ function fetchKey(id) {
 
 	var req, participant, line, resp;
 	req = new XMLHttpRequest();
-	req.open("POST", gsExtensiondir + "keyserver.cgi", false);
+	req.open("POST", gsDCExtensiondir + "keyserver.cgi", false);
 	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 	req.send("service=getKey&gpgID=" + id.toString());
 
@@ -103,23 +103,23 @@ Vote.prototype.kickOut = function (_victim, callafterwards) {
 	var _inverted, _table, ar, keyMatrix, _colidx, _col;
 	AES_Init();
 	keyMatrix = {};
-	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-		_col = gaColumns[_colidx];
+	for (_colidx = 0; _colidx < gaDCColumnsLen; _colidx++) {
+		_col = gaDCColumns[_colidx];
 		keyMatrix[_col] = [];
-		for (_table = 0; _table < giNumTables;_table++) {
+		for (_table = 0; _table < giDCNumTables;_table++) {
 			keyMatrix[_col][_table] = [];
 			for (_inverted = 0; _inverted < 2; _inverted++) {
-				keyMatrix[_col][_table][_inverted] = goVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
+				keyMatrix[_col][_table][_inverted] = goDCVoteVector.calcSharedKey(_victim, _col, _table, _inverted).toString(36);
 			}
 		}
 	}
 	AES_Done();
 
-	ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+	ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
 		parameters: {
 			service: 'setKickOutKeys', 
-			pollID: gsPollID, 
-			gpgIDKicker: goVoteVector.id, 
+			pollID: gsDCPollID, 
+			gpgIDKicker: goDCVoteVector.id, 
 			gpgIDLeaver: _victim, 
 			keys: Object.toJSON(keyMatrix),
 			signature: 'TODO'
@@ -137,24 +137,24 @@ Vote.prototype.kickOutUserInterface = function (_victim) {
 		key = new BigInteger($F('key'), 16);
 		startCalcDisableButton("kickoutbutton");
 		$("cancelbutton").disable();
-		goVoteVector.setSecKey(key, function () {
-			if (goVoteVector.id === gsKickerId) {
-				$("key_td").update(printf(_("Please wait while removing %1 ..."), [goRealUserNames[_victim]]));
-				goVoteVector.participants[_victim] = fetchKey(_victim);
+		goDCVoteVector.setSecKey(key, function () {
+			if (goDCVoteVector.id === gsDCKickerId) {
+				$("key_td").update(printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[_victim]]));
+				goDCVoteVector.participants[_victim] = fetchKey(_victim);
 
 				// calculate the dh secret
-				goVoteVector.participants[_victim].pub.modPow(goVoteVector.sec, goVoteVector.dhmod,
+				goDCVoteVector.participants[_victim].pub.modPow(goDCVoteVector.sec, goDCVoteVector.dhmod,
 					function (result) {
-							goVoteVector.participants[_victim].dh = result;
-							goVoteVector.participants[_victim].aeskey = gfInitAESKey(result);
-							goVoteVector.kickOut(_victim, gfReload);
+							goDCVoteVector.participants[_victim].dh = result;
+							goDCVoteVector.participants[_victim].aeskey = gfDCInitAESKey(result);
+							goDCVoteVector.kickOut(_victim, gfDCReload);
 						}
 				);
 			} else {
 				var _errormsg = _("You entered a wrong key!");
-				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsKickerId + "\")})()'>" + _("Try again?") + "</a>";
+				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsDCKickerId + "\")})()'>" + _("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
-				$("kickoutbutton").value = printf(_("Delete %1"), [goRealUserNames[_victim]]);
+				$("kickoutbutton").value = printf(_("Delete %1"), [goDCRealUserNames[_victim]]);
 			}
 		});
 	}
@@ -165,7 +165,7 @@ function exchangeParticipantRow(_participant, _newTds) {
 	if ($("add_participant")) {
 		$("add_participant").remove();
 	} else {
-		gActiveParticipant.update(gParticipantTds); 
+		gDCActiveParticipant.update(gParticipantTds); 
 	}
 	
 	$("separator_top").remove();
@@ -173,13 +173,13 @@ function exchangeParticipantRow(_participant, _newTds) {
 
 
 
-	gActiveParticipant = $("participant_" + _participant);
-	gParticipantTds = gActiveParticipant.innerHTML;
-	gActiveParticipant.insert({
-		before: "<tr id='separator_top'><td colspan='" + (gaColumnsLen + 2) + "' class='invisible'></td></tr>",
-		after: "<tr id='separator_bottom'><td colspan='" + (gaColumnsLen + 2) + "' class='invisible'></td></tr>"
+	gDCActiveParticipant = $("participant_" + _participant);
+	gParticipantTds = gDCActiveParticipant.innerHTML;
+	gDCActiveParticipant.insert({
+		before: "<tr id='separator_top'><td colspan='" + (gaDCColumnsLen + 2) + "' class='invisible'></td></tr>",
+		after: "<tr id='separator_bottom'><td colspan='" + (gaDCColumnsLen + 2) + "' class='invisible'></td></tr>"
 	});
-	gActiveParticipant.update(_newTds);
+	gDCActiveParticipant.update(_newTds);
 }
 /*
  * display the Edit User form
@@ -187,12 +187,12 @@ function exchangeParticipantRow(_participant, _newTds) {
 function editUser(_participant) {
 	var _l;
 	_l = "<td colspan='2' id='" + _participant + "_td' class='label'><label for='key'>";
-	_l += printf(_("Secret Key for %1:"), [goRealUserNames[_participant]]);
+	_l += printf(_("Secret Key for %1:"), [goDCRealUserNames[_participant]]);
 	_l += "</label></td>";
 
-	_l += gfKeyTd();
+	_l += gfDCKeyTd();
 	_l += "<td><input id='loginbutton' type='button' value='" + _("Next") + "' onClick='login()'/>";
-	_l += gfCancelButton();
+	_l += gfDCCancelButton();
 	_l += "</td>";
 	exchangeParticipantRow(_participant, _l);
 }
@@ -202,9 +202,9 @@ function editUser(_participant) {
  */
 function deleteUser(_victim) {
 	var usersNeeded = [], _tds;
-	$H(goParticipants).each(function (_pair) {
+	$H(goDCParticipants).each(function (_pair) {
 		if (_pair.value.voted) {
-			if (!goParticipants[_victim].flying || (goParticipants[_victim].flying && !goParticipants[_victim].flying[_pair.key])) {
+			if (!goDCParticipants[_victim].flying || (goDCParticipants[_victim].flying && !goDCParticipants[_victim].flying[_pair.key])) {
 				for (var _i = 0; _i < _pair.value.voted.length; ++_i) {
 					if (_pair.value.voted[_i][1].include(_victim)) {
 						usersNeeded.push(_pair.key);
@@ -219,15 +219,15 @@ function deleteUser(_victim) {
 		_tds = "<td colspan='2'>" + _("Please select your username:");
 		_tds += "<ul style='text-align: left'>";
 		_tds += usersNeeded.uniq().collect(function (e) {
-			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goRealUserNames[e] + "</a></li>"; 
+			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goDCRealUserNames[e] + "</a></li>"; 
 		}).join("");
 		_tds += "</ul></td>";
-		_tds += gfKeyTd();
+		_tds += gfDCKeyTd();
 
 		_tds += "<td><input id='kickoutbutton' type='button' value='";
-		_tds += printf(_("Delete %1"), [goRealUserNames[_victim]]);
-		_tds += "' onClick='goVoteVector.kickOutUserInterface(\"" + _victim + "\")' disabled='disabled' />";
-		_tds += gfCancelButton();
+		_tds += printf(_("Delete %1"), [goDCRealUserNames[_victim]]);
+		_tds += "' onClick='goDCVoteVector.kickOutUserInterface(\"" + _victim + "\")' disabled='disabled' />";
+		_tds += gfDCCancelButton();
 		_tds += "</td>";
 		exchangeParticipantRow(_victim, _tds);
 		$("key").disable();
@@ -238,10 +238,10 @@ function deleteUser(_victim) {
 function getState(participant, column) {
 	var state = "notVoted";
 
-	if ($H(goParticipants[participant]).keys().indexOf("flying") !== -1) {
-		$H(goParticipants[participant].flying).each(function (kicker) {
+	if ($H(goDCParticipants[participant]).keys().indexOf("flying") !== -1) {
+		$H(goDCParticipants[participant].flying).each(function (kicker) {
 			if (kicker.value.indexOf(column) !== -1) {
-				if (gsPollState === "closed") {
+				if (gsDCPollState === "closed") {
 					state = "kickedOut";
 				} else {
 					state = "flying";
@@ -250,8 +250,8 @@ function getState(participant, column) {
 		});
 	}
 
-	if ($H(goParticipants[participant]).keys().indexOf("voted") !== -1) {
-		goParticipants[participant].voted.each(function (vote) {
+	if ($H(goDCParticipants[participant]).keys().indexOf("voted") !== -1) {
+		goDCParticipants[participant].voted.each(function (vote) {
 			if (vote[0].indexOf(column) !== -1) {
 				state = "voted";
 			}
@@ -265,17 +265,17 @@ function getState(participant, column) {
  * checks if there are additional steps needed after vote casting *
  * If there is somebody, who should be kicked out, it should be   *
  * asked if the user agrees. Users who should be asked for are    *
- * written into goFlyingUsers[flyer] = [kicker_1,...,kicker_x]    *
+ * written into goDCFlyingUsers[flyer] = [kicker_1,...,kicker_x]    *
  ******************************************************************/
-var goFlyingUsers = new Hash();
+var goDCFlyingUsers = new Hash();
 var gbQuestionsAnswered = true;
 function checkforAdditionalQuestions() {
 	var _button;
 
-	$H(goParticipants).each(function (_pair) {
+	$H(goDCParticipants).each(function (_pair) {
 		var _participant = _pair[0], _status = _pair[1];
-		if (typeof(_status.flying) !== 'undefined' && _participant !== goVoteVector.id) {
-			goFlyingUsers.set(_participant, _status.flying);
+		if (typeof(_status.flying) !== 'undefined' && _participant !== goDCVoteVector.id) {
+			goDCFlyingUsers.set(_participant, _status.flying);
 			gbQuestionsAnswered = false;
 		}
 	});
@@ -286,14 +286,14 @@ function checkforAdditionalQuestions() {
 
 function insertParticipationCheckboxes() {
 	var _td, participationVisible = false;
-	gaColumns.each(function (col) {
-		switch (getState(goVoteVector.id, col)) {
+	gaDCColumns.each(function (col) {
+		switch (getState(goDCVoteVector.id, col)) {
 		case "notVoted":
 		case "flying":
 			/* insert participation checkboxes */
 			_td = "<td title='" + col + "' class='undecided' onclick=\"$('" + htmlid(col) + "').click()\">";
 			_td += "<input id='" + htmlid(col) + "' type='checkbox' onclick=\"event.cancelBubble = true\"/></td>";
-			$(htmlid(col + "." + goVoteVector.id)).replace(_td);
+			$(htmlid(col + "." + goDCVoteVector.id)).replace(_td);
 
 			participationVisible = true;
 			break;
@@ -302,21 +302,21 @@ function insertParticipationCheckboxes() {
 	// insert save buttons when at least one checkbox was inserted
 	if (participationVisible) {
 		_td = "<td id='submit'>";
-		_td += "<input id='votebutton' onclick='goVoteVector.save()' type='button' value='" + _("Next") + "'>";
-		_td += gfCancelButton();
+		_td += "<input id='votebutton' onclick='goDCVoteVector.save()' type='button' value='" + _("Next") + "'>";
+		_td += gfDCCancelButton();
 		_td += "</td>";
-		Element.replace($("lastedit_" + goVoteVector.id), _td);
+		Element.replace($("lastedit_" + goDCVoteVector.id), _td);
 		checkforAdditionalQuestions();
 
-		$("participant_" + goVoteVector.id).childElements()[0].remove();
-		$("participant_" + goVoteVector.id).childElements()[0].writeAttribute("colspan", "2");
+		$("participant_" + goDCVoteVector.id).childElements()[0].remove();
+		$("participant_" + goDCVoteVector.id).childElements()[0].writeAttribute("colspan", "2");
 
 		if ($("add_participant")) {
 			$("add_participant").remove();
 			$("separator_top").remove();
 			$("separator_bottom").remove();
 		}
-		goVoteVector.startKeyCalc();
+		goDCVoteVector.startKeyCalc();
 	}
 }
 
@@ -325,14 +325,14 @@ function login() {
 	if ($F('key')) {
 		var key = new BigInteger($F('key'), 16);
 		startCalcDisableButton("loginbutton");
-		goVoteVector.setSecKey(key, function () {
-			if ("participant_" + goVoteVector.id === gActiveParticipant.id) {
-				gActiveParticipant.update(gParticipantTds);
+		goDCVoteVector.setSecKey(key, function () {
+			if ("participant_" + goDCVoteVector.id === gDCActiveParticipant.id) {
+				gDCActiveParticipant.update(gParticipantTds);
 				insertParticipationCheckboxes();
 			} else {
 				var _errormsg = _("You entered a wrong key!");
 				_errormsg += " <a href='javascript:editUser(\"";
-				_errormsg += gActiveParticipant.id.gsub("participant_", "") + "\")'>";
+				_errormsg += gDCActiveParticipant.id.gsub("participant_", "") + "\")'>";
 				_errormsg += _("Try again?");
 				_errormsg += "</a>";
 				$("key_td").update(_errormsg);
@@ -346,12 +346,12 @@ function fingerprint(pub) {
 }
 
 /****************************************
- * fetches status of gsPollID and calls *
+ * fetches status of gsDCPollID and calls *
  * _successFunction with it             *
  ****************************************/
 function getPollState(_successFunction) {
-	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: {service: 'getPollState', pollID: gsPollID},
+	var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
+		parameters: {service: 'getPollState', pollID: gsDCPollID},
 		method: 'get',
 		onSuccess: function (_t) {
 			_successFunction(_t.responseText);
@@ -364,45 +364,45 @@ function getPollState(_successFunction) {
  * insert HTML code, which shows the participants *
  **************************************************/
 function showParticipants() {
-	$H(goParticipants).each(function (participant) {
+	$H(goDCParticipants).each(function (participant) {
 		var rowstart, row = "", editable = false;
 
-		gaColumns.each(function (column) {
+		gaDCColumns.each(function (column) {
 			var classname, statustitle, statustext;
 
 			switch (getState(participant.key, column)) {
 			case "voted":
 				classname = 'voted';
 				statustitle = _('Has voted anonymously.');
-				statustext = gsVoted;
+				statustext = gsDCVoted;
 				break;
 			case 'notVoted':
 				editable = true;
 				classname = 'undecided';
 				statustitle = _('Has not voted yet.');
-				statustext = gsUnknown;
+				statustext = gsDCUnknown;
 				break;
 			case 'flying':
 				editable = true;
 				classname = 'bmaybe';
 				statustitle = _('Is to be removed.');
-				statustext = gsFlying;
+				statustext = gsDCFlying;
 				break;
 			case 'kickedOut':
 				classname = 'undecided';
 				statustitle = _('Is removed.');
-				statustext = gsKickedOut;
+				statustext = gsDCKickedOut;
 				break;
 			}
 			row += "<td class='" + classname + "' id='" + htmlid(column  + "."  + participant.key) + "' title='" + statustitle + "'>" +  statustext + "</td>";
 		});
 
 		rowstart = "<tr class='participantrow' id='participant_" + participant.key + "'>";
-		rowstart += gfUserTd(participant.key, editable);
+		rowstart += gfDCUserTd(participant.key, editable);
 
 		row += "<td class='invisible' id='" + htmlid("lastedit_" + participant.key) + "'></td></tr>";
 		$("separator_top").insert({ before: rowstart + row });
-		gfUpdateName(participant.key);
+		gfDCUpdateName(participant.key);
 	});
 }
 
@@ -422,9 +422,9 @@ function minabs(_number, _modulo) {
  * calculate the result from anonymous votes and add it to the sum *
  *******************************************************************/
 function calcResult() {
-	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+	var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
 		method: "get",
-		parameters: { service: "getVote", pollID: gsPollID },
+		parameters: { service: "getVote", pollID: gsDCPollID },
 		onSuccess: function (_transport) {
 			var _totalVoteSeveralCols, _totalVote, _resultMatrix, _colResults, _inverted,
 				sumelement, _table, result, _attack, totalsum, colidx, _col, numParticipants, partidx, _gpgID,
@@ -451,8 +451,8 @@ function calcResult() {
 				_resultMatrix[_inverted] = {};
 				_colResults[_inverted] = {};
 
-				for (colidx = 0; colidx < gaColumnsLen; ++colidx) {
-					_col = gaColumns[colidx];
+				for (colidx = 0; colidx < gaDCColumnsLen; ++colidx) {
+					_col = gaDCColumns[colidx];
 					sumelement = $("sum_" + htmlid(_col));
 					_resultMatrix[_inverted][_col] = [];
 					_colResults[_inverted][_col] = BigInteger.ZERO;
@@ -460,26 +460,26 @@ function calcResult() {
 						sumelement.setStyle("color: white; background-color: black");
 					}
 
-					for (_table = 0; _table < giNumTables; _table++) {
+					for (_table = 0; _table < giDCNumTables; _table++) {
 						_resultMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 						
 						for (partidx = 0; partidx < numParticipants; ++partidx) {
 							_gpgID = _totalVoteSeveralCols.keys()[partidx];
-							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 36)).mod(goVoteVector.dcmod);
+							_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].add(new BigInteger(_totalVote[_gpgID][_col][_table][_inverted], 36)).mod(goDCVoteVector.dcmod);
 						}
 
 						_kicked.each(function (kickers) {
 							$H(kickers.value).each(function (kicker) {
 								for (kickeridx = 0; kickeridx < kicker.value.length; ++kickeridx) {
 									for (kicksidx = 0; kicksidx < kickers.value[kicker[kickeridx]].length; ++kicksidx) {
-										_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].subtract(new BigInteger(kickers.value[kicker[kickeridx]][kicksidx].keys[_col][_table][_inverted], 36)).mod(goVoteVector.dcmod);
+										_resultMatrix[_inverted][_col][_table] = _resultMatrix[_inverted][_col][_table].subtract(new BigInteger(kickers.value[kicker[kickeridx]][kicksidx].keys[_col][_table][_inverted], 36)).mod(goDCVoteVector.dcmod);
 									}
 								}
 							});
 						});
 
 
-						result = minabs(_resultMatrix[_inverted][_col][_table], goVoteVector.dcmod);
+						result = minabs(_resultMatrix[_inverted][_col][_table], goDCVoteVector.dcmod);
 						if (result.compareTo(BigInteger.ZERO) < 0) {
 							_attack = _inverted === 0 ? _("decrease") : _("increase");
 							$('comments').insert({before: "<div class='warning'>" + printf(_("Somebody tried to %1 column %2 by %3!!!"), [_attack, _col, result.abs()]) + "</div>"});
@@ -524,12 +524,12 @@ function gfDH2AES(dh) {
 
 	aeskey16 = new Array(16);
 	for (i = 0; i < 16; ++i) {
-		aeskey16[i] = (aeskey32[2*i] << 4) + aeskey32[2*i+1]; 
+		aeskey16[i] = (aeskey32[2 * i] << 4) + aeskey32[2 * i + 1]; 
 	}
 	return aeskey16;
 }
 
-function gfInitAESKey(dh) {
+function gfDCInitAESKey(dh) {
 	var aesfull = gfDH2AES(dh);
 	AES_ExpandKey(aesfull);
 	return aesfull;
@@ -540,7 +540,8 @@ function pseudorandom(aeskey, uuid, col, tableindex, inverted) {
 		seed = uuid + col + tableindex + inverted,
 		round = 0,
 		block = [[]],
-		result = "";
+		result = "",
+		lastblock;
 
 	// transform seed into block[round][aesbyte] = [[aesround_1],...,[aesround_x]]
 	for (i = 0; i < seed.length; i++) {
@@ -597,23 +598,23 @@ Vote.prototype.calculationReady = function () {
  * Start all calculations, which can be done before vote casting *
  *****************************************************************/
 Vote.prototype.startKeyCalc = function () {
-	this.otherParticipantArray = $H(goParticipants).keys().without(goVoteVector.id);
+	this.otherParticipantArray = $H(goDCParticipants).keys().without(goDCVoteVector.id);
 	this.calcNextDHKey();
 };
 
 /******************************************************************
  * stores user into gaKickUsers if kickuser == true               *
  * if user == null, nothing is stored (first round)               *
- * asks the user to kickout next user (goFlyingUsers.random)      *
- * deletes this user from goFlyingUsers afterwards                *
+ * asks the user to kickout next user (goDCFlyingUsers.random)      *
+ * deletes this user from goDCFlyingUsers afterwards                *
  ******************************************************************/
-var gaKickUsers = [], gsPreviousUserRow;
+var gaKickUsers = [], gsDCPreviousUserRow;
 Vote.prototype.askKickOutNext = function (user, kickuser) {
 	var nextuser, nextkickers, i, kickoutquestion;
 
 	if (typeof(user) === "undefined") {
 		// first call of the function, remove the vote buttons
-		for (i = 0; i < gaColumnsLen; ++i) {
+		for (i = 0; i < gaDCColumnsLen; ++i) {
 			$$("#participant_" + this.id + " td")[1].remove();
 		}
 		$("votebutton").remove();
@@ -622,19 +623,19 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 		// remove the old question
 		$("kickoutquestion").remove();
 		// restore the previously saved row
-		$("participant_" + user).update(gsPreviousUserRow);
+		$("participant_" + user).update(gsDCPreviousUserRow);
 
 		if (kickuser) {
 			gaKickUsers.push(user);
 		}
 	}
 
-	kickoutquestion = "<td id='kickoutquestion' colspan='" + gaColumnsLen + "'>";
+	kickoutquestion = "<td id='kickoutquestion' colspan='" + gaDCColumnsLen + "'>";
 
-	if (goFlyingUsers.size() === 0) {
+	if (goDCFlyingUsers.size() === 0) {
 		// this was the last question, stop here and send everything
 		kickoutquestion += "</td>";
-		$$("#participant_" + goVoteVector.id + " td")[0].insert({
+		$$("#participant_" + goDCVoteVector.id + " td")[0].insert({
 			after: kickoutquestion
 		});
 		if (gbCalculationFinished) {
@@ -644,13 +645,13 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 		}
 		return;
 	}
-	nextuser = goFlyingUsers.keys()[0];
-	nextkickers = $H(goFlyingUsers.unset(nextuser)).keys().collect(function (user) {
-		return goRealUserNames[user];
+	nextuser = goDCFlyingUsers.keys()[0];
+	nextkickers = $H(goDCFlyingUsers.unset(nextuser)).keys().collect(function (user) {
+		return goDCRealUserNames[user];
 	});
 
 	// save the row
-	gsPreviousUserRow = $("participant_" + nextuser).innerHTML;
+	gsDCPreviousUserRow = $("participant_" + nextuser).innerHTML;
 
 	// make the belonging fields red
 	$$("#participant_" + nextuser + " td.name, #participant_" + nextuser + " td.bmaybe").each(function (field) {
@@ -662,15 +663,15 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 	kickoutquestion += printf(gt.ngettext('%1 wants to remove %2.', 
 			'Some Users (%1) want to remove %2.', 
 			nextkickers.size()),
-		[nextkickers.join(", "), goRealUserNames[nextuser]]
+		[nextkickers.join(", "), goDCRealUserNames[nextuser]]
 	);
 	kickoutquestion += "<br />";
-	kickoutquestion += "<input type='button' onclick='goVoteVector.askKickOutNext(\"" + nextuser + "\", true)' value='" + _("I agree.") + "' id='agreebutton' />";
+	kickoutquestion += "<input type='button' onclick='goDCVoteVector.askKickOutNext(\"" + nextuser + "\", true)' value='" + _("I agree.") + "' id='agreebutton' />";
 	kickoutquestion += "&nbsp;";
-	kickoutquestion += "<input type='button' onclick='goVoteVector.askKickOutNext(\"" + nextuser + "\", false)' value='" + _("I do not agree.") + "' id='disagreebutton'/>";
+	kickoutquestion += "<input type='button' onclick='goDCVoteVector.askKickOutNext(\"" + nextuser + "\", false)' value='" + _("I do not agree.") + "' id='disagreebutton'/>";
 	kickoutquestion += "</td>";
 
-	$$("#participant_" + goVoteVector.id + " td")[0].insert({
+	$$("#participant_" + goDCVoteVector.id + " td")[0].insert({
 		after: kickoutquestion
 	});
 
@@ -685,8 +686,8 @@ Vote.prototype.save = function () {
 	this.votes = {};
 
 	// read the votes
-	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-		_col = gaColumns[_colidx];
+	for (_colidx = 0; _colidx < gaDCColumnsLen; _colidx++) {
+		_col = gaDCColumns[_colidx];
 		this.votes[_col] = $(htmlid(_col)).checked ? BigInteger.ONE : BigInteger.ZERO;
 	}
 
@@ -709,12 +710,12 @@ Vote.prototype.sendNextKickoutKey = function () {
 	var nextvictim;
 	if (gaKickUsers.size() === 0) {
 		// all users send, finish
-		gfReload();
+		gfDCReload();
 		return;
 	}
 	nextvictim = gaKickUsers.pop();
-	$("participant_" + this.id).update("<td colspan='" + (giNumTables + 3) + "'>" + printf(_("Please wait while removing %1 ..."), [goRealUserNames[nextvictim]]) + "</td>");
-	this.kickOut(nextvictim, goVoteVector.sendNextKickoutKey);
+	$("participant_" + this.id).update("<td colspan='" + (giDCNumTables + 3) + "'>" + printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[nextvictim]]) + "</td>");
+	this.kickOut(nextvictim, goDCVoteVector.sendNextKickoutKey);
 };
 
 /****************************************************
@@ -723,19 +724,19 @@ Vote.prototype.sendNextKickoutKey = function () {
  ****************************************************/
 Vote.prototype.userWasFaster = function () {
 	this.calculationReady = this.sendVote;
-	$("participant_" + this.id).update("<td colspan='" + (giNumTables + 3) + "'>" + _("Please wait while calculating keys ...") + "</td>");
+	$("participant_" + this.id).update("<td colspan='" + (giDCNumTables + 3) + "'>" + _("Please wait while calculating keys ...") + "</td>");
 };
 
 Vote.prototype.sendVote = function () {
 	var _inverted, _colidx, _col, randomTable, voteval, _table, ar;
 
-	$("participant_" + this.id).update("<td colspan='" + (giNumTables + 3) + "'>" + _("Please wait while sending the vote ...") + "</td>");
+	$("participant_" + this.id).update("<td colspan='" + (giDCNumTables + 3) + "'>" + _("Please wait while sending the vote ...") + "</td>");
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
-		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-			_col = gaColumns[_colidx];
-			randomTable = Math.round(Math.random() * (giNumTables - 1));
+		for (_colidx = 0; _colidx < gaDCColumnsLen; _colidx++) {
+			_col = gaDCColumns[_colidx];
+			randomTable = Math.round(Math.random() * (giDCNumTables - 1));
 			voteval = this.votes[_col].subtract(new BigInteger(_inverted.toString())).abs();
 			this.keyMatrix[_inverted][_col][randomTable] = this.keyMatrix[_inverted][_col][randomTable].add(voteval);//.mod(this.dcmod);
 		}
@@ -743,20 +744,20 @@ Vote.prototype.sendVote = function () {
 
 	// write vote string
 	this.voteobj = {};
-	for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-		_col = gaColumns[_colidx];
+	for (_colidx = 0; _colidx < gaDCColumnsLen; _colidx++) {
+		_col = gaDCColumns[_colidx];
 		this.voteobj[_col] = [];
-		for (_table = 0; _table < giNumTables;_table++) {
+		for (_table = 0; _table < giDCNumTables;_table++) {
 			this.voteobj[_col][_table] = [];
 			for (_inverted = 0; _inverted < 2; _inverted++) {
 				this.voteobj[_col][_table][_inverted] = this.keyMatrix[_inverted][_col][_table].toString(36);
 			}
 		}
 	}
-	ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: {service: 'setVote', pollID: gsPollID, gpgID: goVoteVector.id, vote: Object.toJSON(this.voteobj), signature: 'TODO'},
+	ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
+		parameters: {service: 'setVote', pollID: gsDCPollID, gpgID: goDCVoteVector.id, vote: Object.toJSON(this.voteobj), signature: 'TODO'},
 		onSuccess: function (transport) {
-			goVoteVector.sendNextKickoutKey();
+			goDCVoteVector.sendNextKickoutKey();
 		},
 		onFailure: function (transport) {
 			alert("Something went wrong, could not send the vote!");
@@ -769,12 +770,12 @@ Vote.prototype.sendVote = function () {
  *******************************************************/
 Vote.prototype.calcSharedKey = function (otherID, timeslot, tableindex, inverted) {
 	var cmp, ret;
-	cmp = new BigInteger(goVoteVector.id).compareTo(new BigInteger(otherID));
+	cmp = new BigInteger(goDCVoteVector.id).compareTo(new BigInteger(otherID));
 	if (cmp === 0) {
 		return BigInteger.ZERO;
 	}
 
-	ret = hash(pseudorandom(this.participants[otherID].aeskey, gsPollID, timeslot, tableindex, inverted));
+	ret = hash(pseudorandom(this.participants[otherID].aeskey, gsDCPollID, timeslot, tableindex, inverted));
 	if (cmp > 0) {
 		return ret.negate().mod(this.dcmod);
 	}
@@ -783,12 +784,12 @@ Vote.prototype.calcSharedKey = function (otherID, timeslot, tableindex, inverted
 
 
 function usedMyKey(id, col) {
-	if (typeof(goParticipants[id].voted) === 'undefined') {
+	if (typeof(goDCParticipants[id].voted) === 'undefined') {
 		return true;
 	}
 	var ret = false;
-	goParticipants[id].voted.each(function (_vote) {
-		if (_vote[0].indexOf(col) !== -1 && _vote[1].indexOf(goVoteVector.id) !== -1) {
+	goDCParticipants[id].voted.each(function (_vote) {
+		if (_vote[0].indexOf(col) !== -1 && _vote[1].indexOf(goDCVoteVector.id) !== -1) {
 			ret = true;
 		}
 	});
@@ -804,10 +805,10 @@ Vote.prototype.calculateVoteKeys = function () {
 	this.keyMatrix = [];
 	for (_inverted = 0; _inverted < 2; _inverted++) {
 		this.keyMatrix[_inverted] = {};
-		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-			_col = gaColumns[_colidx];
+		for (_colidx = 0; _colidx < gaDCColumnsLen; _colidx++) {
+			_col = gaDCColumns[_colidx];
 			this.keyMatrix[_inverted][_col] = [];
-			for (_table = 0; _table < giNumTables;_table++) {
+			for (_table = 0; _table < giDCNumTables;_table++) {
 				this.keyMatrix[_inverted][_col][_table] = BigInteger.ZERO;
 			}
 		}
@@ -815,11 +816,11 @@ Vote.prototype.calculateVoteKeys = function () {
 	AES_Init();
 //	time.start("symmetric")
 	for (_id in this.participants) {
-		for (_colidx = 0; _colidx < gaColumnsLen; _colidx++) {
-			_col = gaColumns[_colidx];
+		for (_colidx = 0; _colidx < gaDCColumnsLen; _colidx++) {
+			_col = gaDCColumns[_colidx];
 			if (usedMyKey(_id, _col)) {
 				for (_inverted = 0; _inverted < 2; _inverted++) {
-					for (_table = 0; _table < giNumTables;_table++) {
+					for (_table = 0; _table < giDCNumTables;_table++) {
 						addval = this.calcSharedKey(_id, _col, _table, _inverted);
 						this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].add(addval);
 						this.keyMatrix[_inverted][_col][_table] = this.keyMatrix[_inverted][_col][_table].mod(this.dcmod);
@@ -874,9 +875,9 @@ Vote.prototype.calcNextDHKey = (function () {
 			this.participants[id].pub.modPow(this.sec, this.dhmod,
 				function (result) {
 //					time.stop("dh");
-					goVoteVector.participants[id].dh = result;
-					goVoteVector.participants[id].aeskey = gfInitAESKey(result);
-					goVoteVector.calcNextDHKey();
+					goDCVoteVector.participants[id].dh = result;
+					goDCVoteVector.participants[id].aeskey = gfDCInitAESKey(result);
+					goDCVoteVector.calcNextDHKey();
 				}
 			);
 		};
@@ -887,36 +888,36 @@ Vote.prototype.calcNextDHKey = (function () {
  * checks, if the name entered in the username input     *
  * is configured in the privacy-enhanced poll            *
  *********************************************************/
-var gsOldParticipateTr, gsRequestedUserName;
+var gsDCOldParticipateTr, gsDCRequestedUserName;
 function checkIfUserIsAnonymousConfigured() {
 	var pequestion, 
 			requesteduserid,
 			i;
-	gsRequestedUserName = $F("add_participant_input");
-	if ($H(goRealUserNames).values().include(gsRequestedUserName)) {
+	gsDCRequestedUserName = $F("add_participant_input");
+	if ($H(goDCRealUserNames).values().include(gsDCRequestedUserName)) {
 		
 		// search for the id
-		$H(goRealUserNames).each(function (_pair) {
-			if (_pair.value === gsRequestedUserName) {
+		$H(goDCRealUserNames).each(function (_pair) {
+			if (_pair.value === gsDCRequestedUserName) {
 				requesteduserid = _pair.key;
 			}
 		});
 
 		// check if user already voted
-		if (typeof(goParticipants[requesteduserid].voted) === "undefined") {
+		if (typeof(goDCParticipants[requesteduserid].voted) === "undefined") {
 			//store old tr for later use
-			$("add_participant_input").value = gsRequestedUserName;
-			gsOldParticipateTr = $("add_participant").innerHTML;
-			for (i = 0; i < gaColumnsLen; ++i) {
+			$("add_participant_input").value = gsDCRequestedUserName;
+			gsDCOldParticipateTr = $("add_participant").innerHTML;
+			for (i = 0; i < gaDCColumnsLen; ++i) {
 				$$("#add_participant td.checkboxes")[0].remove();
 			}
 
 			// ask user if he is the configured one
 			$("savebutton").disable();
-			pequestion = "<td id='pequestion' colspan='" + gaColumnsLen + "'>";
+			pequestion = "<td id='pequestion' colspan='" + gaDCColumnsLen + "'>";
 			pequestion += _("A user with the same name is configured for anonymous voting!");
 			pequestion += "<br />";
-			pequestion += "<input type='button' onclick='editUser(\"" + requesteduserid + "\")' value='" + printf(_("I have the secret key for user %1."), [gsRequestedUserName]) + "' id='pebutton' />";
+			pequestion += "<input type='button' onclick='editUser(\"" + requesteduserid + "\")' value='" + printf(_("I have the secret key for user %1."), [gsDCRequestedUserName]) + "' id='pebutton' />";
 			pequestion += "&nbsp;";
 			pequestion += "<input type='button' onclick='continueNonPe()' value='" + _("Continue with non-anonymous voting.") + "' id='nonpebutton'/>";
 			pequestion += "</td>";
@@ -927,8 +928,8 @@ function checkIfUserIsAnonymousConfigured() {
 	}
 }
 function continueNonPe() {
-	$("add_participant").update(gsOldParticipateTr);
-	$("add_participant_input").value = gsRequestedUserName;
+	$("add_participant").update(gsDCOldParticipateTr);
+	$("add_participant_input").value = gsDCRequestedUserName;
 }
 
 function onAjaxComplete(callfunc) {
@@ -947,24 +948,24 @@ function onAjaxComplete(callfunc) {
  * fetch columns and participants                        *
  * show participants and start precalculation when ready *
  *********************************************************/
-var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-	parameters: {service: 'getColumns', pollID: gsPollID},
+var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
+	parameters: {service: 'getColumns', pollID: gsDCPollID},
 	method: 'get',
 	onSuccess: function (transport) {
-		gaColumns = transport.responseText.split("\n");
-		gaColumnsLen = gaColumns.length;
+		gaDCColumns = transport.responseText.split("\n");
+		gaDCColumnsLen = gaDCColumns.length;
 
-		var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-			parameters: {service: 'getParticipants', pollID: gsPollID},
+		var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
+			parameters: {service: 'getParticipants', pollID: gsDCPollID},
 			method: "get",
 			onFailure: function () { 
 				alert(_('Failed to fetch participant list.'));
 			},
 			onSuccess: function (transport) {
 				/* FIXME evalJSON() is evil, as others may inject some code*/
-				goParticipants = transport.responseText.evalJSON();
+				goDCParticipants = transport.responseText.evalJSON();
 				getPollState(function (_pollState) {
-					gsPollState = _pollState;
+					gsDCPollState = _pollState;
 					showParticipants();
 					if (_pollState === "closed") {
 						calcResult();

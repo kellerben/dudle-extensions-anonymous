@@ -19,15 +19,15 @@
 
 "use strict";
 
-var giDHLENGTH = 786;
-var giNumTables = 3;
-var goVoteVector;
+var giDCDHLENGTH = 786;
+var giDCNumTables = 3;
+var goDCVoteVector;
 
 var Vote = function () {
 	var that = this;
 	that.participants = {};
 
-	switch (giDHLENGTH) {
+	switch (giDCDHLENGTH) {
 	case 786:
 		this.dhmod = new BigInteger("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A63A3620FFFFFFFFFFFFFFFF", 16);
 		break;
@@ -45,13 +45,13 @@ var Vote = function () {
 	this.setSecKey = function (key, callafterwards) {
 		this.sec = key;
 		window.setTimeout(function () {
-			goVoteVector.g.modPow(goVoteVector.sec, goVoteVector.dhmod, function (result) {
-				goVoteVector.pub = result;
-				goVoteVector.id = "0x" + SHA256_hash(goVoteVector.pub.toString(16)).slice(56, 64).toUpperCase();
+			goDCVoteVector.g.modPow(goDCVoteVector.sec, goDCVoteVector.dhmod, function (result) {
+				goDCVoteVector.pub = result;
+				goDCVoteVector.id = "0x" + SHA256_hash(goDCVoteVector.pub.toString(16)).slice(56, 64).toUpperCase();
 				callafterwards();
 			});
 		}, 1);
 	};
 };
 
-goVoteVector = new Vote();
+goDCVoteVector = new Vote();

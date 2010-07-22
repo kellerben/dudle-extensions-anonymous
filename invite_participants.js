@@ -18,11 +18,11 @@
  ***************************************************************************/
 
 "use strict";
-/*global gsExtensiondir, gsPollID, gfUpdateName, gfUserTd, gfCancelButton, gfReload, gfRemoveParticipant */
-var gsKeyId, gsCheckedName;
+/*global gsDCExtensiondir, gsDCPollID, gfDCUpdateName, gfDCUserTd, gfDCCancelButton, gfDCReload, gfDCRemoveParticipant */
+var gsDCKeyId, gsDCCheckedName;
 
 var _oParticipants;
-var gsSaveButtonLabel = $("savebutton").value;
+var gsDCSaveButtonLabel = $("savebutton").value;
 var gaAllUsers;
 
 $("add_participant").insert({after: "<tr><td colspan='3' class='warning' id='registerederror'></td></tr>"});
@@ -32,20 +32,20 @@ function checkcheckbox(successfunction) {
 	if ($F("add_participant_check_privacy_enhanced")) {
 		$("savebutton").disable();
 		$("savebutton").value = _("Checking Username");
-		ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+		ar = new Ajax.Request(gsDCExtensiondir + 'keyserver.cgi', {
 			method: "get",
 			parameters: { service: 'searchId', name: $F("add_participant_input")},
 			onSuccess: function (transport) {
-				gsCheckedName = curname;
-				gsKeyId = transport.responseText;
+				gsDCCheckedName = curname;
+				gsDCKeyId = transport.responseText;
 				$("savebutton").enable();
-				$("savebutton").value = gsSaveButtonLabel;
+				$("savebutton").value = gsDCSaveButtonLabel;
 				if (typeof(successfunction) !== 'undefined') {
 					successfunction();
 				}
 			},
 			onFailure: function (transport) {
-				$("savebutton").value = gsSaveButtonLabel;
+				$("savebutton").value = gsDCSaveButtonLabel;
 				$("add_participant_input").focus();
 				$("registerederror").update(_("Only registered users can participate privacy-enhanced."));
 			}
@@ -55,9 +55,9 @@ function checkcheckbox(successfunction) {
 	}
 }
 
-var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
+var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
 	method: "get",
-	parameters: { service: 'getParticipants', pollID: gsPollID},
+	parameters: { service: 'getParticipants', pollID: gsDCPollID},
 	onFailure: function () {
 		alert(_('Failed to fetch participant list.'));
 	},
@@ -88,11 +88,11 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 		
 		$H(_oParticipants).keys().each(function (_p) {
 			var _tr = "<tr class='participantrow' id='" + _p + "_tr' title='" + _p + "'>";
-			_tr += gfUserTd(_p, !usedKeys.include(_p));
+			_tr += gfDCUserTd(_p, !usedKeys.include(_p));
 			_tr += "<td style='text-align:center'><input type='checkbox' disabled='disabled' checked='checked' /></td>";
 			_tr += "</tr>";
 			$("participanttable").select("tr")[0].insert({after: _tr});
-			gfUpdateName(_p);
+			gfDCUpdateName(_p);
 		});
 
 		
@@ -100,7 +100,7 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 			// Modify participation form
 			$("add_participant_input").writeAttribute("onchange", "checkcheckbox();");
 			$("add_participant_input").insert({after: "<div id='autocomplete' class='autocomplete' style='display: none; position:absolute;'></div>"});
-			ar = new Ajax.Request(gsExtensiondir + 'keyserver.cgi', {
+			ar = new Ajax.Request(gsDCExtensiondir + 'keyserver.cgi', {
 				parameters: {service: 'listAllNames'},
 				method: 'get',
 				onSuccess: function (transport) {
@@ -118,30 +118,30 @@ var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
 
 		$("invite_participants_form").writeAttribute("onsubmit", "return addParticipantCheckOldUser();");
 		$("cancelbutton").writeAttribute("type", "button");
-		$("cancelbutton").writeAttribute("onclick", "gfReload()");
+		$("cancelbutton").writeAttribute("onclick", "gfDCReload()");
 	}
 });
 
 function deleteUser(_userid) {
-	gfRemoveParticipant(_userid, gfReload);
+	gfDCRemoveParticipant(_userid, gfDCReload);
 }
 
 /* 
  * display edit user form
  * save previous content in
- * gsOldUserTr and gsOldUser
+ * gsDCOldUserTr and gsDCOldUser
  */
-var gsOldUserTr, gsOldUser;
+var gsDCOldUserTr, gsDCOldUser;
 function editUser(_user) {
 	var _inputTr, _savebutton, ac,
 		_username = $(_user).innerHTML;
 
-	gsSaveButtonLabel = _("Save Changes");
+	gsDCSaveButtonLabel = _("Save Changes");
 
 	/* if something was saved, restore it */
-	if (gsOldUser) {
-		_inputTr = $(gsOldUser + "_tr").innerHTML;
-		$(gsOldUser + "_tr").update(gsOldUserTr);
+	if (gsDCOldUser) {
+		_inputTr = $(gsDCOldUser + "_tr").innerHTML;
+		$(gsDCOldUser + "_tr").update(gsDCOldUserTr);
 	} else {
 		if (location.href.include("?edituser=")) {
 			location.assign(location.href.gsub(/\?edituser=.*/, ""));
@@ -153,16 +153,16 @@ function editUser(_user) {
 		_inputTr = $("add_participant").innerHTML;
 		$("add_participant").remove();
 	}
-	gsOldUser = _user;
-	gsOldUserTr = $(_user + "_tr").innerHTML;
+	gsDCOldUser = _user;
+	gsDCOldUserTr = $(_user + "_tr").innerHTML;
 
 
 	$(_user + "_tr").update(_inputTr);
 
 	_savebutton = '<input type="submit" value="';
-	_savebutton += gsSaveButtonLabel;
+	_savebutton += gsDCSaveButtonLabel;
 	_savebutton += '" id="savebutton" />';
-	_savebutton += gfCancelButton();
+	_savebutton += gfDCCancelButton();
 	$("savebutton").parentNode.update(_savebutton);
 
 	$("add_participant_input").value = _username;
@@ -171,8 +171,8 @@ function editUser(_user) {
 }
 
 function addPEParticipant() {
-	var ar = new Ajax.Request(gsExtensiondir + 'webservices.cgi', {
-		parameters: { service: 'addParticipant', pollID: gsPollID, gpgID: gsKeyId},
+	var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
+		parameters: { service: 'addParticipant', pollID: gsDCPollID, gpgID: gsDCKeyId},
 		onSuccess: function () {
 			if (location.href.include("?edituser=")) {
 				$("savebutton").insert({
@@ -180,7 +180,7 @@ function addPEParticipant() {
 				});
 				$("invite_participants_form").submit();
 			} else {
-				gfReload();
+				gfDCReload();
 			}
 		},
 		onFailure: function (transport) {
@@ -190,7 +190,7 @@ function addPEParticipant() {
 }
 function addParticipant() {
 	if ($F("add_participant_check_privacy_enhanced")) {
-		if (gsCheckedName !== $F("add_participant_input")) {
+		if (gsDCCheckedName !== $F("add_participant_input")) {
 			checkcheckbox(addPEParticipant);
 		} else {
 			addPEParticipant();
@@ -201,8 +201,8 @@ function addParticipant() {
 }
 
 function addParticipantCheckOldUser() {
-	if (gsOldUser) {
-		gfRemoveParticipant(gsOldUser, addParticipant);
+	if (gsDCOldUser) {
+		gfDCRemoveParticipant(gsDCOldUser, addParticipant);
 	}	else {
 		addParticipant();
 	}
