@@ -21,7 +21,11 @@
 class Extension
 	def initialize(basedir)
 		@basedir = basedir + "/extensions/dc-net"
-		load "#{@basedir}/config.rb"
+		if File.exists?("#{@basedir}/config.rb")
+			load "#{@basedir}/config.rb"
+		else
+			load "#{@basedir}/config_sample.rb"
+		end
 		$d.html.add_script("var gsDCExtensiondir='#{@basedir}/';")
 
 		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po")

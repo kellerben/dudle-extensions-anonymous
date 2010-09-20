@@ -19,5 +19,5 @@
 
 # Should this extension use the compressed javascript files?
 # (you have to make them via “make compressed”
-COMPRESSED=true
+COMPRESSED=false
 
