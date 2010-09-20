@@ -602,11 +602,26 @@ Vote.prototype.startKeyCalc = function () {
 	this.calcNextDHKey();
 };
 
+
+/******************************************************************
+ * This function clears the vote buttons to display usefull       *
+ * messages instead                                               *
+ ******************************************************************/
+Vote.prototype.gfRemoveVoteButtons = function () {
+	for (i = 0; i < gaDCColumnsLen; ++i) {
+		$$("#participant_" + this.id + " td")[1].remove();
+	}
+	$("votebutton").remove();
+	$$("#participant_" + this.id + " td")[0].insert({
+		after: "<td id='statusmessage' colspan='" + gaDCColumnsLen + "'>"
+	});
+};
+
 /******************************************************************
  * stores user into gaKickUsers if kickuser == true               *
  * if user == null, nothing is stored (first round)               *
- * asks the user to kickout next user (goDCFlyingUsers.random)      *
- * deletes this user from goDCFlyingUsers afterwards                *
+ * asks the user to kickout next user (goDCFlyingUsers.random)    *
+ * deletes this user from goDCFlyingUsers afterwards              *
  ******************************************************************/
 var gaKickUsers = [], gsDCPreviousUserRow;
 Vote.prototype.askKickOutNext = function (user, kickuser) {
@@ -614,14 +629,9 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 
 	if (typeof(user) === "undefined") {
 		// first call of the function, remove the vote buttons
-		for (i = 0; i < gaDCColumnsLen; ++i) {
-			$$("#participant_" + this.id + " td")[1].remove();
-		}
-		$("votebutton").remove();
+		this.gfRemoveVoteButtons();
 	} else {
 		// we are not in the first run
-		// remove the old question
-		$("kickoutquestion").remove();
 		// restore the previously saved row
 		$("participant_" + user).update(gsDCPreviousUserRow);
 
@@ -630,14 +640,8 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 		}
 	}
 
-	kickoutquestion = "<td id='kickoutquestion' colspan='" + gaDCColumnsLen + "'>";
-
 	if (goDCFlyingUsers.size() === 0) {
 		// this was the last question, stop here and send everything
-		kickoutquestion += "</td>";
-		$$("#participant_" + goDCVoteVector.id + " td")[0].insert({
-			after: kickoutquestion
-		});
 		if (gbCalculationFinished) {
 			this.sendVote();
 		} else {
@@ -660,7 +664,7 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 		});
 	});
 
-	kickoutquestion += printf(gt.ngettext('%1 wants to remove %2.', 
+	kickoutquestion = printf(gt.ngettext('%1 wants to remove %2.', 
 			'Some Users (%1) want to remove %2.', 
 			nextkickers.size()),
 		[nextkickers.join(", "), goDCRealUserNames[nextuser]]
@@ -669,13 +673,8 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 	kickoutquestion += "<input type='button' onclick='goDCVoteVector.askKickOutNext(\"" + nextuser + "\", true)' value='" + _("I agree.") + "' id='agreebutton' />";
 	kickoutquestion += "&nbsp;";
 	kickoutquestion += "<input type='button' onclick='goDCVoteVector.askKickOutNext(\"" + nextuser + "\", false)' value='" + _("I do not agree.") + "' id='disagreebutton'/>";
-	kickoutquestion += "</td>";
 
-	$$("#participant_" + goDCVoteVector.id + " td")[0].insert({
-		after: kickoutquestion
-	});
-
-
+	$("statusmessage").update(kickoutquestion);
 };
 
 /*********************************
@@ -714,8 +713,8 @@ Vote.prototype.sendNextKickoutKey = function () {
 		return;
 	}
 	nextvictim = gaKickUsers.pop();
-	$("participant_" + this.id).update("<td colspan='" + (giDCNumTables + 3) + "'>" + printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[nextvictim]]) + "</td>");
-	this.kickOut(nextvictim, goDCVoteVector.sendNextKickoutKey);
+	$("participant_" + this.id).update("<td colspan='" + (gaDCColumnsLen + 3) + "'>" + printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[nextvictim]]) + "</td>");
+	this.kickOut(nextvictim, this.sendNextKickoutKey);
 };
 
 /****************************************************
@@ -724,13 +723,13 @@ Vote.prototype.sendNextKickoutKey = function () {
  ****************************************************/
 Vote.prototype.userWasFaster = function () {
 	this.calculationReady = this.sendVote;
-	$("participant_" + this.id).update("<td colspan='" + (giDCNumTables + 3) + "'>" + _("Please wait while calculating keys ...") + "</td>");
+	$("participant_" + this.id).update("<td colspan='" + (gaDCColumnsLen + 3) + "'>" + _("Please wait while calculating keys ...") + "</td>");
 };
 
 Vote.prototype.sendVote = function () {
 	var _inverted, _colidx, _col, randomTable, voteval, _table, ar;
 
-	$("participant_" + this.id).update("<td colspan='" + (giDCNumTables + 3) + "'>" + _("Please wait while sending the vote ...") + "</td>");
+	$("participant_" + this.id).update("<td colspan='" + (gaDCColumnsLen + 3) + "'>" + _("Please wait while sending the vote ...") + "</td>");
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
