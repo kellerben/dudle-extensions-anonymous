@@ -608,13 +608,16 @@ Vote.prototype.startKeyCalc = function () {
  * messages instead                                               *
  ******************************************************************/
 Vote.prototype.gfRemoveVoteButtons = function () {
-	for (i = 0; i < gaDCColumnsLen; ++i) {
-		$$("#participant_" + this.id + " td")[1].remove();
+	// only do something in the first call
+	if ($("statusmessage") == null) {
+		for (i = 0; i < gaDCColumnsLen; ++i) {
+			$$("#participant_" + this.id + " td")[1].remove();
+		}
+		$("votebutton").disabled = true;
+		$$("#participant_" + this.id + " td")[0].insert({
+			after: "<td id='statusmessage' colspan='" + gaDCColumnsLen + "'>"
+		});
 	}
-	$("votebutton").remove();
-	$$("#participant_" + this.id + " td")[0].insert({
-		after: "<td id='statusmessage' colspan='" + gaDCColumnsLen + "'>"
-	});
 };
 
 /******************************************************************
@@ -713,7 +716,7 @@ Vote.prototype.sendNextKickoutKey = function () {
 		return;
 	}
 	nextvictim = gaKickUsers.pop();
-	$("participant_" + this.id).update("<td colspan='" + (gaDCColumnsLen + 3) + "'>" + printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[nextvictim]]) + "</td>");
+	$("statusmessage").update(printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[nextvictim]]));
 	this.kickOut(nextvictim, this.sendNextKickoutKey);
 };
 
@@ -723,13 +726,15 @@ Vote.prototype.sendNextKickoutKey = function () {
  ****************************************************/
 Vote.prototype.userWasFaster = function () {
 	this.calculationReady = this.sendVote;
-	$("participant_" + this.id).update("<td colspan='" + (gaDCColumnsLen + 3) + "'>" + _("Please wait while calculating keys ...") + "</td>");
+	this.gfRemoveVoteButtons();
+	$("statusmessage").update(_("Please wait while calculating keys ..."));
 };
 
 Vote.prototype.sendVote = function () {
 	var _inverted, _colidx, _col, randomTable, voteval, _table, ar;
 
-	$("participant_" + this.id).update("<td colspan='" + (gaDCColumnsLen + 3) + "'>" + _("Please wait while sending the vote ...") + "</td>");
+	this.gfRemoveVoteButtons();
+	$("statusmessage").update(_("Please wait while sending the vote ..."));
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {
