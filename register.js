@@ -53,6 +53,7 @@ function showRegister(name) {
 	_r += "<td><input type='button' value='" + _("Cancel") + "' onClick='showContent()'/> ";
 	_r += "<input type='button' id='next' value='" + _("Next") + "' onclick='checkUserExistance()'/></td>";
 	_r += "</tr><tr id='registererror' /></table>";
+	_r += "<div id='languageChooser'>" + $('languageChooser').innerHTML + "</div>";
 	$('content').update(_r);
 
 	$('active_tab').removeClassName("active_tab");
@@ -148,11 +149,11 @@ function showKeyAgain() {
 // summary
 function showFinish() {
 	var _r = "<tr>";
-	_r += "<td colspan='2' class='textcolumn'>" + _("You successfully registered an Account. With your secret key, you are able to participate in anonymous polls. Make sure, that you do not loose your secret key. Without the key, nobody is able to vote for the username.") + "</td>";
+	_r += "<td colspan='2' class='textcolumn'>" + _("You registered an account successfully. With your secret key, you are able to participate in anonymous polls. Make sure, that you do not loose your secret key. Without the key, nobody is able to vote for the username.") + "</td>";
 	_r += "</tr><tr>";
 	_r += "<td colspan='2'><ul>";
 	_r += "<li><a href='javascript:showKeyAgain()'>" + _('Click here in order to view and backup your secret key (last chance)') + "</a></li>";
-	_r += "<li><a href='javascript:gfDCReload()'>" + _('Return to dudle home and Schedule a new Poll') + "</a></li>";
+	_r += "<li><a href='javascript:gfDCReload()'>" + _('Return to dudle home and schedule a new poll') + "</a></li>";
 	_r += "</ul></td>";
 	_r += "</tr><tr id='keyplaceholder'></tr>";
 	$('register').update(_r);
