@@ -25,7 +25,7 @@ var _oParticipants;
 var gsDCSaveButtonLabel = $("savebutton").value;
 var gaAllUsers;
 
-$("add_participant").insert({after: "<tr><td colspan='3' class='warning' id='registerederror'></td></tr>"});
+$("add_participant").insert({after: "<tr><td colspan='4' class='warning' id='registerederror'></td></tr>"});
 function checkcheckbox(successfunction) {
 	var ar, curname = $F("add_participant_input");
 	$("registerederror").update("");
