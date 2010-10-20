@@ -1,0 +1,97 @@
+\documentclass[a4paper]{article}
+<%#\usepackage[utf8]{inputenc}%>
+\usepackage{tikz}
+\usetikzlibrary{matrix}
+\usepackage[colorlinks,urlcolor = black]{hyperref}
+\pgfrealjobname{foo}
+\begin{document}
+<%
+	class String
+		def escapetex
+			self.gsub("#","\\#").gsub("%","\%")
+		end
+	end
+
+	require "pp"
+	require "open-uri"
+
+	require "json"
+
+	load "init"
+
+	p = JSON.parse(open("#{URL}/extensions/dc-net/webservices.cgi?service=getParticipants&pollID=#{POLLID}").gets)
+
+	realnames = {}
+	p.each_key {|user|
+		realnames[user] = open("#{URL}/extensions/dc-net/keyserver.cgi?service=getName&gpgID=#{user}").gets
+	}
+	REALNAMES = realnames
+
+	numKeysUsed = {}
+	p.each{|participant,state|
+		if state["voted"]
+			state["voted"].each{|cols,usedkeys|
+				if cols.include?(COLUMN)
+					numKeysUsed[participant] = "$_#{usedkeys.size}$"
+				end
+			}
+		end
+	}
+	NUMUSEDKEYS = numKeysUsed
+	RINGSIZE=6
+%>
+\beginpgfgraphicnamed{keygraph}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+\begin{tikzpicture}[thick,->]
+	\matrix[matrix of nodes,anchor=south,every node/.style={anchor=west,font=\bfseries}] at (0,<%=RINGSIZE+0.3%>) {%
+		Poll: &\href{<%="#{URL}/#{POLLID}"%>}{<%="#{URL}/#{POLLID}"%>}\\
+		Column: &<%=COLUMN.escapetex%>\\
+	};
+<%= 
+	ret = ''
+	s = p.keys.size.to_f
+	p.keys.each_with_index{|participant,i|
+		ret += "\\path (0,0) -- +(#{(360/s*i).to_i}:#{RINGSIZE}) node (#{participant}) {#{REALNAMES[participant]}#{NUMUSEDKEYS[participant]}};\n"
+	}
+	ret
+%>
+<%=
+	ret = ""
+	p.each{|participant,state|
+		if state["voted"]
+			state["voted"].each{|cols,usedkeys|
+				if cols.include?(COLUMN)
+					usedkeys.each{|other|
+						ret += "\\draw (#{participant}) -- (#{other});\n"
+					}
+				end
+			}
+		end
+		if state["flying"]
+			state["flying"].each{|kicker,columns|
+				if columns.include?(COLUMN)
+					ret += "\\begin{pgfonlayer}{foreground}\n"
+					ret += "\\draw[color=red,thick] (#{kicker}) -- (#{participant});% node[pos=0.9,color=red,sloped]{xxx};\n"
+					ret += "\\end{pgfonlayer}\n"
+				end
+			}
+		end
+	}
+	ret
+%>
+	\matrix[draw,matrix of nodes,anchor=north,every node/.style={anchor=west}]  at (0,-<%=RINGSIZE+0.3%>){%
+		Alice$_5$
+		&Alice encrypted her vote with 5 keys\\
+		\draw node[anchor=east]{x} (0,0) -- (1,0) node[anchor=west]{y};
+		&x used y's key\\
+		\draw node[anchor=east]{x} (0,0) -- (1,0) node[anchor=west]{y};
+		\draw[color=red] (0,0) -- (1,0);
+		&x released y's key\\
+	};
+\end{tikzpicture}
+
+
+\endpgfgraphicnamed
+\end{document}
