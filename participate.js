@@ -501,8 +501,26 @@ function calcResult() {
 					}
 				}
 			}
+			$$("tr#summary td.name")[0].writeAttribute("onclick", "gfShowKeygraphLinks()");
+			console.log("fertig");
 		}
 	});
+}
+
+gbKeyGraphLinksHidden = true;
+function gfShowKeygraphLinks() {
+	if (gbKeyGraphLinksHidden) {
+		var _tr = "<tr id='keygraphlinks'><td colspan='2' />";
+		gaDCColumns.each(function (column) {
+			_tr += "<td><a href='../extensions/dc-net/keygraph.cgi?pollid=" 
+			_tr += gsDCPollID +  "&column="+ escape(column) + "' style='font-size:70%'>show keygraph" + "</a></td>";
+		});
+		$("summary").insert({after:_tr});
+		gbKeyGraphLinksHidden = false;
+	} else {
+		$("keygraphlinks").remove();
+		gbKeyGraphLinksHidden = true;
+	}
 }
 
 function gfDH2AES(dh) {

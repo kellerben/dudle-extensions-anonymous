@@ -8,7 +8,7 @@
 <%
 	class String
 		def escapetex
-			self.gsub("#","\\#").gsub("%","\%")
+			self.gsub("#","\\#").gsub("%","\%").gsub("_","\\_")
 		end
 	end
 
@@ -46,7 +46,7 @@
 \pgfsetlayers{background,main,foreground}
 \begin{tikzpicture}[thick,->]
 	\matrix[matrix of nodes,anchor=south,every node/.style={anchor=west,font=\bfseries}] at (0,<%=RINGSIZE+0.3%>) {%
-		Poll: &\href{<%="#{URL}/#{POLLID}"%>}{<%="#{URL}/#{POLLID}"%>}\\
+		Poll: &\href{<%="#{URL.escapetex}/#{POLLID.escapetex}"%>}{<%="#{URL.escapetex}/#{POLLID.escapetex}"%>}\\
 		Column: &<%=COLUMN.escapetex%>\\
 	};
 <%= 
