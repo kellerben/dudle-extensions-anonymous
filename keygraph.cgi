@@ -22,35 +22,43 @@
 require "cgi"
 require "pp"
 $c = CGI.new
-$header = {}
-tmpdir = "/tmp/keygraph.#{rand(9999999)}"
-Dir.mkdir(tmpdir)
-`cp keygraph.tex.erb #{tmpdir}`
-Dir.chdir(tmpdir)
 
-File.open("init","w"){|f|
-	f << <<INIT
-URL = "http://#{$c.server_name}#{$c.script_name.gsub(/\/extensions\/dc-net\/keygraph.cgi$/,"")}"
-POLLID = "#{$c["pollid"]}"
-COLUMN = "#{$c["column"]}"
+# prevent malicious input as these fields are evaled afterwards
+if $c["pollid"] =~ /^[a-zA-Z0-9_-]*$/ && $c["column"] =~ /^[a-zA-Z0-9_\#: -]*$/
+
+	$header = {}
+	tmpdir = "/tmp/keygraph.#{rand(9999999)}"
+	Dir.mkdir(tmpdir)
+	`cp keygraph.tex.erb #{tmpdir}`
+	Dir.chdir(tmpdir)
+
+
+	File.open("init","w"){|f|
+		f << <<INIT
+	URL = "http://#{$c.server_name}#{$c.script_name.gsub(/\/extensions\/dc-net\/keygraph.cgi$/,"")}"
+	POLLID = "#{$c["pollid"]}"
+	COLUMN = "#{$c["column"]}"
 INIT
-}
-`erb keygraph.tex.erb > keygraph.tex`
-`pdflatex keygraph`
+	}
+	`erb keygraph.tex.erb > keygraph.tex`
+	`pdflatex keygraph`
 
 
-if File.exists?("keygraph.pdf")
-	$header["type"]= "application/pdf"
-	$header["Content-Disposition"] = "attachment; filename=keygraph_#{$c["pollid"]}.pdf"
-	out = File.open("keygraph.pdf","r").readlines.join("")
+	if File.exists?("keygraph.pdf")
+		$header["type"]= "application/pdf"
+		$header["Content-Disposition"] = "attachment; filename=keygraph_#{$c["pollid"]}.pdf"
+		out = File.open("keygraph.pdf","r").readlines.join("")
+	else
+		$header["type"] = "text/plain"
+		out = $c.pretty_inspect
+		out += "\n"
+		out += File.open("init","r").readlines.join("")
+		out += "\n"
+		out += File.open("keygraph.log","r").readlines.join("")
+	end
+
+	$c.out($header){out}
+	`rm -rf #{tmpdir}`
 else
-	$header["type"] = "text/plain"
-	out = $c.pretty_inspect
-	out += "\n"
-	out += File.open("init","r").readlines.join("")
-	out += "\n"
-	out += File.open("keygraph.log","r").readlines.join("")
+	$c.out(){"Sorry, no keygraph available for this column. Try another one!"}
 end
-
-$c.out($header){out}
-`rm -rf #{tmpdir}`
