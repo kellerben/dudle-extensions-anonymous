@@ -62,14 +62,14 @@ function gfDCUserTd(userid, editable) {
 	var _ret = "";
 	if (editable) {
 		_ret += "<td><span class='edituser'><a href='javascript:editUser(\"" + userid + "\")'";
-		_ret += "title='" + printf(_("Edit user %1..."), [userid]) + "'>";
+		_ret += "title='" + printf(_("Vote for user %1..."), [userid]) + "'>";
 		_ret += gsDCEdit + "</a>";
 		_ret += "&nbsp;|&nbsp;<a href='javascript:deleteUser(\"" + userid + "\")'";
 		_ret += "title='" + printf(_("Delete user %1..."), [userid]) + "'>";
 		_ret += gsDCDelete + "</a></span></td>";
-		_ret += "<td class='name'>";
+		_ret += "<td class='name' title='ID: " + userid + "'>";
 	} else {
-		_ret += "<td class='name' colspan='2'>";
+		_ret += "<td class='name' title='ID: " + userid + "' colspan='2'>";
 	}
 	_ret += "<span id='" + userid + "'>" + printf(_("fetching user name for %1 ..."), [userid]) + "</span>";
 	_ret += "</td>";

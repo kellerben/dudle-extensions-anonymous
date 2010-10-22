@@ -47,7 +47,7 @@ function checkcheckbox(successfunction) {
 			onFailure: function (transport) {
 				$("savebutton").value = gsDCSaveButtonLabel;
 				$("add_participant_input").focus();
-				$("registerederror").update(_("Only registered users can participate privacy-enhanced."));
+				$("registerederror").update(_("Only registered users can vote anonymously."));
 			}
 		});
 	} else {
@@ -68,7 +68,7 @@ var ar = new Ajax.Request(gsDCExtensiondir + 'webservices.cgi', {
 		// Add existing participants
 
 		$("participanttable").select("th").each(function (th) {
-			th.insert({after: "<th>" + _("Privacy Enhanced") + "</th>"});
+			th.insert({after: "<th>" + _("Vote Anonymously") + "</th>"});
 		});
 
 		usedKeys = $H(_oParticipants).collect(function (_elem) {

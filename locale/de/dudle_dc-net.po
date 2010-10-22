@@ -2,10 +2,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-09-21 18:00+0200\n"
+"POT-Creation-Date: 2010-10-22 08:39+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,8 +17,8 @@ msgid "Failed to fetch name for %1."
 msgstr "Konnte Namen von %1 nicht holen."
 
 #: common.js:65
-msgid "Edit user %1..."
-msgstr "Bearbeite Teilnehmer %1..."
+msgid "Vote for user %1..."
+msgstr "Für Teilnehmer %1 abstimmen..."
 
 #: common.js:68
 msgid "Delete user %1..."
@@ -38,17 +39,17 @@ msgid "Checking Username"
 msgstr "Überprüfe Benutzername"
 
 #: invite_participants.js:50
-msgid "Only registered users can participate privacy-enhanced."
-msgstr "Nur angemeldete Nutzer können datenschutzfreundlich teilnehmen."
+msgid "Only registered users can vote anonymously."
+msgstr "Nur angemeldete Nutzer können anonym abstimmen."
 
 #: invite_participants.js:62
-#: participate.js:966
+#: participate.js:984
 msgid "Failed to fetch participant list."
 msgstr "Konnte die Liste der Teilnehmer nicht laden."
 
 #: invite_participants.js:71
-msgid "Privacy Enhanced"
-msgstr "Datenschutzfreundlich"
+msgid "Vote Anonymously"
+msgstr "Stimmt anonym ab"
 
 #: invite_participants.js:139
 msgid "Save Changes"
@@ -72,7 +73,7 @@ msgid "Please wait ..."
 msgstr "Bitte warten …"
 
 #: participate.js:142
-#: participate.js:719
+#: participate.js:737
 msgid "Please wait while removing %1 ..."
 msgstr "Bitte warten Sie während %1 entfernt wird …"
 
@@ -142,37 +143,37 @@ msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
 msgid "Somebody sent inconsistent values at column %1!!!"
 msgstr "Jemand hat inkonsistente Werte für Spalte %1 gesendet!!!"
 
-#: participate.js:670
+#: participate.js:688
 msgid "%1 wants to remove %2."
 msgid_plural "Some Users (%1) want to remove %2."
 msgstr[0] "%1 möchte %2 entfernen."
 msgstr[1] "Einige Benutzer (%1) möchten %2 entfernen."
 
-#: participate.js:676
+#: participate.js:694
 msgid "I agree."
 msgstr "Ich stimme zu."
 
-#: participate.js:678
+#: participate.js:696
 msgid "I do not agree."
 msgstr "Ich stimme nicht zu."
 
-#: participate.js:730
+#: participate.js:748
 msgid "Please wait while calculating keys ..."
 msgstr "Bitte warten Sie, während die Schlüssel berechnet werden ..."
 
-#: participate.js:737
+#: participate.js:755
 msgid "Please wait while sending the vote ..."
 msgstr "Bitte warten Sie während ihre Auswahl gesendet wird …"
 
-#: participate.js:922
+#: participate.js:940
 msgid "A user with the same name is configured for anonymous voting!"
 msgstr "Ein Benutzer mit diesem Namen wurde für die anonyme Abstimmung eingeladen!"
 
-#: participate.js:924
+#: participate.js:942
 msgid "I have the secret key for user %1."
 msgstr "Ich habe den geheimen Schlüssel für Benutzer %1."
 
-#: participate.js:926
+#: participate.js:944
 msgid "Continue with non-anonymous voting."
 msgstr "Nicht anonym abstimmen (jeder sieht meine Stimme)."
 
@@ -237,6 +238,10 @@ msgstr "Zurück zur dudle Hauptseite um eine neue Umfrage zu erstellen"
 msgid "Failed to store key, the server said:"
 msgstr "Konnte Schlüssel nicht am server registrieren:"
 
+#~ msgid "Privacy Enhanced"
+#~ msgstr "Datenschutzfreundlich"
+#~ msgid "Edit user %1..."
+#~ msgstr "Bearbeite Teilnehmer %1..."
 #~ msgid "Last chance to backup your Secret Key"
 #~ msgstr "Klicken sie hier um ihren geheimen Schlüssel noch einmal anzuzeigen"
 #~ msgid "Calculating keys ..."
