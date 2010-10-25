@@ -24,7 +24,7 @@ require "pp"
 $c = CGI.new
 
 # prevent malicious input as these fields are evaled afterwards
-if $c["pollid"] =~ /^[a-zA-Z0-9_-]*$/ && $c["column"] =~ /^[a-zA-Z0-9_\#: -]*$/
+if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/") && $c["pollID"] != "" && $c["column"] =~ /^[a-zA-Z0-9_\#: -]*$/
 
 	$header = {}
 	tmpdir = "/tmp/keygraph.#{rand(9999999)}"
@@ -36,17 +36,18 @@ if $c["pollid"] =~ /^[a-zA-Z0-9_-]*$/ && $c["column"] =~ /^[a-zA-Z0-9_\#: -]*$/
 	File.open("init","w"){|f|
 		f << <<INIT
 	URL = "http://#{$c.server_name}#{$c.script_name.gsub(/\/extensions\/dc-net\/keygraph.cgi$/,"")}"
-	POLLID = "#{$c["pollid"]}"
+	POLLID = "#{$c["pollID"]}"
 	COLUMN = "#{$c["column"]}"
 INIT
 	}
+
 	`erb keygraph.tex.erb > keygraph.tex`
 	`pdflatex keygraph`
 
 
 	if File.exists?("keygraph.pdf")
 		$header["type"]= "application/pdf"
-		$header["Content-Disposition"] = "attachment; filename=keygraph_#{$c["pollid"]}.pdf"
+		$header["Content-Disposition"] = "attachment; filename=keygraph_#{$c["pollID"]}.pdf"
 		out = File.open("keygraph.pdf","r").readlines.join("")
 	else
 		$header["type"] = "text/plain"

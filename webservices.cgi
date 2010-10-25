@@ -38,7 +38,7 @@ Poll.methods.collect{|m|
 if all.include?($c["service"])
 	$header = {"type" => "text/plain"}
 
-	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/")
+	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/") && $c["pollID"] != ""
 		require "keyserver"
 		keyserverdir = File.expand_path("keyserverdata")
 
