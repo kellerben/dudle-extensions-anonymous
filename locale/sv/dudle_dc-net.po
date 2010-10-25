@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-22 08:39+0200\n"
+"POT-Creation-Date: 2010-10-25 08:30+0200\n"
 "PO-Revision-Date: 2010-03-10 14:41+0100\n"
 "Last-Translator: Erica <erica.resare@kau.se>\n"
 "Language-Team: \n"
@@ -52,7 +52,7 @@ msgstr "hämtar användarnamn för %1 ..."
 msgid "Cancel"
 msgstr "Avboka"
 
-#: invite_participants.js:34 register.js:121
+#: invite_participants.js:34 register.js:132
 msgid "Checking Username"
 msgstr "Kontrollerar användarnamn"
 
@@ -215,58 +215,75 @@ msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
 
 #: register.js:83
 msgid ""
-"Please store the secret key somewhere at your computer (e.&thinsp;g., by "
-"copying it to a textfile)."
+"You have to store a secret key somewhere at your computer. There are two "
+"possibilities to do this, please choose one method:"
 msgstr ""
-"Vänligen lagra hemlig nyckel någonstans på din dator (t ex genom att kopiera "
-"det till en textfil)."
 
 #: register.js:85
-msgid "Secret Key:"
-msgstr "Hemlig nyckel:"
-
-#: register.js:90
-msgid ""
-"Alternatively, you may bookmark this link, which inserts the key into the "
-"login field:"
+msgid "Create a bookmark%1 of the following link:"
 msgstr ""
-"Alternativt kan du bokmärka denna länk för att infoga nyckeln i fältet för "
-"inloggning:"
 
-#: register.js:95
+#: register.js:91
 msgid "insert dudle key (%1)"
 msgstr "Infoga dudle nyckel (%1)"
 
+#: register.js:98
+msgid "Copy the following key it to a textfile:"
+msgstr ""
+
 #: register.js:108
+msgid ""
+"To create a bookmark, you have to right-click on the insert-dudle-key-link "
+"and choose the appropriate option from the context menu."
+msgstr ""
+
+#: register.js:119
 msgid "Previous"
 msgstr "Föregående"
 
-#: register.js:109
+#: register.js:120
 msgid "Finish"
 msgstr "Klar"
 
-#: register.js:128
+#: register.js:139
 msgid "A user with the same name already exists."
 msgstr ""
 
-#: register.js:152
+#: register.js:163
 msgid ""
 "You registered an account successfully. With your secret key, you are able "
 "to participate in anonymous polls. Make sure, that you do not loose your "
 "secret key. Without the key, nobody is able to vote for the username."
 msgstr ""
 
-#: register.js:155
+#: register.js:166
 msgid "Click here in order to view and backup your secret key (last chance)"
 msgstr ""
 
-#: register.js:156
+#: register.js:167
 msgid "Return to dudle home and schedule a new poll"
 msgstr ""
 
-#: register.js:172
+#: register.js:183
 msgid "Failed to store key, the server said:"
 msgstr "Misslyckades med lagring av nyckel. Servern säger:"
+
+#~ msgid ""
+#~ "Please store the secret key somewhere at your computer (e.&thinsp;g., by "
+#~ "copying it to a textfile)."
+#~ msgstr ""
+#~ "Vänligen lagra hemlig nyckel någonstans på din dator (t ex genom att "
+#~ "kopiera det till en textfil)."
+
+#~ msgid "Secret Key:"
+#~ msgstr "Hemlig nyckel:"
+
+#~ msgid ""
+#~ "Alternatively, you may bookmark this link, which inserts the key into the "
+#~ "login field:"
+#~ msgstr ""
+#~ "Alternativt kan du bokmärka denna länk för att infoga nyckeln i fältet "
+#~ "för inloggning:"
 
 #~ msgid "Privacy Enhanced"
 #~ msgstr "Förhöjd Integritetsversion"

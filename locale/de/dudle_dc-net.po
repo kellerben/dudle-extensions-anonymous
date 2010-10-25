@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-22 08:39+0200\n"
+"POT-Creation-Date: 2010-10-25 08:30+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Benjamin Kellermann <Benjamin.Kellermann@tu-dresden.de>\n"
 "Language-Team: \n"
@@ -34,7 +34,7 @@ msgid "Cancel"
 msgstr "Abbrechen"
 
 #: invite_participants.js:34
-#: register.js:121
+#: register.js:132
 msgid "Checking Username"
 msgstr "Überprüfe Benutzername"
 
@@ -101,7 +101,7 @@ msgstr "Weiter"
 
 #: participate.js:217
 msgid "There are no votes depending on this user. Please vote before removing other participants."
-msgstr "Es gibt momentan keine Stimmen, die von diesem Benutzer abhängig sind. Bitte stimmen sie erst ab, bevor sie andere Teilnehmer entfernen."
+msgstr "Es gibt momentan keine Stimmen, die von diesem Benutzer abhängig sind. Bitte stimmen Sie erst ab, bevor Sie andere Teilnehmer entfernen."
 
 #: participate.js:219
 msgid "Please select your username:"
@@ -163,7 +163,7 @@ msgstr "Bitte warten Sie, während die Schlüssel berechnet werden ..."
 
 #: participate.js:755
 msgid "Please wait while sending the vote ..."
-msgstr "Bitte warten Sie während ihre Auswahl gesendet wird …"
+msgstr "Bitte warten Sie während Ihre Auswahl gesendet wird …"
 
 #: participate.js:940
 msgid "A user with the same name is configured for anonymous voting!"
@@ -195,55 +195,73 @@ msgid "Please wait while calculating a secret key ..."
 msgstr "Bitte warten Sie, ein geheimer Schlüssel wird berechnet ..."
 
 #: register.js:83
-msgid "Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile)."
-msgstr "Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;B. indem Sie ihn in eine Textdatei kopieren)."
+msgid "You have to store a secret key somewhere at your computer. There are two possibilities to do this, please choose one method:"
+msgstr "Sie müssen Sich einen geheimen Schlüssel auf Ihrem Computer speichern. Es gibt zwei Möglichkeiten, bitte wählen Sie eine:"
 
 #: register.js:85
-msgid "Secret Key:"
-msgstr "Geheimer Schlüssel:"
+msgid "Create a bookmark%1 of the following link:"
+msgstr "Setzen Sie ein Lesezeichen%1 für den folgenden Link:"
 
-#: register.js:90
-msgid "Alternatively, you may bookmark this link, which inserts the key into the login field:"
-msgstr "Alternativ können Sie ein Lesezeichen dieses Links erstellen, welcher den Schlüssel in das Loginfeld kopiert:"
-
-#: register.js:95
+#: register.js:91
 msgid "insert dudle key (%1)"
 msgstr "dudle Schlüssel einfügen (%1)"
 
+#: register.js:98
+msgid "Copy the following key it to a textfile:"
+msgstr "Kopieren Sie den folgenden Schlüssel in eine Textdatei:"
+
 #: register.js:108
+msgid "To create a bookmark, you have to right-click on the insert-dudle-key-link and choose the appropriate option from the context menu."
+msgstr "Um ein Lesezeichen zu erstellen müssen Sie mit der rechten Maustaste auf den dudle-Schlüssel-einfügen-link klicken und die passende Option aus dem Kontextmenü wählen."
+
+#: register.js:119
 msgid "Previous"
 msgstr "Zurück"
 
-#: register.js:109
+#: register.js:120
 msgid "Finish"
 msgstr "Fertig"
 
-#: register.js:128
+#: register.js:139
 msgid "A user with the same name already exists."
 msgstr "Ein Benutzer mit diesem Namen existiert bereits."
 
-#: register.js:152
+#: register.js:163
 msgid "You registered an account successfully. With your secret key, you are able to participate in anonymous polls. Make sure, that you do not loose your secret key. Without the key, nobody is able to vote for the username."
-msgstr "Sie haben erfolgreich einen Account registriert. Mit ihrem geheimen Schlüssel können sie nun an anonymen Abstimmungen teilnehmen. Achten sie darauf, den geheimen Schlüssel nicht zu verlieren. Ohne den Schlüssel ist niemand in der Lage für ihren Benutzernamen abzustimmen."
+msgstr "Sie haben erfolgreich einen Account registriert. Mit Ihrem geheimen Schlüssel können Sie nun an anonymen Abstimmungen teilnehmen. Achten Sie darauf, den geheimen Schlüssel nicht zu verlieren. Ohne den Schlüssel ist niemand in der Lage für Ihren Benutzernamen abzustimmen."
 
-#: register.js:155
+#: register.js:166
 msgid "Click here in order to view and backup your secret key (last chance)"
-msgstr "Klicken sie hier um sich ihren geheimen Schlüssel nochmal anzeigen zu lassen (letzte Möglichkeit)"
+msgstr "Klicken Sie hier um Sich Ihren geheimen Schlüssel nochmal anzeigen zu lassen (letzte Möglichkeit)"
 
-#: register.js:156
+#: register.js:167
 msgid "Return to dudle home and schedule a new poll"
 msgstr "Zurück zur dudle Hauptseite um eine neue Umfrage zu erstellen"
 
-#: register.js:172
+#: register.js:183
 msgid "Failed to store key, the server said:"
 msgstr "Konnte Schlüssel nicht am server registrieren:"
 
+#~ msgid ""
+#~ "Please store the secret key somewhere at your computer (e.&thinsp;g., by "
+#~ "copying it to a textfile)."
+#~ msgstr ""
+#~ "Bitte speichern Sie den geheimen Schlüssel in Ihrem Computer (z.&thinsp;"
+#~ "B. indem Sie ihn in eine Textdatei kopieren)."
+#~ msgid "Secret Key:"
+#~ msgstr "Geheimer Schlüssel:"
+#~ msgid ""
+#~ "Alternatively, you may bookmark this link, which inserts the key into the "
+#~ "login field:"
+#~ msgstr ""
+#~ "Alternativ können Sie ein Lesezeichen dieses Links erstellen, welcher den "
+#~ "Schlüssel in das Loginfeld kopiert:"
 #~ msgid "Privacy Enhanced"
 #~ msgstr "Datenschutzfreundlich"
 #~ msgid "Edit user %1..."
 #~ msgstr "Bearbeite Teilnehmer %1..."
 #~ msgid "Last chance to backup your Secret Key"
-#~ msgstr "Klicken sie hier um ihren geheimen Schlüssel noch einmal anzuzeigen"
+#~ msgstr "Klicken Sie hier um Ihren geheimen Schlüssel noch einmal anzuzeigen"
 #~ msgid "Calculating keys ..."
 #~ msgstr "Berechne Schlüssel ..."
 #~ msgid "Fetching Name for %1 ..."

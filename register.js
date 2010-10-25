@@ -79,24 +79,35 @@ var gsDCUserName;
 // returns all information about the storage of the secret key within a <tr></tr>
 function keyTr() {
 	var _r = "<tr>";
-	_r += "<td></td>";
-	_r += "<td class='textcolumn'>" + _("Please store the secret key somewhere at your computer (e.&thinsp;g., by copying it to a textfile).") + "</td>";
-	_r += "</tr><tr>";
-	_r += "<td class='label'><label for='key'>" + _("Secret Key:") + "</label></td>";
-	_r += "<td><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
-	_r += goDCVoteVector.sec.toString(16) + "</textarea></td>";
-	_r += "</tr><tr>";
-	_r += "<td></td>";
-	_r += "<td class='textcolumn'>" + _("Alternatively, you may bookmark this link, which inserts the key into the login field:");
+	_r += "<td />"
+	_r += "<td class='textcolumn'>" + _("You have to store a secret key somewhere at your computer. There are two possibilities to do this, please choose one method:");
+	_r += "<ul><li>";
+	_r += printf(_("Create a bookmark%1 of the following link:"), ["<sup><a id='howtoLink' href='javascript:howtoCreateBookmark()'>?</a></sup>"]);
+
 	_r += " <a href=\"javascript:void(";
 	_r += "document.getElementById('key').value='";
 	_r += goDCVoteVector.sec.toString(16);
 	_r += "')\">";
-	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a>.';
-	_r += "</td>";
-	_r += "</tr>";
+	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a>';
+
+	_r += "<div id='bookmarkhint' class='hint'></div>"
+
+
+	_r += "</li><li>"
+
+	_r += _("Copy the following key it to a textfile:");
+	_r += "<br /><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
+	_r += goDCVoteVector.sec.toString(16) + "</textarea>";
+
+	_r += "</li></ul></tr>";
+
 	return _r;
 }
+
+function howtoCreateBookmark() {
+	$("bookmarkhint").update(_("To create a bookmark, you have to right-click on the insert-dudle-key-link and choose the appropriate option from the context menu."));
+}
+
 
 // the second and last step (asks to store the key)
 function secondRegisterStep() {
