@@ -80,7 +80,7 @@ var gsDCUserName;
 function keyTr() {
 	var _r = "<tr>";
 	_r += "<td />"
-	_r += "<td class='textcolumn'>" + _("You have to store a secret key somewhere at your computer. There are two possibilities to do this, please choose one method:");
+	_r += "<td class='textcolumn'>" + _("You have to store a secret key (like a password) somewhere at your computer. There are two possibilities to do this, please choose one:");
 	_r += "<ul><li>";
 	_r += printf(_("Create a bookmark%1 of the following link:"), ["<sup><a id='howtoLink' href='javascript:howtoCreateBookmark()'>?</a></sup>"]);
 
@@ -109,17 +109,45 @@ function howtoCreateBookmark() {
 }
 
 
-// the second and last step (asks to store the key)
+// the second step (asks to store the key)
 function secondRegisterStep() {
 	var _r;
-	gsDCUserName = $F('name');
 	_r = keyTr();
 	_r += "<tr>";
 	_r += "<td></td>";
 	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='showRegister(\"" + gsDCUserName + "\");' /> ";
-	_r += "<input type='button' value='" + _("Finish") + "' onclick='register()'/></td>";
+	_r += "<input type='button' id='next' value='" + _("Next") + "' onclick='thirdRegisterStep()'/></td>";
 	_r += "</tr>";
 	$('register').update(_r);
+}
+
+// the third and last step (asks to repeat the key)
+function thirdRegisterStep() {
+	var _r;
+	_r = "<tr><td colspan='2'>";
+	_r += printf(_("To validate the correct storage of your key, please enter your secret key%1:"), ["<sup><a id='howtoEnterKey' href='javascript:howtoEnterKey()'>?</a></sup>"]);
+	_r += "<div id='enterkeyhint' class='hint'></div>"
+	_r += "</td></tr>";
+	_r += "<tr><td><label for='key'>" + printf(_("Secret Key for %1:"), [gsDCUserName]) + "</label></td>";
+	_r += "<td><textarea id='key' type='text' cols='100' rows='3'></textarea></td></tr>";
+	_r += "<tr>";
+	_r += "<td></td>";
+	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='secondRegisterStep()' /> ";
+	_r += "<input type='button' value='" + _("Finish") + "' onclick='checkCorrectness()'/></td>";
+	_r += "</tr><tr><td /><td id='keyValidationError' class='warning' /></tr>";
+	$('register').update(_r);
+}
+
+function howtoEnterKey() {
+	$("enterkeyhint").update(_("If you created a bookmark in the previous step, click on it to enter the key."));
+}
+
+function checkCorrectness() {
+	if (goDCVoteVector.sec.toString(16) === $("key").value) {
+		register();
+	} else {
+		$("keyValidationError").update(_("The entered key is wrong!"));
+	}
 }
 
 // avoid double registration
@@ -142,6 +170,7 @@ function checkUserExistance() {
 			onFailure: function (transport) {
 				$("next").value = label;
 				$("next").enable();
+				gsDCUserName = $F('name');
 				secondRegisterStep();
 			}
 		});

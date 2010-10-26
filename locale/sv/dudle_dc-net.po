@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-10-25 08:30+0200\n"
+"POT-Creation-Date: 2010-10-26 08:29+0200\n"
 "PO-Revision-Date: 2010-03-10 14:41+0100\n"
 "Last-Translator: Erica <erica.resare@kau.se>\n"
 "Language-Team: \n"
@@ -52,7 +52,7 @@ msgstr "hämtar användarnamn för %1 ..."
 msgid "Cancel"
 msgstr "Avboka"
 
-#: invite_participants.js:34 register.js:132
+#: invite_participants.js:34 register.js:160
 msgid "Checking Username"
 msgstr "Kontrollerar användarnamn"
 
@@ -74,7 +74,7 @@ msgstr "Har röstat anonymt."
 msgid "Save Changes"
 msgstr ""
 
-#: participate.js:59 participate.js:190
+#: participate.js:59 participate.js:190 register.js:131
 #, fuzzy
 msgid "Secret Key for %1:"
 msgstr "Hemlig nyckel:"
@@ -97,8 +97,8 @@ msgstr ""
 msgid "Please wait while removing %1 ..."
 msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
 
-#: participate.js:154 participate.js:333
-msgid "You entered a wrong key!"
+#: participate.js:154 register.js:149
+msgid "The entered key is wrong!"
 msgstr ""
 
 #: participate.js:155 participate.js:336
@@ -110,6 +110,7 @@ msgid "Delete %1"
 msgstr ""
 
 #: participate.js:194 participate.js:305 register.js:54 register.js:72
+#: register.js:119
 msgid "Next"
 msgstr "Nästa"
 
@@ -126,6 +127,10 @@ msgstr ""
 #: participate.js:283
 msgid "Save"
 msgstr "Spara"
+
+#: participate.js:333
+msgid "You entered a wrong key!"
+msgstr ""
 
 #: participate.js:376
 msgid "Has voted anonymously."
@@ -215,8 +220,8 @@ msgstr "Vänligen vänta medan hemlig nyckel beräknas ..."
 
 #: register.js:83
 msgid ""
-"You have to store a secret key somewhere at your computer. There are two "
-"possibilities to do this, please choose one method:"
+"You have to store a secret key (like a password) somewhere at your computer. "
+"There are two possibilities to do this, please choose one:"
 msgstr ""
 
 #: register.js:85
@@ -237,34 +242,44 @@ msgid ""
 "and choose the appropriate option from the context menu."
 msgstr ""
 
-#: register.js:119
+#: register.js:118 register.js:135
 msgid "Previous"
 msgstr "Föregående"
 
-#: register.js:120
+#: register.js:128
+msgid ""
+"To validate the correct storage of your key, please enter your secret key%1:"
+msgstr ""
+
+#: register.js:136
 msgid "Finish"
 msgstr "Klar"
 
-#: register.js:139
+#: register.js:142
+msgid ""
+"If you created a bookmark in the previous step, click on it to enter the key."
+msgstr ""
+
+#: register.js:167
 msgid "A user with the same name already exists."
 msgstr ""
 
-#: register.js:163
+#: register.js:192
 msgid ""
 "You registered an account successfully. With your secret key, you are able "
 "to participate in anonymous polls. Make sure, that you do not loose your "
 "secret key. Without the key, nobody is able to vote for the username."
 msgstr ""
 
-#: register.js:166
+#: register.js:195
 msgid "Click here in order to view and backup your secret key (last chance)"
 msgstr ""
 
-#: register.js:167
+#: register.js:196
 msgid "Return to dudle home and schedule a new poll"
 msgstr ""
 
-#: register.js:183
+#: register.js:212
 msgid "Failed to store key, the server said:"
 msgstr "Misslyckades med lagring av nyckel. Servern säger:"
 

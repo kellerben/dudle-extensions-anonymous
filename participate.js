@@ -151,7 +151,7 @@ Vote.prototype.kickOutUserInterface = function (_victim) {
 						}
 				);
 			} else {
-				var _errormsg = _("You entered a wrong key!");
+				var _errormsg = _("The entered key is wrong!");
 				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsDCKickerId + "\")})()'>" + _("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
 				$("kickoutbutton").value = printf(_("Delete %1"), [goDCRealUserNames[_victim]]);
