@@ -90,7 +90,7 @@ function fetchKey(id) {
 }
 
 function startCalcDisableButton(button) {
-	$("key_td").update(_("Calculating the public key ..."));
+	$("key_td").update(_("Calculating the public key &hellip;"));
 	$(button).value = _("Please wait ...");
 	$(button).disable();
 }
@@ -139,7 +139,7 @@ Vote.prototype.kickOutUserInterface = function (_victim) {
 		$("cancelbutton").disable();
 		goDCVoteVector.setSecKey(key, function () {
 			if (goDCVoteVector.id === gsDCKickerId) {
-				$("key_td").update(printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[_victim]]));
+				$("key_td").update(printf(_("Please wait while removing %1 &hellip;"), [goDCRealUserNames[_victim]]));
 				goDCVoteVector.participants[_victim] = fetchKey(_victim);
 
 				// calculate the dh secret
@@ -734,7 +734,7 @@ Vote.prototype.sendNextKickoutKey = function () {
 		return;
 	}
 	nextvictim = gaKickUsers.pop();
-	$("statusmessage").update(printf(_("Please wait while removing %1 ..."), [goDCRealUserNames[nextvictim]]));
+	$("statusmessage").update(printf(_("Please wait while removing %1 &hellip;"), [goDCRealUserNames[nextvictim]]));
 	this.kickOut(nextvictim, this.sendNextKickoutKey);
 };
 
@@ -745,14 +745,14 @@ Vote.prototype.sendNextKickoutKey = function () {
 Vote.prototype.userWasFaster = function () {
 	this.calculationReady = this.sendVote;
 	this.gfRemoveVoteButtons();
-	$("statusmessage").update(_("Please wait while calculating keys ..."));
+	$("statusmessage").update(_("Please wait while calculating keys &hellip;"));
 };
 
 Vote.prototype.sendVote = function () {
 	var _inverted, _colidx, _col, randomTable, voteval, _table, ar;
 
 	this.gfRemoveVoteButtons();
-	$("statusmessage").update(_("Please wait while sending the vote ..."));
+	$("statusmessage").update(_("Please wait while sending the vote &hellip;"));
 
 	// choose random table 
 	for (_inverted = 0; _inverted < 2; _inverted++) {

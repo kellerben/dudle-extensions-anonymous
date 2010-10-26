@@ -76,19 +76,47 @@ function showRegister(name) {
 
 var gsDCUserName;
 
+var gscreateBookmark = _("Create a bookmark of the following link:");
+var gsenterkeyhint = _("If you created a bookmark in the previous step, click on it to enter the key.");
+var gsbookmarkhint = _("To create a bookmark, you have to right-click on the insert-dudle-key-link and choose the appropriate option from the context menu.");
+
+switch(gfBrowserName()){
+	case "ie":
+		gscreateBookmark = _("Create a Favorite of the following link:")
+		gsenterkeyhint = _("If you created a Favorite in the previous step, click on it to enter the key.");
+		gsbookmarkhint = _('To create a Favorite, you have to right-click on the insert-dudle-key-link and click on &ldquo;Add to Favorites&hellip;&rdquo;.');
+		break;
+	case "firefox":
+		gsbookmarkhint = _('To create a bookmark, you have to right-click on the insert-dudle-key-link and click on &ldquo;Bookmark This Link&rdquo;.');
+		break;
+	case "safari":
+		gsbookmarkhint = _('To create a bookmark, you have to drag-and-drop the link into your bookmark bar.');
+		break;
+	case 'opera':
+		gsbookmarkhint = _('To create a bookmark, you have to right-click on the insert-dudle-key-link and click on &ldquo;Bookmark Link&hellip;&rdquo;.');
+		break;
+	case "chrome":
+		gsbookmarkhint = _('To create a bookmark, you have to drag-and-drop the link into your bookmark manager.');
+		break;
+}
+
+function gfHowtoCreateBookmark() {
+	$("bookmarkhint").update(gsbookmarkhint);
+}
+
 // returns all information about the storage of the secret key within a <tr></tr>
 function keyTr() {
 	var _r = "<tr>";
 	_r += "<td />"
 	_r += "<td class='textcolumn'>" + _("You have to store a secret key (like a password) somewhere at your computer. There are two possibilities to do this, please choose one:");
 	_r += "<ul><li>";
-	_r += printf(_("Create a bookmark%1 of the following link:"), ["<sup><a id='howtoLink' href='javascript:howtoCreateBookmark()'>?</a></sup>"]);
+	_r += gscreateBookmark;
 
-	_r += " <a href=\"javascript:void(";
+	_r += " <span onclick='gfHowtoCreateBookmark()'><a href=\"javascript:void(";
 	_r += "document.getElementById('key').value='";
 	_r += goDCVoteVector.sec.toString(16);
 	_r += "')\">";
-	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a>';
+	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a></span>';
 
 	_r += "<div id='bookmarkhint' class='hint'></div>"
 
@@ -96,16 +124,12 @@ function keyTr() {
 	_r += "</li><li>"
 
 	_r += _("Copy the following key it to a textfile:");
-	_r += "<br /><textarea readonly='readonly' id='key' type='text' cols='100' rows='3'>";
+	_r += "<br /><textarea readonly='readonly' id='key' type='text' cols='70' rows='3'>";
 	_r += goDCVoteVector.sec.toString(16) + "</textarea>";
 
 	_r += "</li></ul></tr>";
 
 	return _r;
-}
-
-function howtoCreateBookmark() {
-	$("bookmarkhint").update(_("To create a bookmark, you have to right-click on the insert-dudle-key-link and choose the appropriate option from the context menu."));
 }
 
 
@@ -121,25 +145,27 @@ function secondRegisterStep() {
 	$('register').update(_r);
 }
 
+function gfHowtoEnterKey() {
+	$("enterkeyhint").update(gsenterkeyhint);
+}
+
 // the third and last step (asks to repeat the key)
 function thirdRegisterStep() {
 	var _r;
-	_r = "<tr><td colspan='2'>";
-	_r += printf(_("To validate the correct storage of your key, please enter your secret key%1:"), ["<sup><a id='howtoEnterKey' href='javascript:howtoEnterKey()'>?</a></sup>"]);
-	_r += "<div id='enterkeyhint' class='hint'></div>"
+	_r = "<tr><td colspan='3'>";
+	_r += _("To validate the correct storage of your key, please enter your secret key:");
 	_r += "</td></tr>";
 	_r += "<tr><td><label for='key'>" + printf(_("Secret Key for %1:"), [gsDCUserName]) + "</label></td>";
-	_r += "<td><textarea id='key' type='text' cols='100' rows='3'></textarea></td></tr>";
+	_r += "<td colspan='2'><textarea id='key' type='text' cols='70' rows='3'></textarea></td></tr>";
 	_r += "<tr>";
 	_r += "<td></td>";
 	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='secondRegisterStep()' /> ";
-	_r += "<input type='button' value='" + _("Finish") + "' onclick='checkCorrectness()'/></td>";
-	_r += "</tr><tr><td /><td id='keyValidationError' class='warning' /></tr>";
+	_r += "<input type='button' value='" + _("Finish") + "' onclick='checkCorrectness()'/>"
+	_r += "</td><td style='text-align:right'>";
+	_r += "<input type='button' value='" + _("Help") + "' onclick='gfHowtoEnterKey()'/>"
+	_r += "</td></tr><tr><td /><td colspan='2' id='enterkeyhint' class='hint' style='max-width:20em' /></tr>";
+	_r += "</td></tr><tr><td /><td colspan='2' id='keyValidationError' class='warning' /></tr>";
 	$('register').update(_r);
-}
-
-function howtoEnterKey() {
-	$("enterkeyhint").update(_("If you created a bookmark in the previous step, click on it to enter the key."));
 }
 
 function checkCorrectness() {

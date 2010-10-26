@@ -62,16 +62,16 @@ function gfDCUserTd(userid, editable) {
 	var _ret = "";
 	if (editable) {
 		_ret += "<td><span class='edituser'><a href='javascript:editUser(\"" + userid + "\")'";
-		_ret += "title='" + printf(_("Vote for user %1..."), [userid]) + "'>";
+		_ret += "title='" + printf(_("Vote for user %1&hellip;"), [userid]) + "'>";
 		_ret += gsDCEdit + "</a>";
 		_ret += "&nbsp;|&nbsp;<a href='javascript:deleteUser(\"" + userid + "\")'";
-		_ret += "title='" + printf(_("Delete user %1..."), [userid]) + "'>";
+		_ret += "title='" + printf(_("Delete user %1&hellip;"), [userid]) + "'>";
 		_ret += gsDCDelete + "</a></span></td>";
 		_ret += "<td class='name' title='ID: " + userid + "'>";
 	} else {
 		_ret += "<td class='name' title='ID: " + userid + "' colspan='2'>";
 	}
-	_ret += "<span id='" + userid + "'>" + printf(_("fetching user name for %1 ..."), [userid]) + "</span>";
+	_ret += "<span id='" + userid + "'>" + printf(_("fetching user name for %1 &hellip;"), [userid]) + "</span>";
 	_ret += "</td>";
 	return _ret;
 }
@@ -85,5 +85,18 @@ function gfDCCancelButton() {
 }
 
 function gfDCKeyTd() {
-	return "<td id='key_td' colspan='" + gaDCColumnsLen + "'><textarea id='key' cols='100' rows='2'></textarea></td>";
+	return "<td id='key_td' colspan='" + gaDCColumnsLen + "'><textarea id='key' cols='70' rows='3'></textarea></td>";
+}
+
+/* returns firefox, ie, opera, safari, chrome, unknown */
+function gfBrowserName(){
+	var agent, i, browsers;
+	agent = navigator.userAgent.toLowerCase();
+	browsers =  ["chrome","epiphany", "opera", "safari", "firefox", "ie"]
+	for	(i = 0; i < browsers.length; i++) {
+		if (agent.indexOf(browsers[i])>-1) {
+			return browsers[i];
+		}
+	}
+	return "unknown";
 }
