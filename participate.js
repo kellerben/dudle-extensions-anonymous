@@ -855,22 +855,39 @@ Vote.prototype.calculateVoteKeys = function () {
 	AES_Done();
 };
 
-/*
+/* time.hiergehtslos
+function avg(ary) {
+	var i, sum = 0;
+	for (i = 0; i < ary.length; i++){
+		sum += ary[i];
+	}
+	return sum/ary.length;
+}
+
+$("comments").insert({
+	after : "<h2>Benchmark</h2><div id='benchresult'>Please wait...</div>"
+});
+var allBench = {};
+var numRounds = 0;
 time.setReportMethod(function (log) {
-	var i = 0, total = {}, message = "";
-	for (; i < log.length; i++){
+	var i, total = {}, message = "";
+	numRounds += 1;
+	for (i=0; i < log.length; i++){
 		if (typeof(total[log[i].name]) == "undefined") total[log[i].name] = 0;
 		total[log[i].name] += log[i].delta;
 	}
 	
 	$H(total).each(function(_pair){
-		message += _pair.key + ": " + _pair.value + " ms<br />";
+		if (typeof(allBench[_pair.key]) == "undefined") allBench[_pair.key] = [];
+		allBench[_pair.key].push(_pair.value)
 	});
-	$("comments").insert({
-		after : "<h2>Benchmark</h2>" + log.join(" | ") + "<br />---------- total ----------<br />" + message
+
+	$H(allBench).each(function(_pair){
+		message += _pair.key + ": " + _pair.value.join(", ") + " avg: " + avg(_pair.value) + " (ms)<br />";
 	});
+	$("benchresult").update(log.join(" | ") + "<br />---------- total (" + numRounds + ") ----------<br />" + message);
 });
-*/
+/* time.bishierhin */
 
 /**************************************************
  * calculate a DH secret with another participant *
@@ -881,8 +898,7 @@ Vote.prototype.calcNextDHKey = (function () {
 			if (i >= this.otherParticipantArray.length) {
 				this.calculateVoteKeys();
 				this.calculationReady();
-//				time.stop("login");
-//				time.report();
+//				time.stop("login"); time.report(); time.reset(); i = 0;
 				return;
 			}
 
