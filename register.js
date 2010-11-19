@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global goDCVoteVector, giDCDHLENGTH, gsDCExtensiondir */
+/*global goDCVoteVector, giDCDHLENGTH, gsDCExtensiondir, gfBrowserName */
 
 function showRegisterTab() {
 	$('registerTab').update("<a href='javascript:showRegister(\"\");'>&nbsp;" + _("Register") + "&nbsp;</a></li>");
@@ -71,7 +71,7 @@ function showRegister(name) {
 			$('next').enable();
 			$('next').value = _('Next');
 		});
-	} 
+	}
 }
 
 var gsDCUserName;
@@ -80,24 +80,28 @@ var gscreateBookmark = _("Create a bookmark of the following link:");
 var gsenterkeyhint = _("If you created a bookmark in the previous step, click on it to enter the key.");
 var gsbookmarkhint = _("To create a bookmark, you have to right-click on the insert-dudle-key-link and choose the appropriate option from the context menu.");
 
-switch(gfBrowserName()){
-	case "ie":
-		gscreateBookmark = _("Create a Favorite of the following link:")
-		gsenterkeyhint = _("If you created a Favorite in the previous step, click on it to enter the key.");
-		gsbookmarkhint = _('To create a Favorite, you have to right-click on the insert-dudle-key-link and click on &ldquo;Add to Favorites&hellip;&rdquo;.');
-		break;
-	case "firefox":
-		gsbookmarkhint = _('To create a bookmark, you have to right-click on the insert-dudle-key-link and click on &ldquo;Bookmark This Link&rdquo;.');
-		break;
-	case "safari":
-		gsbookmarkhint = _('To create a bookmark, you have to drag-and-drop the link into your bookmark bar.');
-		break;
-	case 'opera':
-		gsbookmarkhint = _('To create a bookmark, you have to right-click on the insert-dudle-key-link and click on &ldquo;Bookmark Link&hellip;&rdquo;.');
-		break;
-	case "chrome":
-		gsbookmarkhint = _('To create a bookmark, you have to drag-and-drop the link into your bookmark manager.');
-		break;
+switch (gfBrowserName()) {
+case "ie":
+	gscreateBookmark = _("Create a Favorite of the following link:");
+	gsenterkeyhint = _("If you created a Favorite in the previous step, click on it to enter the key.");
+	gsbookmarkhint = _('To create a Favorite, you have to right-click on the insert-dudle-key-link and click on &ldquo;Add to Favorites&hellip;&rdquo;.');
+	break;
+
+case "firefox":
+	gsbookmarkhint = _('To create a bookmark, you have to right-click on the insert-dudle-key-link and click on &ldquo;Bookmark This Link&rdquo;.');
+	break;
+
+case "safari":
+	gsbookmarkhint = _('To create a bookmark, you have to drag-and-drop the link into your bookmark bar.');
+	break;
+
+case 'opera':
+	gsbookmarkhint = _('To create a bookmark, you have to right-click on the insert-dudle-key-link and click on &ldquo;Bookmark Link&hellip;&rdquo;.');
+	break;
+
+case "chrome":
+	gsbookmarkhint = _('To create a bookmark, you have to drag-and-drop the link into your bookmark manager.');
+	break;
 }
 
 function gfHowtoCreateBookmark() {
@@ -107,7 +111,7 @@ function gfHowtoCreateBookmark() {
 // returns all information about the storage of the secret key within a <tr></tr>
 function keyTr() {
 	var _r = "<tr>";
-	_r += "<td />"
+	_r += "<td />";
 	_r += "<td class='textcolumn'>" + _("You have to store a secret key (like a password) somewhere at your computer. There are two possibilities to do this, please choose one:");
 	_r += "<ul><li>";
 	_r += gscreateBookmark;
@@ -118,10 +122,10 @@ function keyTr() {
 	_r += "')\">";
 	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a></span>';
 
-	_r += "<div id='bookmarkhint' class='hint'></div>"
+	_r += "<div id='bookmarkhint' class='hint'></div>";
 
 
-	_r += "</li><li>"
+	_r += "</li><li>";
 
 	_r += _("Copy the following key it to a textfile:");
 	_r += "<br /><textarea readonly='readonly' id='key' type='text' cols='70' rows='3'>";
@@ -160,12 +164,43 @@ function thirdRegisterStep() {
 	_r += "<tr>";
 	_r += "<td></td>";
 	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='secondRegisterStep()' /> ";
-	_r += "<input type='button' value='" + _("Finish") + "' onclick='checkCorrectness()'/>"
+	_r += "<input type='button' value='" + _("Finish") + "' onclick='checkCorrectness()'/>";
 	_r += "</td><td style='text-align:right'>";
-	_r += "<input type='button' value='" + _("Help") + "' onclick='gfHowtoEnterKey()'/>"
+	_r += "<input type='button' value='" + _("Help") + "' onclick='gfHowtoEnterKey()'/>";
 	_r += "</td></tr><tr><td /><td colspan='2' id='enterkeyhint' class='hint' style='max-width:20em' /></tr>";
 	_r += "</td></tr><tr><td /><td colspan='2' id='keyValidationError' class='warning' /></tr>";
 	$('register').update(_r);
+}
+
+// summary
+function showFinish() {
+	var _r = "<tr>";
+	_r += "<td colspan='2' class='textcolumn'>" + _("You registered an account successfully. With your secret key, you are able to participate in anonymous polls. Make sure, that you do not loose your secret key. Without the key, nobody is able to vote for the username.") + "</td>";
+	_r += "</tr><tr>";
+	_r += "<td colspan='2'><ul>";
+	_r += "<li><a href='javascript:showKeyAgain()'>" + _('Click here in order to view and backup your secret key (last chance)') + "</a></li>";
+	_r += "<li><a href='javascript:gfDCReload()'>" + _('Return to dudle home and schedule a new poll') + "</a></li>";
+	_r += "</ul></td>";
+	_r += "</tr><tr id='keyplaceholder'></tr>";
+	$('register').update(_r);
+
+}
+
+// send the key to the server
+function register() {
+	var _pubkey, _ar;
+
+	_pubkey = "NAME " + gsDCUserName + "\n";
+	_pubkey += "DHPUB " + goDCVoteVector.pub.toString(16);
+	_ar = new Ajax.Request(gsDCExtensiondir + "keyserver.cgi", {
+		parameters: {service: 'setKey', gpgKey: _pubkey},
+		onFailure: function (transport) {
+			alert(_("Failed to store key, the server said:") + " " + transport.responseText);
+		},
+		onSuccess: function (transport) {
+			showFinish();
+		}
+	});
 }
 
 function checkCorrectness() {
@@ -212,34 +247,4 @@ function showKeyAgain() {
 	}
 }
 
-// summary
-function showFinish() {
-	var _r = "<tr>";
-	_r += "<td colspan='2' class='textcolumn'>" + _("You registered an account successfully. With your secret key, you are able to participate in anonymous polls. Make sure, that you do not loose your secret key. Without the key, nobody is able to vote for the username.") + "</td>";
-	_r += "</tr><tr>";
-	_r += "<td colspan='2'><ul>";
-	_r += "<li><a href='javascript:showKeyAgain()'>" + _('Click here in order to view and backup your secret key (last chance)') + "</a></li>";
-	_r += "<li><a href='javascript:gfDCReload()'>" + _('Return to dudle home and schedule a new poll') + "</a></li>";
-	_r += "</ul></td>";
-	_r += "</tr><tr id='keyplaceholder'></tr>";
-	$('register').update(_r);
-
-}
-
-// send the key to the server
-function register() {
-	var _pubkey, _ar;
-
-	_pubkey = "NAME " + gsDCUserName + "\n";
-	_pubkey += "DHPUB " + goDCVoteVector.pub.toString(16);
-	_ar = new Ajax.Request(gsDCExtensiondir + "keyserver.cgi", {
-		parameters: {service: 'setKey', gpgKey: _pubkey},
-		onFailure: function (transport) {
-			alert(_("Failed to store key, the server said:") + " " + transport.responseText);
-		},
-		onSuccess: function (transport) {
-			showFinish();
-		}
-	});
-}
 
