@@ -18,7 +18,7 @@
  ***************************************************************************/
 
 "use strict";
-/*global goDCVoteVector, gsDCExtensiondir, gsDCPollID, gsDCVoted, gsDCUnknown, gsDCFlying, gsDCKickedOut, gfDCUpdateName, gfDCRemoveParticipant, gfDCReload, gfDCUserTd, gfDCKeyTd, gfDCCancelButton, giDCNumTables, goDCRealUserNames, gfDCInitAESKey, Vote, gt */
+/*global goDCVoteVector, gsDCExtensiondir, gsDCPollID, gsDCVoted, gsDCUnknown, gsDCFlying, gsDCKickedOut, gfDCUpdateName, gfDCRemoveParticipant, gfDCReload, gfDCUserTd, gfDCKeyTd, gfDCCancelButton, giDCNumTables, goDCRealUserNames, gfDCInitAESKey, Vote, gt, escape */
 
 var gDCActiveParticipant;
 var gaDCColumns;
@@ -502,20 +502,19 @@ function calcResult() {
 				}
 			}
 			$$("tr#summary td.name")[0].writeAttribute("onclick", "gfShowKeygraphLinks()");
-			console.log("fertig");
 		}
 	});
 }
 
-gbKeyGraphLinksHidden = true;
+var gbKeyGraphLinksHidden = true;
 function gfShowKeygraphLinks() {
 	if (gbKeyGraphLinksHidden) {
 		var _tr = "<tr id='keygraphlinks'><td colspan='2' />";
 		gaDCColumns.each(function (column) {
-			_tr += "<td><a href='../extensions/dc-net/keygraph.cgi?pollID=" 
-			_tr += gsDCPollID +  "&column="+ escape(column) + "' style='font-size:70%'>show keygraph" + "</a></td>";
+			_tr += "<td><a href='../extensions/dc-net/keygraph.cgi?pollID=";
+			_tr += gsDCPollID +  "&column=" + escape(column) + "' style='font-size:70%'>show keygraph" + "</a></td>";
 		});
-		$("summary").insert({after:_tr});
+		$("summary").insert({after: _tr});
 		gbKeyGraphLinksHidden = false;
 	} else {
 		$("keygraphlinks").remove();
@@ -626,8 +625,9 @@ Vote.prototype.startKeyCalc = function () {
  * messages instead                                               *
  ******************************************************************/
 Vote.prototype.gfRemoveVoteButtons = function () {
+	var i;
 	// only do something in the first call
-	if ($("statusmessage") == null) {
+	if ($("statusmessage") === null) {
 		for (i = 0; i < gaDCColumnsLen; ++i) {
 			$$("#participant_" + this.id + " td")[1].remove();
 		}

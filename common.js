@@ -89,12 +89,12 @@ function gfDCKeyTd() {
 }
 
 /* returns firefox, ie, opera, safari, chrome, unknown */
-function gfBrowserName(){
+function gfBrowserName() {
 	var agent, i, browsers;
 	agent = navigator.userAgent.toLowerCase();
-	browsers =  ["chrome","epiphany", "opera", "safari", "firefox", "ie"]
+	browsers =  ["chrome", "epiphany", "opera", "safari", "firefox", "ie"];
 	for	(i = 0; i < browsers.length; i++) {
-		if (agent.indexOf(browsers[i])>-1) {
+		if (agent.indexOf(browsers[i]) > -1) {
 			return browsers[i];
 		}
 	}
