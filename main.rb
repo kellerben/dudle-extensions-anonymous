@@ -29,7 +29,7 @@ class Extension
 		$d.html.add_script("var gsDCExtensiondir='#{@basedir}/';")
 
 		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po")
-			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po' />")
+			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{$d.html.relative_dir}#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po' />")
 		end
 		$d.html.add_head_script("#{@basedir}/lib/Gettext.js")
 		$d.html.add_head_script("#{@basedir}/lib/prototype.js")
