@@ -17,10 +17,11 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-$:.push("../../")
-$:.uniq!
 require "yaml"
+olddir = Dir.pwd
+Dir.chdir("../../")
 require "git"
+Dir.chdir(olddir)
 require "digest/sha2"
 require "cgistatus"
 
