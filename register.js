@@ -53,7 +53,6 @@ function showRegister(name) {
 	_r += "<td><input type='button' value='" + _("Cancel") + "' onClick='showContent()'/> ";
 	_r += "<input type='button' id='next' value='" + _("Next") + "' onclick='checkUserExistance()'/></td>";
 	_r += "</tr><tr id='registererror' /></table>";
-	_r += "<div id='languageChooser'>" + $('languageChooser').innerHTML + "</div>";
 	$('content').update(_r);
 
 	$('active_tab').removeClassName("active_tab");
