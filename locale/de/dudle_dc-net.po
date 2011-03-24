@@ -143,7 +143,7 @@ msgstr "erhöhen"
 
 #: participate.js:485
 msgid "Somebody tried to %1 column %2 by %3!!!"
-msgstr "Es versuchte jemand Spalte %2 um %3 zu %1!!!"
+msgstr "Es versuchte Jemand, Spalte %2 um %3 zu %1!!!"
 
 #: participate.js:497
 msgid "Somebody sent inconsistent values at column %1!!!"
@@ -206,7 +206,7 @@ msgstr "Setzen Sie ein Lesezeichen für den folgenden Link:"
 
 #: register.js:80
 msgid "If you created a bookmark in the previous step, click on it to enter the key."
-msgstr "Wenn Sie im vorhergehenden Schritt ein Lesezeichen gesetzt haben, reicht es dieses jetzt zu klicken um den Schlüssel einzufügen."
+msgstr "Wenn Sie im vorhergehenden Schritt ein Lesezeichen gesetzt haben, reicht es, dieses jetzt anzuklicken, um den Schlüssel einzufügen."
 
 #: register.js:81
 msgid "To create a bookmark, you have to right-click on the insert-dudle-key-link and choose the appropriate option from the context menu."
@@ -242,7 +242,7 @@ msgstr "Um ein Lesezeichen zu erstellen, müssen Sie den dudle-Schlüssel-einfü
 
 #: register.js:111
 msgid "You have to store a secret key (like a password) somewhere at your computer. There are two possibilities to do this, please choose one:"
-msgstr "Sie müssen Sich einen geheimen Schlüssel (ähnlich eines Passworts) auf Ihrem Computer speichern. Es gibt zwei Möglichkeiten, bitte wählen Sie eine:"
+msgstr "Sie müssen einen geheimen Schlüssel (ähnlich eines Passworts) auf Ihrem Computer speichern. Es gibt zwei Möglichkeiten, bitte wählen Sie eine:"
 
 #: register.js:119
 msgid "insert dudle key (%1)"
