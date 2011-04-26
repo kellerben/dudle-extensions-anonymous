@@ -20,7 +20,7 @@
 /*global gsDCExtensiondir, gsDCEdit, gsDCDelete, gsDCPollID, gaDCColumnsLen, Gettext */
 "use strict";
 
-var gt = new Gettext({ 'domain' : 'dudle_dc-net' });
+var gt = new Gettext({ 'domain' : 'dudle' });
 function _(msgid) { 
 	return gt.gettext(msgid); 
 }

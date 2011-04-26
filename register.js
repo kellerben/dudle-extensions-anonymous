@@ -115,7 +115,7 @@ function keyTr() {
 	_r += "<ul><li>";
 	_r += gscreateBookmark;
 
-	_r += " <span onclick='gfHowtoCreateBookmark()'><a href=\"javascript:void(";
+	_r += "<br /><span onclick='gfHowtoCreateBookmark()'><a href=\"javascript:void(";
 	_r += "document.getElementById('key').value='";
 	_r += goDCVoteVector.sec.toString(16);
 	_r += "')\">";

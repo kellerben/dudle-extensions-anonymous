@@ -21,21 +21,21 @@ DOMAIN=dudle_dc-net
 
 locale: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
 locale/$(DOMAIN).pot: *.js
-	rm -f locale/dudle_dc-net.pot
+	rm -f $@
 	xgettext -L Python *.js -o $@
 
 %.mo: %.po
 	rmsgfmt $*.po -o $*.mo
 
 locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
-	msgmerge locale/$*/$(DOMAIN).po locale/$(DOMAIN).pot >/tmp/$(DOMAIN)_$*_tmp.po
-	if [ "`msgcomm -u /tmp/$(DOMAIN)_$*_tmp.po locale/$*/$(DOMAIN).po`" ];then\
-		mv /tmp/$(DOMAIN)_$*_tmp.po locale/$*/$(DOMAIN).po;\
+	msgmerge $@ $? >/tmp/$(DOMAIN)_$*_tmp.po
+	if [ "`msgcomm -u /tmp/$(DOMAIN)_$*_tmp.po $@`" ];then\
+		mv /tmp/$(DOMAIN)_$*_tmp.po $@;\
 	else\
-		touch locale/$*/$(DOMAIN).po;\
+		touch $@;\
 	fi
-	if [ "`potool -fnt locale/$*/$(DOMAIN).po -s`" != "0" -o "`potool -ff locale/$*/$(DOMAIN).po -s`" != "0" ];then\
-		poedit locale/$*/$(DOMAIN).po;\
+	if [ "`potool -fnt $@ -s`" != "0" -o "`potool -ff $@ -s`" != "0" ];then\
+		poedit $@;\
 	fi
 
 check: $(foreach p,$(wildcard *.js), $p.check)
