@@ -20,7 +20,7 @@
 require "yaml"
 olddir = Dir.pwd
 Dir.chdir("../../")
-require "git"
+require "vcs_git"
 Dir.chdir(olddir)
 require "digest/sha2"
 require "cgistatus"

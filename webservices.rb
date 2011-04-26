@@ -20,7 +20,7 @@
 require "pp"
 olddir = Dir.pwd
 Dir.chdir("../../")
-require "git"
+require "vcs_git"
 Dir.chdir(olddir)
 require "cgistatus"
 require "json"
