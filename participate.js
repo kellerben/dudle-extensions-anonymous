@@ -36,13 +36,13 @@ var gsDCPollState;
 var htmlid = (function () {
 	var cache = {},
 	    ncache = {},
-	    reg = /[^A-Za-z0-9_:.\-]/g;
+	    reg = /[^A-Za-z0-9_\-]/g;
 	return function (s) {
 		var id;
 		if (s in cache) {
 			id = cache[s];
 		} else {
-			id = s.replace(reg, ".");
+			id = s.replace(reg, "_");
 			if (id in ncache) {
 				id += ncache[id]++;
 			}
