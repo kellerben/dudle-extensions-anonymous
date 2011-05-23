@@ -126,7 +126,7 @@ function keyTr() {
 
 	_r += "</li><li>";
 
-	_r += _("Copy the following key it to a textfile:");
+	_r += _("Copy the following key into a textfile:");
 	_r += "<br /><textarea readonly='readonly' id='key' type='text' cols='70' rows='3'>";
 	_r += goDCVoteVector.sec.toString(16) + "</textarea>";
 
