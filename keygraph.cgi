@@ -35,7 +35,7 @@ if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/") && $c["pol
 
 	File.open("init","w"){|f|
 		f << <<INIT
-	URL = "http://#{$c.server_name}#{$c.script_name.gsub(/\/extensions\/dc-net\/keygraph.cgi$/,"")}"
+	URL = "http://#{$c.server_name}#{$c.script_name.gsub(/\/extensions\/anonymous\/keygraph.cgi$/,"")}"
 	POLLID = "#{$c["pollID"]}"
 	COLUMN = "#{$c["column"]}"
 INIT

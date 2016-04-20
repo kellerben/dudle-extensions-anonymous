@@ -1,0 +1,5 @@
+keyserverdata
+locale/*/dudle_anonymous.mo
+locale/dudle_anonymous.pot
+compressed/*.js
+config.rb

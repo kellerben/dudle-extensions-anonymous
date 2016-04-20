@@ -19,11 +19,11 @@
 
 	load "init"
 
-	p = JSON.parse(open("#{URL}/extensions/dc-net/webservices.cgi?service=getParticipants&pollID=#{POLLID}").gets)
+	p = JSON.parse(open("#{URL}/extensions/anonymous/webservices.cgi?service=getParticipants&pollID=#{POLLID}").gets)
 
 	realnames = {}
 	p.each_key {|user|
-		realnames[user] = open("#{URL}/extensions/dc-net/keyserver.cgi?service=getName&gpgID=#{user}").gets
+		realnames[user] = open("#{URL}/extensions/anonymous/keyserver.cgi?service=getName&gpgID=#{user}").gets
 	}
 	REALNAMES = realnames
 

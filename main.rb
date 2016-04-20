@@ -20,7 +20,7 @@
 
 class Extension
 	def initialize(basedir)
-		@basedir = basedir + "/extensions/dc-net"
+		@basedir = basedir + "/extensions/anonymous"
 		if File.exists?("#{@basedir}/config.rb")
 			load "#{@basedir}/config.rb"
 		else
@@ -28,8 +28,8 @@ class Extension
 		end
 		$d.html.add_script("var gsDCExtensiondir='#{@basedir}/';")
 
-		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po")
-			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{$d.html.relative_dir}#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po' />")
+		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_anonymous.po")
+			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{$d.html.relative_dir}#{@basedir}/locale/#{GetText.locale.language}/dudle_anonymous.po' />")
 		end
 		$d.html.add_head_script("#{@basedir}/lib/Gettext.js")
 		$d.html.add_head_script("#{@basedir}/lib/prototype.js")

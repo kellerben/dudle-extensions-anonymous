@@ -17,7 +17,7 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-DOMAIN=dudle_dc-net
+DOMAIN=dudle_anonymous
 
 locale: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
 locale/$(DOMAIN).pot: *.js

@@ -511,7 +511,7 @@ function gfShowKeygraphLinks() {
 	if (gbKeyGraphLinksHidden) {
 		var _tr = "<tr id='keygraphlinks'><td colspan='2' />";
 		gaDCColumns.each(function (column) {
-			_tr += "<td><a href='../extensions/dc-net/keygraph.cgi?pollID=";
+			_tr += "<td><a href='../extensions/anonymous/keygraph.cgi?pollID=";
 			_tr += gsDCPollID +  "&column=" + escape(column) + "' style='font-size:70%'>show keygraph" + "</a></td>";
 		});
 		$("summary").insert({after: _tr});
