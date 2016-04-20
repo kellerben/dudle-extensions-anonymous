@@ -18,20 +18,17 @@
 ############################################################################
 
 require "pp"
-olddir = Dir.pwd
-Dir.chdir("../../")
-require "vcs_git"
-Dir.chdir(olddir)
-require "cgistatus"
+require_relative "../../vcs_git"
+require_relative "cgistatus"
 require "json"
-require "keyserver"
+require_relative "keyserver"
 class Poll
 	###################################################################
 	# Poll Initialization
 	###################################################################
 	def Poll.webservicedescription_0Initialization_addParticipant
 		{ "return" => "",
-			"input" => "gpgID"
+			"input" => ["gpgID"]
 		}
 	end
 	def webservice_addParticipant
@@ -43,7 +40,7 @@ class Poll
 
 	def Poll.webservicedescription_0Initialization_removeParticipant
 		{ "return" => "202 wenn user entfernt wurde, 403 wenn der user nicht entfernt werden darf (er oder jemand anders hat schon seinen Schlüssel in einer Stimme benutzt), 404 wenn user nicht in Datenbank",
-			"input" => "gpgID"
+			"input" => ["gpgID"]
 		}
 	end
 	def webservice_removeParticipant

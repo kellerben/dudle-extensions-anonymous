@@ -18,12 +18,9 @@
 ############################################################################
 
 require "yaml"
-olddir = Dir.pwd
-Dir.chdir("../../")
-require "vcs_git"
-Dir.chdir(olddir)
+require_relative "../../vcs_git"
 require "digest/sha2"
-require "cgistatus"
+require_relative "cgistatus"
 
 class Keyserver
 	def initialize(dir)

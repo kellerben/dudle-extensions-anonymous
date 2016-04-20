@@ -19,7 +19,7 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-require "webservices"
+require_relative "webservices"
 
 require "cgi"
 $c = CGI.new
@@ -28,7 +28,7 @@ $header = {}
 webservices = {}
 all = []
 Poll.methods.collect{|m|
-	m.scan(/^webservicedescription_(.*)_(.*)$/)[0]
+	m.to_s.scan(/^webservicedescription_(.*)_(.*)$/)[0]
 }.compact.each{|phase,webservice|
 	webservices[phase] ||= []
 	webservices[phase] << webservice
@@ -39,7 +39,7 @@ if all.include?($c["service"])
 	$header = {"type" => "text/plain"}
 
 	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/") && $c["pollID"] != ""
-		require "keyserver"
+		require_relative "keyserver"
 		keyserverdir = File.expand_path("keyserverdata")
 
 		Dir.chdir("../../#{$c["pollID"]}/")

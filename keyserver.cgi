@@ -19,7 +19,7 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-require "keyserver"
+require_relative "keyserver"
 
 $cgi = CGI.new
 $header = {}
@@ -29,7 +29,7 @@ $header["Cache-Control"] = "no-cache"
 webservices = {}
 all = []
 Keyserver.methods.collect{|m|
-	m.scan(/^webservicedescription_(.*)_(.*)$/)[0]
+	m.to_s.scan(/^webservicedescription_(.*)_(.*)$/)[0]
 }.compact.each{|phase,webservice|
 	webservices[phase] ||= []
 	webservices[phase] << webservice
