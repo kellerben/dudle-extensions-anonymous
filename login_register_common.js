@@ -19,7 +19,7 @@
 
 "use strict";
 
-var giDCDHLENGTH = 786;
+var giDCDHLENGTH = 1536;
 var giDCNumTables = 3;
 var goDCVoteVector;
 
