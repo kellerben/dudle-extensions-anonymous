@@ -28,12 +28,14 @@ class Extension
 		end
 		$d.html.add_script("var gsDCExtensiondir='#{@basedir}/';")
 
-		if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_anonymous.po")
-			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{$d.html.relative_dir}#{@basedir}/locale/#{GetText.locale.language}/dudle_anonymous.po' />")
+		if GetText.locale.language =~ /^[a-zA-Z_]+$/
+			if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_anonymous.po")
+				$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{$d.html.relative_dir}#{@basedir}/locale/#{GetText.locale.language}/dudle_anonymous.po' />")
+			end
 		end
 		$d.html.add_head_script("#{@basedir}/lib/Gettext.js")
 		$d.html.add_head_script("#{@basedir}/lib/prototype.js")
-		
+
 	end
 	def add_lib(jslib)
 		$d.html.add_head_script("#{@basedir}/lib/#{jslib}.js")
@@ -73,7 +75,7 @@ SCRIPT
 			e.add_script("invite_participants")
 			e.add_css("invite_participants")
 
-		when "." 
+		when "."
 
 			if $USEUTF
 			# †✉◌#░▨▧◍▩☨☩☥☦☢☣☠✄✈✝✞✟✠
