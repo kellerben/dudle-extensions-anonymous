@@ -119,7 +119,7 @@ function keyTr() {
 	_r += "document.getElementById('key').value='";
 	_r += goDCVoteVector.sec.toString(16);
 	_r += "')\">";
-	_r += printf(_('insert dudle key (%1)'), [gsDCUserName]) + '</a></span>';
+	_r += printf(_('insert dudle key (%1)'), [escapeHtml(gsDCUserName)]) + '</a></span>';
 
 	_r += "<div id='bookmarkhint' class='hint'></div>";
 
@@ -142,7 +142,7 @@ function secondRegisterStep() {
 	_r = keyTr();
 	_r += "<tr>";
 	_r += "<td></td>";
-	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='showRegister(\"" + gsDCUserName + "\");' /> ";
+	_r += "<td><input type='button' value='" + _("Previous") + "' onclick='showRegister(\"" + escapeJS(escapeHtml(gsDCUserName)) + "\");' /> ";
 	_r += "<input type='button' id='next' value='" + _("Next") + "' onclick='thirdRegisterStep()'/></td>";
 	_r += "</tr>";
 	$('register').update(_r);
@@ -158,7 +158,7 @@ function thirdRegisterStep() {
 	_r = "<tr><td colspan='3'>";
 	_r += _("To validate the correct storage of your key, please enter your secret key:");
 	_r += "</td></tr>";
-	_r += "<tr><td><label for='key'>" + printf(_("Secret Key for %1:"), [gsDCUserName]) + "</label></td>";
+	_r += "<tr><td><label for='key'>" + printf(_("Secret Key for %1:"), [escapeHtml(gsDCUserName)]) + "</label></td>";
 	_r += "<td colspan='2'><textarea id='key' type='text' cols='70' rows='3'></textarea></td></tr>";
 	_r += "<tr>";
 	_r += "<td></td>";

@@ -56,14 +56,14 @@ var htmlid = (function () {
 var gsDCKickerId;
 function showKicker(_victim, _kicker) {
 	var tdtext = "<label for='key'>";
-	tdtext += printf(_("Secret Key for %1:"), [goDCRealUserNames[_kicker]]);
+	tdtext += printf(_("Secret Key for %1:"), [escapeHtml(goDCRealUserNames[_kicker])]);
 	tdtext += "</label>";
 	$("participant_" + _victim).childElements()[0].update(tdtext);
 
 	gsDCKickerId = _kicker;
 	$("key").enable();
 	$("kickoutbutton").enable();
-	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + _victim + "')");
+	$("cancelbutton").writeAttribute("onclick", "deleteUser('" + escapeJS(_victim) + "')");
 }
 
 // TODO: transform into asynchronus call
@@ -139,7 +139,7 @@ Vote.prototype.kickOutUserInterface = function (_victim) {
 		$("cancelbutton").disable();
 		goDCVoteVector.setSecKey(key, function () {
 			if (goDCVoteVector.id === gsDCKickerId) {
-				$("key_td").update(printf(_("Please wait while removing %1 &hellip;"), [goDCRealUserNames[_victim]]));
+				$("key_td").update(printf(_("Please wait while removing %1 &hellip;"), [escapeHtml(goDCRealUserNames[_victim])]));
 				goDCVoteVector.participants[_victim] = fetchKey(_victim);
 
 				// calculate the dh secret
@@ -154,7 +154,7 @@ Vote.prototype.kickOutUserInterface = function (_victim) {
 				var _errormsg = _("The entered key is wrong!");
 				_errormsg += " <a href='javascript:(function () {deleteUser(\"" + _victim + "\");showKicker(\"" + _victim + "\", \"" + gsDCKickerId + "\")})()'>" + _("Try again?") + "</a>";
 				$("key_td").update(_errormsg);
-				$("kickoutbutton").value = printf(_("Delete %1"), [goDCRealUserNames[_victim]]);
+				$("kickoutbutton").value = printf(_("Delete %1"), [escapeHtml(goDCRealUserNames[_victim])]);
 			}
 		});
 	}
@@ -187,7 +187,7 @@ function exchangeParticipantRow(_participant, _newTds) {
 function editUser(_participant) {
 	var _l;
 	_l = "<td colspan='2' id='" + _participant + "_td' class='label'><label for='key'>";
-	_l += printf(_("Secret Key for %1:"), [goDCRealUserNames[_participant]]);
+	_l += printf(_("Secret Key for %1:"), [escapeHtml(goDCRealUserNames[_participant])]);
 	_l += "</label></td>";
 
 	_l += gfDCKeyTd();
@@ -219,13 +219,13 @@ function deleteUser(_victim) {
 		_tds = "<td colspan='2'>" + _("Please select your username:");
 		_tds += "<ul style='text-align: left'>";
 		_tds += usersNeeded.uniq().collect(function (e) {
-			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + goDCRealUserNames[e] + "</a></li>"; 
+			return "<li title='" + e + "'><a href='javascript:showKicker(\"" + _victim + "\", \"" + e + "\")'>" + escapeHtml(goDCRealUserNames[e]) + "</a></li>"; 
 		}).join("");
 		_tds += "</ul></td>";
 		_tds += gfDCKeyTd();
 
 		_tds += "<td><input id='kickoutbutton' type='button' value='";
-		_tds += printf(_("Delete %1"), [goDCRealUserNames[_victim]]);
+		_tds += printf(_("Delete %1"), [escapeHtml(goDCRealUserNames[_victim])]);
 		_tds += "' onClick='goDCVoteVector.kickOutUserInterface(\"" + _victim + "\")' disabled='disabled' />";
 		_tds += gfDCCancelButton();
 		_tds += "</td>";
@@ -672,7 +672,7 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 	}
 	nextuser = goDCFlyingUsers.keys()[0];
 	nextkickers = $H(goDCFlyingUsers.unset(nextuser)).keys().collect(function (user) {
-		return goDCRealUserNames[user];
+		return escapeHtml(goDCRealUserNames[user]);
 	});
 
 	// save the row
@@ -688,7 +688,7 @@ Vote.prototype.askKickOutNext = function (user, kickuser) {
 	kickoutquestion = printf(gt.ngettext('%1 wants to remove %2.', 
 			'Some Users (%1) want to remove %2.', 
 			nextkickers.size()),
-		[nextkickers.join(", "), goDCRealUserNames[nextuser]]
+		[nextkickers.join(", "), escapeHtml(goDCRealUserNames[nextuser])]
 	);
 	kickoutquestion += "<br />";
 	kickoutquestion += "<input type='button' onclick='goDCVoteVector.askKickOutNext(\"" + nextuser + "\", true)' value='" + _("I agree.") + "' id='agreebutton' />";
@@ -734,7 +734,7 @@ Vote.prototype.sendNextKickoutKey = function () {
 		return;
 	}
 	nextvictim = gaKickUsers.pop();
-	$("statusmessage").update(printf(_("Please wait while removing %1 &hellip;"), [goDCRealUserNames[nextvictim]]));
+	$("statusmessage").update(printf(_("Please wait while removing %1 &hellip;"), [escapeHtml(goDCRealUserNames[nextvictim])]));
 	this.kickOut(nextvictim, this.sendNextKickoutKey);
 };
 

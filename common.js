@@ -21,24 +21,55 @@
 "use strict";
 
 var gt = new Gettext({ 'domain' : 'dudle' });
-function _(msgid) { 
-	return gt.gettext(msgid); 
+function _(msgid) {
+	return gt.gettext(msgid);
 }
 function printf(msg, replaceary) {
-	return Gettext.strargs(msg, replaceary); 
+	return Gettext.strargs(msg, replaceary);
+}
+var entityMapHtml = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'/': '&#x2F;',
+	'`': '&#x60;',
+	'=': '&#x3D;'
+};
+
+function escapeHtml (string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+			return entityMapHtml[s];
+	});
+}
+var entityMapJS = {
+	'&': '\\x26',
+	'<': '\\x3C',
+	'>': '\\x3E',
+	"'": '\\x27',
+	'"': '\\x22',
+	'/': '\\x2F'
+};
+
+function escapeJS (string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+		return entityMapJS[s];
+	});
 }
 
 var goDCRealUserNames = {};
 
 function gfDCUpdateName(gpgID) {
-	var ar = new Ajax.Updater(gpgID, gsDCExtensiondir + 'keyserver.cgi', {
+	var ar = new Ajax.Request(gsDCExtensiondir + 'keyserver.cgi', {
 		parameters: { service: "getName", gpgID: gpgID },
 		method: 'get',
 		onSuccess: function (transport) {
 			goDCRealUserNames[gpgID] = transport.responseText;
+			$(gpgID).update(escapeHtml(transport.responseText));
 		},
 		onFailure: function () {
-			$(gpgID).update(printf(_("Failed to fetch name for %1."), [gpgID]));
+			$(gpgID).update(printf(_("Failed to fetch name for %1."), [escapeHtml(gpgID)]));
 		}
 	});
 }
